@@ -1,0 +1,7 @@
+img {
+    image-orientation: from-image;
+}
+
+.viewer-transition {
+  transition:all 0.001s;
+}

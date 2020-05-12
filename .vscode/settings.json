@@ -1,0 +1,19 @@
+{
+  // "javascript.validate.enable": false,
+  "editor.formatOnSave": false,
+  "editor.tabSize": 2,
+  "files.eol": "\n",
+  "git.ignoreLimitWarning": true,
+  // prevent conflict
+  "[typescript]": {
+    "editor.formatOnSave": false
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": false
+  },
+  "npm.enableScriptExplorer": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}

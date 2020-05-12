@@ -1,26 +1,33 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { connect } from "unistore/react";
+import "./App.css";
+import { SnackbarProvider } from "notistack";
+import actions from "./actions";
+import { State, MainViewerState, SnackbarState } from "./types/unistore";
+import MainViewer from "./containers/MainViewer";
+import Snackbar from "./components/feedback/Snackbar";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+interface BaseAppProps {
+  finishLayoutUpdated: () => void;
+  snackbar: SnackbarState;
+  mainViewer: MainViewerState;
+  loadMainViewerImages: () => Promise<void>;
 }
+type AppProps = BaseAppProps;
+
+const mapStateToProps = "snackbar,mainViewer";
+
+const App = connect<{}, {}, State, AppProps>(
+  mapStateToProps,
+  actions
+)((props: AppProps) => (
+  <SnackbarProvider maxSnack={10}>
+    <div className="App">
+      {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+      <MainViewer {...props.mainViewer} />
+      <Snackbar state={props.snackbar} close={props.finishLayoutUpdated} />
+    </div>
+  </SnackbarProvider>
+));
 
 export default App;

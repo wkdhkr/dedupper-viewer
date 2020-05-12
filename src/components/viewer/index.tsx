@@ -1,0 +1,117 @@
+// eslint-disable-next-line max-classes-per-file
+import React, { PureComponent, cloneElement } from "react";
+import { deepMap } from "react-children-utilities";
+import Viewer from "viewerjs";
+import ImageListRender from "./ImageListRender";
+import "./index.css";
+import { DedupperImage } from "../../types/unistore";
+
+const RViewerTriggerName = Symbol("RViewerTriggerName");
+class RViewerTrigger extends PureComponent<{ index?: number }> {
+  static componentName: symbol = RViewerTriggerName;
+
+  render() {
+    const children = this.props;
+    return <div>{children}</div>;
+  }
+}
+
+const isRViewerTrigger = (el: any): el is RViewerTrigger => {
+  if (el) {
+    if (
+      typeof el === "string" ||
+      typeof el === "number" ||
+      typeof el === "boolean"
+    ) {
+      return false;
+    }
+    if (el.type.componentName) {
+      return el.type.componentName === RViewerTriggerName;
+    }
+  }
+
+  return false;
+};
+interface RViewerProps {
+  options: Viewer.Options;
+  images: DedupperImage[];
+}
+
+interface RViewerState {
+  isShow: boolean;
+  index: number;
+}
+
+class RViewer extends PureComponent<RViewerProps, RViewerState> {
+  constructor(props: RViewerProps) {
+    super(props);
+
+    this.state = {
+      isShow: true,
+      index: 0
+    };
+  }
+
+  show = (index = 0) => {
+    this.setState({
+      isShow: true,
+      index
+    });
+  };
+
+  hide = () => {
+    this.setState({
+      isShow: false
+    });
+  };
+
+  render() {
+    const { children, images, options } = this.props;
+    const { isShow, index } = this.state;
+    const { Fragment } = React;
+    return (
+      <Fragment>
+        {isShow ? (
+          <ImageListRender
+            images={images}
+            index={index}
+            options={options}
+            hide={this.hide}
+          />
+        ) : (
+          <div />
+        )}
+        {deepMap(children, child => {
+          if (child === null) {
+            return <div />;
+          }
+          if (isRViewerTrigger(child)) {
+            const props = {
+              onClick: () => {
+                this.show(child.props.index);
+              }
+            };
+
+            return cloneElement(child.props.children as any, props);
+          }
+          return child;
+        })}
+      </Fragment>
+    );
+  }
+}
+
+interface MultiImageViewerProps {
+  images: DedupperImage[];
+}
+const MultiImageViewer: React.SFC<MultiImageViewerProps> = ({ images }) => (
+  <RViewer images={images} options={{}}>
+    {/*
+    <RViewerTrigger>
+      <button type="button">Multiple images preview</button>
+    </RViewerTrigger>
+    */}
+  </RViewer>
+);
+
+export { RViewerTrigger, RViewer, MultiImageViewer };
