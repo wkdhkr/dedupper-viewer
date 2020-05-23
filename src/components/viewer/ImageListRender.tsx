@@ -7,6 +7,10 @@ import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 interface ImageListRenderProps {
+  isPlay: boolean;
+  togglePlay: Function;
+  load: () => Promise<void>;
+  unload: () => void;
   images: DedupperImage[];
   index: number;
   hide: Function;
@@ -45,32 +49,62 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     );
   }
 
-  componentDidUpdate() {
-    const { index, hide, options: customOptions } = this.props;
+  componentDidMount() {
+    const { load } = this.props;
+    load();
+  }
+
+  componentDidUpdate(prevProps: ImageListRenderProps) {
+    const {
+      images,
+      index,
+      hide,
+      togglePlay,
+      options: customOptions
+    } = this.props;
+
+    if (this.viewer) {
+      return;
+    }
+    if (images.length === 0) {
+      return;
+    }
+
     const {
       toolbar: customToolbar,
       hidden,
       ...restOptions
     } = customOptions || { toolbar: {} };
+    const toolbarOptions = {
+      show: true,
+      size: "large" as Viewer.ToolbarButtonSize
+    };
     const options = {
-      zIndex: 1250, // under 1500, Snackbar z-index
+      title: false,
+      zoomRatio: 0.1,
+      zIndex: 1350, // under 1500, upper 1300, Snackbar  and modal z-index
       // transition: false,
       fullscreen: false,
       transition: true,
       button: false,
       backdrop: "static",
       toolbar: {
-        zoomIn: true,
-        zoomOut: true,
-        oneToOne: true,
-        reset: true,
-        prev: true,
-        // play: true,
-        next: true,
-        rotateLeft: true,
-        rotateRight: 4,
-        flipHorizontal: true,
-        flipVertical: true,
+        zoomIn: toolbarOptions,
+        zoomOut: toolbarOptions,
+        oneToOne: toolbarOptions,
+        reset: toolbarOptions,
+        prev: toolbarOptions,
+        play: {
+          ...toolbarOptions,
+          click: () => {
+            togglePlay();
+          }
+        },
+        next: toolbarOptions,
+        rotateLeft: toolbarOptions,
+        rotateRight: toolbarOptions,
+        flipHorizontal: toolbarOptions,
+        flipVertical: toolbarOptions,
         ...(typeof customToolbar === "object" ? customToolbar : {})
       },
       // navbar: true,
@@ -83,17 +117,34 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         hide();
       }
     };
-    if (this.containerDiv.current) {
+    if (this.containerDiv.current && images.length) {
       const viewer = new Viewer(this.containerDiv.current, options);
       (viewer as any).initImage = initImageExpand;
       viewer.view(index);
       this.viewer = viewer;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("play")) {
+        togglePlay();
+      }
     }
   }
 
   componentWillUnmount() {
-    if (this.viewer) {
-      this.viewer.destroy();
+    const { viewer } = this as any;
+    if (viewer) {
+      (viewer as any).ready = true;
+      if (!viewer.viewer) {
+        [(viewer as any).viewer] = document.getElementsByClassName(
+          "viewer-container"
+        );
+      }
+      viewer.destroy();
+      this.viewer = null;
+      const { isPlay, togglePlay, unload } = this.props;
+      if (isPlay && togglePlay) {
+        togglePlay();
+      }
+      unload();
     }
   }
 }

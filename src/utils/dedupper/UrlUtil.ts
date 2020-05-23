@@ -1,7 +1,11 @@
 import AuthUtil from "./AuthUtil";
 
+const isLocalhost = window.location.hostname === "localhost";
+const port = isLocalhost ? 8080 : 3000;
+const hostname = isLocalhost ? "localhost" : window.location.hostname;
+
 export default class UrlUtil {
-  static BASE_URL = "http://localhost:8080/dedupper/v1/";
+  static BASE_URL = `http://${hostname}:${port}/dedupper/v1/`;
 
   static setupApiUrlObj = (path: string) => {
     const u = new URL(`${UrlUtil.BASE_URL}${path}`);

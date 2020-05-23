@@ -14,8 +14,7 @@ module.exports = {
       jsx: true,
     },
     // sourceType: 'module',
-    project: "./tsconfig.json",
-    extraFileExtensions: [".vue"],
+    project: "./tsconfig.json"
   },
   env: {
     browser: true,
@@ -31,6 +30,8 @@ module.exports = {
     }
   },
   rules: {
+    // conflict with prettier
+    "react/jsx-curly-newline": "off",
     // default exportを押す 無効化
     "import/prefer-default-export": "off",
     // "import/no-unresolved": "off",

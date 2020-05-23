@@ -9,24 +9,34 @@ export default class DomUtil {
   static getViewerSourceContainer = () =>
     document.getElementById("viewer-source-container");
 
-  static getViewer = () => {
-    const container = DomUtil.getViewerSourceContainer();
+  static getViewer = (event?: CustomEvent) => {
+    const container = event
+      ? (event as any).target
+      : DomUtil.getViewerSourceContainer();
     if (!container) {
       throw new Error("viewer container not found.");
     }
-    return (container as any).viewer as
+    const viewer = (container as any).viewer as
       | (Viewer & {
+          options: Viewer.Options;
+          index: number;
           image: HTMLImageElement;
           imageData: ImageData;
+          initialImageData: ImageData;
         })
-      | null;
+      | undefined;
+    if (!viewer) {
+      throw new Error("viewer not found.");
+    }
+    return viewer;
   };
 
-  static getCurrentHash = () => {
-    const viewer = DomUtil.getViewer();
-    if (viewer) {
-      return UrlUtil.extractHashParam(viewer.image.src) || null;
+  static getCurrentHash = (event?: CustomEvent) => {
+    const viewer = DomUtil.getViewer(event);
+    const hash = UrlUtil.extractHashParam(viewer.image.src);
+    if (!hash) {
+      throw new Error("hash not found.");
     }
-    return null;
+    return hash;
   };
 }

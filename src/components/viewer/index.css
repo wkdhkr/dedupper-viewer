@@ -5,3 +5,7 @@ img {
 .viewer-transition {
   transition:all 0.001s;
 }
+.viewer-footer {
+  text-align: right;
+  padding-right: 5px;
+}

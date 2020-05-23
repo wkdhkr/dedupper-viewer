@@ -4,7 +4,7 @@
 import { Store } from "unistore";
 import debounce from "lodash/debounce";
 // import Viewer from "viewerjs";
-import Viewer from "viewerjs";
+import isEqual from "lodash/isEqual";
 import { State } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
 import actions from "../actions";
@@ -88,27 +88,45 @@ function addListener(element: any, type: any, listener: any) {
     });
 }
 
-let body: (HTMLBodyElement & { viewer: Viewer }) | null = null;
-
 export default function(store: Store<State>) {
-  document.body.addEventListener<any>("viewed", function(event: CustomEvent) {
-    console.log("viewed", event);
+  document.body.addEventListener<any>("viewed", function(
+    event: CustomEvent<any>
+  ) {
+    actions(store).viewed(store.getState(), DomUtil.getCurrentHash(event));
+    // console.log("viewed", event);
+    if (DomUtil.getViewer().index === 0) {
+      actions(store).showSnackbarCustom(store.getState(), [
+        "This is first image.",
+        {
+          variant: "info",
+          autoHideDuration: 3000,
+          anchorOrigin: { horizontal: "right", vertical: "top" }
+        }
+      ]);
+    }
   });
-  document.body.addEventListener<any>("ready", function(event: CustomEvent) {
-    body = this as any;
-    console.log("ready", event);
+  document.body.addEventListener<any>("ready", function() {
+    actions(store).showSnackbarCustom(store.getState(), [
+      "Viewer.js is ready.",
+      {
+        variant: "info",
+        autoHideDuration: 3000,
+        anchorOrigin: { horizontal: "right", vertical: "top" }
+      }
+    ]);
+    // console.log("ready", event);
   });
-  document.body.addEventListener<any>("show", function(event: CustomEvent) {
-    console.log("show", event);
+  document.body.addEventListener<any>("show", function() {
+    // console.log("show", event);
   });
-  document.body.addEventListener<any>("hide", function(event: CustomEvent) {
-    console.log("hide", event);
+  document.body.addEventListener<any>("hide", function() {
+    // console.log("hide", event);
   });
-  document.body.addEventListener<any>("hidden", function(event: CustomEvent) {
-    console.log("hidden", event);
+  document.body.addEventListener<any>("hidden", function() {
+    // console.log("hidden", event);
   });
-  document.body.addEventListener<any>("view", function(event: CustomEvent) {
-    console.log("view", event);
+  document.body.addEventListener<any>("view", function() {
+    // console.log("view", event);
   });
   /*
   document.body.addEventListener<any>("zoom", function(event: CustomEvent) {
@@ -117,7 +135,7 @@ export default function(store: Store<State>) {
   */
   document.body.addEventListener<any>(
     "zoomed",
-    debounce(function(event: CustomEvent) {
+    debounce(function() {
       const hash = DomUtil.getCurrentHash();
       const viewer = DomUtil.getViewer();
       if (hash && viewer) {
@@ -138,13 +156,21 @@ export default function(store: Store<State>) {
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {
-    const hash = DomUtil.getCurrentHash();
-    const viewer = DomUtil.getViewer();
+    let hash;
+    let viewer;
+    try {
+      hash = DomUtil.getCurrentHash();
+      viewer = DomUtil.getViewer();
+    } catch (e) {
+      return;
+    }
     if (hash && viewer) {
       if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
         if (pointerX !== event.clientX || pointerY !== event.clientY) {
-          const trim = JSON.stringify(viewer.imageData);
-          actions(store).updateTrim(store.getState(), hash, trim);
+          if (!isEqual(viewer.imageData, viewer.initialImageData)) {
+            const trim = JSON.stringify(viewer.imageData);
+            actions(store).updateTrim(store.getState(), hash, trim);
+          }
         }
       }
       if (
@@ -160,7 +186,8 @@ export default function(store: Store<State>) {
     }
   });
 
-  window.addEventListener("load", event => {
-    actions(store).loadMainViewerImages(store.getState());
+  window.addEventListener("load", () => {
+    // actions(store).loadMainViewerImages(store.getState());
+    actions(store).loadChannels(store.getState());
   });
 }

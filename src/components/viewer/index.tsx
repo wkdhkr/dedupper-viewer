@@ -33,7 +33,11 @@ const isRViewerTrigger = (el: any): el is RViewerTrigger => {
   return false;
 };
 interface RViewerProps {
+  isPlay: boolean;
+  togglePlay: Function;
   options: Viewer.Options;
+  load: () => Promise<void>;
+  unload: () => void;
   images: DedupperImage[];
 }
 
@@ -66,15 +70,27 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
   };
 
   render() {
-    const { children, images, options } = this.props;
+    const {
+      children,
+      isPlay,
+      unload,
+      load,
+      images,
+      togglePlay,
+      options
+    } = this.props;
     const { isShow, index } = this.state;
     const { Fragment } = React;
     return (
       <Fragment>
         {isShow ? (
           <ImageListRender
+            togglePlay={togglePlay}
+            load={load}
+            unload={unload}
             images={images}
             index={index}
+            isPlay={isPlay}
             options={options}
             hide={this.hide}
           />
@@ -102,10 +118,27 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
 }
 
 interface MultiImageViewerProps {
+  isPlay: boolean;
+  togglePlay: Function;
   images: DedupperImage[];
+  load: () => Promise<void>;
+  unload: () => void;
 }
-const MultiImageViewer: React.SFC<MultiImageViewerProps> = ({ images }) => (
-  <RViewer images={images} options={{}}>
+const MultiImageViewer: React.SFC<MultiImageViewerProps> = ({
+  load,
+  unload,
+  images,
+  isPlay,
+  togglePlay
+}) => (
+  <RViewer
+    togglePlay={togglePlay}
+    isPlay={isPlay}
+    load={load}
+    unload={unload}
+    images={images}
+    options={{}}
+  >
     {/*
     <RViewerTrigger>
       <button type="button">Multiple images preview</button>
