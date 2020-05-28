@@ -92,7 +92,11 @@ export default function(store: Store<State>) {
   document.body.addEventListener<any>("viewed", function(
     event: CustomEvent<any>
   ) {
-    actions(store).viewed(store.getState(), DomUtil.getCurrentHash(event));
+    actions(store).viewed(
+      store.getState(),
+      DomUtil.getCurrentHash(event),
+      event.detail.index
+    );
     // console.log("viewed", event);
     if (DomUtil.getViewer().index === 0) {
       actions(store).showSnackbarCustom(store.getState(), [
@@ -190,4 +194,27 @@ export default function(store: Store<State>) {
     // actions(store).loadMainViewerImages(store.getState());
     actions(store).loadChannels(store.getState());
   });
+
+  /*
+  const changeScale = {
+    container: 1080,
+    percent: 1,
+    function() {
+      if (changeScale.percent === window.devicePixelRatio) {
+        let scale = document.documentElement.clientWidth;
+        scale /= changeScale.container;
+        const t = `scale(${scale})`;
+        document.body.style.transform = t;
+      } else {
+        changeScale.percent = window.devicePixelRatio;
+      }
+    }
+  };
+  (function() {
+    changeScale.function();
+  })();
+  window.addEventListener("resize", event => {
+    changeScale.function();
+  });
+  */
 }

@@ -1,3 +1,12 @@
 .MuiRating-root {
   font-size: 3rem !important;
 }
+
+#viewer-data-table {
+  cursor: default;
+  transition: 0.3s;
+}
+
+#viewer-data-table:hover {
+  opacity: 0.9 !important;
+}

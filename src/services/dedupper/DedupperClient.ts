@@ -24,6 +24,7 @@ const MAX_CONCURRENT_REQUESTS = 1;
 
 // init your manager.
 const http = axios;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const manager = ConcurrencyManager(http, MAX_CONCURRENT_REQUESTS);
 
 export default class DedupperClient {

@@ -12,6 +12,7 @@ import {
   DedupperChannel
 } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
+import ViewerUtil from "../utils/ViewerUtil";
 
 const dc = new DedupperClient();
 const ps = new PlayerService();
@@ -50,10 +51,11 @@ const actions = (store: Store<State>) => ({
       })
     );
   },
-  viewed(state: State, hash: string) {
+  viewed(state: State, hash: string, index: number) {
     store.setState(
       produce(state, draft => {
         draft.mainViewer.currentImage = draft.imageByHash[hash] || null;
+        draft.mainViewer.index = index;
       })
     );
   },
@@ -81,7 +83,16 @@ const actions = (store: Store<State>) => ({
     });
   },
   async updateTrim(state: State, hash: string, trim: string) {
-    await StoreUtil.updateField(hash, { trim }, "layoutUpdated", store);
+    let finalTrim = trim;
+    if (trim !== "") {
+      finalTrim = JSON.stringify(ViewerUtil.restoreImageData(JSON.parse(trim)));
+    }
+    await StoreUtil.updateField(
+      hash,
+      { trim: finalTrim },
+      "layoutUpdated",
+      store
+    );
   },
   updateRating(state: State, hash: string, rating: number | null) {
     // no wait

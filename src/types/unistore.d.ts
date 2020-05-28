@@ -14,6 +14,13 @@ export interface DedupperImage {
   t3: number | null;
   t4: number | null;
   t5: number | null;
+  to_path: string;
+  size: number;
+  width: number;
+  height: number;
+  timestamp: number;
+  drawing: number;
+  neutral: number;
   hentai: number;
   hentai_porn: number;
   hentai_porn_sexy: number;
@@ -30,6 +37,7 @@ export interface MainViewerState {
   isLoading: boolean;
   isOpen: boolean;
   isPlay: boolean;
+  index: number;
   currentImage: DedupperImage | null;
   images: DedupperImage[];
 }

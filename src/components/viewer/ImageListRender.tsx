@@ -54,6 +54,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     load();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps: ImageListRenderProps) {
     const {
       images,
@@ -83,9 +84,9 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       title: false,
       zoomRatio: 0.1,
       zIndex: 1350, // under 1500, upper 1300, Snackbar  and modal z-index
-      // transition: false,
+      transition: false,
       fullscreen: false,
-      transition: true,
+      // transition: true,
       button: false,
       backdrop: "static",
       toolbar: {

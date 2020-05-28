@@ -4,6 +4,7 @@
 
 import store from "../store";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import ViewerUtil from "../utils/ViewerUtil";
 
 const WINDOW = window;
 
@@ -186,7 +187,9 @@ export function initImageExpand(this: any, done: any) {
     }
 
     if (dedupperImage && dedupperImage.trim !== "") {
-      _this2.imageData = JSON.parse(dedupperImage.trim);
+      _this2.imageData = ViewerUtil.ajustImageData(
+        JSON.parse(dedupperImage.trim)
+      );
     } else {
       _this2.imageData = imageData;
     }

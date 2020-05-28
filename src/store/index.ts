@@ -22,6 +22,7 @@ const initialState: State = {
   channelById: {},
   mainViewer: {
     isLoading: false,
+    index: 0,
     isOpen: true,
     isPlay: false,
     currentImage: null,

@@ -1,4 +1,5 @@
 import React from "react";
+import Hotkeys from "react-hot-keys";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
 import Rating from "@material-ui/lab/Rating";
 import { Label } from "@material-ui/icons";
@@ -11,6 +12,7 @@ import "./MainViewer.css";
 
 import { MultiImageViewer } from "../components/viewer";
 import { MainViewerState, DedupperImage } from "../types/unistore";
+import DataTable from "../components/viewer/DataTable";
 
 type MainViewerProps = MainViewerState & {
   unload: () => void;
@@ -114,6 +116,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   isLoading,
   channelId,
   currentImage,
+  index,
   images,
   updateTag,
   updateRating,
@@ -130,20 +133,73 @@ const MainViewer: React.SFC<MainViewerProps> = ({
           />
         </Box>
       )}
-      <Dialog fullScreen open TransitionComponent={Transition}>
-        {isLoading && <LinearProgress color="secondary" />}
-        <MultiImageViewer
-          load={async () => {
-            if (channelId) {
-              load(channelId);
-            }
-          }}
-          unload={unload}
-          isPlay={isPlay}
-          togglePlay={togglePlay}
-          images={images}
+      <Box
+        id="viewer-data-table"
+        style={{ opacity: "0.0" }}
+        position="fixed"
+        left="6px"
+        bottom="6px"
+        zIndex="1400"
+      >
+        <DataTable
+          index={index}
+          imageCount={images.length}
+          image={currentImage}
         />
-      </Dialog>
+      </Box>
+      <Hotkeys
+        keyName="d,s,a,c,w,f"
+        onKeyUp={(keyName: string) => {
+          if (currentImage) {
+            const update = (rating: number) => {
+              const newRating = currentImage.rating === rating ? 0 : rating;
+              updateRating(currentImage.hash, newRating);
+            };
+            switch (keyName) {
+              case "s":
+                // special
+                update(5);
+                break;
+              case "f":
+                // fantastic
+                update(4);
+                break;
+              case "w":
+                // wonder
+                update(3);
+                break;
+              case "a":
+                // accept
+                update(2);
+                break;
+              case "c":
+                // common
+                update(1);
+                break;
+              case "d":
+                // deny
+                updateTag(currentImage.hash, currentImage.t1 ? null : 1, "t1");
+                break;
+              default:
+            }
+          }
+        }}
+      >
+        <Dialog fullScreen open TransitionComponent={Transition}>
+          {isLoading && <LinearProgress color="secondary" />}
+          <MultiImageViewer
+            load={async () => {
+              if (channelId) {
+                load(channelId);
+              }
+            }}
+            unload={unload}
+            isPlay={isPlay}
+            togglePlay={togglePlay}
+            images={images}
+          />
+        </Dialog>
+      </Hotkeys>
     </>
   );
 };
