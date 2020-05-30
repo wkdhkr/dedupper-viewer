@@ -17,9 +17,12 @@ export default class ViewerUtil {
     return window.innerWidth / ss;
   };
 
-  static ajustImageData = (imageData: ImageData) => {
-    const windowRatio = ViewerUtil.getWindowRatio();
-    if (window.devicePixelRatio !== 1) {
+  static adjustImageData = (
+    imageData: ImageData,
+    ratio: number | null = null
+  ) => {
+    const windowRatio = ratio || ViewerUtil.getWindowRatio();
+    if (window.devicePixelRatio !== 1 || ratio) {
       return {
         ...imageData,
         ...{

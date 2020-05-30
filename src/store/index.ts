@@ -22,11 +22,16 @@ const initialState: State = {
   channelById: {},
   mainViewer: {
     isLoading: false,
-    index: 0,
+    index: -1,
     isOpen: true,
     isPlay: false,
     currentImage: null,
     images: []
+  },
+  gridViewer: {
+    selectedImage: null,
+    isPlay: false,
+    index: -1
   }
 };
 

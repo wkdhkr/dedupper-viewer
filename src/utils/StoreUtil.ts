@@ -28,6 +28,14 @@ export default class StoreUtil {
             };
           }
         }
+        if (draft.gridViewer.selectedImage) {
+          if (draft.gridViewer.selectedImage.hash === hash) {
+            draft.gridViewer.selectedImage = {
+              ...draft.gridViewer.selectedImage,
+              ...edit
+            };
+          }
+        }
         if (draft.imageByHash[hash]) {
           draft.imageByHash[hash] = {
             ...draft.imageByHash[hash],
@@ -36,7 +44,9 @@ export default class StoreUtil {
         }
       })
     );
-    await dc.update(hash, edit, table);
+    // await dc.update(hash, edit, table);
+    // no wait
+    dc.update(hash, edit, table);
     store.setState(
       produce(store.getState(), draft => {
         draft.snackbar[snackbarName] = true;

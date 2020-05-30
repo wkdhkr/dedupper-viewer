@@ -37,7 +37,7 @@ import Remove from "@material-ui/icons/Remove";
 import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
-import { Delete, FileCopy } from "@material-ui/icons";
+import { Delete, FileCopy, PhotoLibrary, Slideshow } from "@material-ui/icons";
 import { Dictionary } from "lodash";
 import { DedupperChannel } from "../types/unistore";
 import ConfirmDialog from "../components/feedback/ConfirmDialog";
@@ -248,6 +248,20 @@ The channel will be permanently removed."
               tooltip: "Add Channel",
               isFreeAction: true,
               onClick: () => setIsShowDialog(true)
+            },
+            {
+              icon: () => <Slideshow />,
+              tooltip: "grid play",
+              onClick: (event, rowData: any) => {
+                navigate(`/channel/grid/${rowData.id}?play=1`);
+              }
+            },
+            {
+              icon: () => <PhotoLibrary />,
+              tooltip: "grid show",
+              onClick: (event, rowData: any) => {
+                navigate(`/channel/grid/${rowData.id}`);
+              }
             },
             {
               icon: () => <PlayArrow />,

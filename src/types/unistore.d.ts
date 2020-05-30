@@ -42,6 +42,12 @@ export interface MainViewerState {
   images: DedupperImage[];
 }
 
+export interface GridViewerState {
+  selectedImage: DedupperImage | null;
+  isPlay: boolean;
+  index: number;
+}
+
 export type SnackbarKind = "tagUpdated" | "ratingUpdated" | "layoutUpdated";
 export type SnackbarCustomState = [React.ReactNode, OptionsObject];
 export type SnackbarState = { [_ in SnackbarKind]: boolean };
@@ -55,5 +61,6 @@ export interface State {
   snackbarCustom: SnackbarCustomState | null;
   imageByHash: Dictionary<DedupperImage>;
   channelById: Dictionary<DedupperChannel>;
+  gridViewer: GridViewerState;
   mainViewer: MainViewerState;
 }

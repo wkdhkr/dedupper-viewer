@@ -21,6 +21,22 @@ export default class PlayerService {
     }
   };
 
+  switchGridPlay(isPlay: boolean, nextFn: Function) {
+    if (this.timer === null) {
+      if (isPlay) {
+        this.timer = setInterval(() => {
+          try {
+            nextFn();
+          } catch (e) {
+            this.clear();
+          }
+        }, this.intervalMs);
+      }
+    } else {
+      this.clear();
+    }
+  }
+
   switchPlay(isPlay: boolean) {
     if (this.timer === null) {
       if (isPlay) {

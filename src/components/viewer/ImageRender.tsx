@@ -6,36 +6,26 @@ import { initImageExpand } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
-interface ImageListRenderProps {
-  isPlay: boolean;
-  togglePlay: Function;
-  load: () => Promise<void>;
-  unload: () => void;
-  images: DedupperImage[];
-  index: number;
-  hide: Function;
+interface ImageRenderProps {
+  image: DedupperImage;
   options: Viewer.Options;
 }
 
-class ImageListRender extends PureComponent<ImageListRenderProps> {
+class ImageRender extends PureComponent<ImageRenderProps> {
   viewer: Viewer | null = null;
 
   containerDiv: React.RefObject<HTMLUListElement>;
 
-  constructor(props: ImageListRenderProps) {
+  constructor(props: ImageRenderProps) {
     super(props);
     this.containerDiv = React.createRef();
   }
 
   render() {
-    const { images } = this.props;
+    const { image } = this.props;
     return (
-      <ul
-        id="viewer-source-container"
-        style={{ display: "none" }}
-        ref={this.containerDiv}
-      >
-        {images.map(({ hash }) => (
+      <ul ref={this.containerDiv}>
+        {[image].map(({ hash }) => (
           <li key={hash}>
             <img
               data-hash={hash}
@@ -50,27 +40,19 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
   }
 
   componentDidMount() {
+    /*
     const { load } = this.props;
     load();
+    */
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  componentDidUpdate(prevProps: ImageListRenderProps) {
-    const {
-      images,
-      index,
-      hide,
-      togglePlay,
-      options: customOptions
-    } = this.props;
+  componentDidUpdate(prevProps: ImageRenderProps) {
+    const { image, options: customOptions } = this.props;
 
     if (this.viewer) {
       return;
     }
-    if (images.length === 0) {
-      return;
-    }
-
     const {
       toolbar: customToolbar,
       hidden,
@@ -90,6 +72,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       button: false,
       backdrop: "static",
       toolbar: {
+        /*
         zoomIn: toolbarOptions,
         zoomOut: toolbarOptions,
         oneToOne: toolbarOptions,
@@ -106,28 +89,20 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         rotateRight: toolbarOptions,
         flipHorizontal: toolbarOptions,
         flipVertical: toolbarOptions,
+        */
         ...(typeof customToolbar === "object" ? customToolbar : {})
       },
       // navbar: true,
       navbar: false,
-      ...restOptions,
-      hidden: () => {
-        if (hidden) {
-          hidden(new CustomEvent("viewer-hidden"));
-        }
-        hide();
-      }
+      ...restOptions
     };
-    if (this.containerDiv.current && images.length) {
+    if (this.containerDiv.current) {
       Viewer.noConflict();
       const viewer = new Viewer(this.containerDiv.current, options);
       (viewer as any).initImage = initImageExpand;
-      viewer.view(index);
+      viewer.view(0);
       this.viewer = viewer;
       const params = new URLSearchParams(window.location.search);
-      if (params.get("play")) {
-        togglePlay();
-      }
     }
   }
 
@@ -136,18 +111,15 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     if (viewer) {
       (viewer as any).ready = true;
       if (!viewer.viewer) {
+        /*
         [(viewer as any).viewer] = document.getElementsByClassName(
           "viewer-container"
         );
+        */
       }
       viewer.destroy();
       this.viewer = null;
-      const { isPlay, togglePlay, unload } = this.props;
-      if (isPlay && togglePlay) {
-        togglePlay();
-      }
-      unload();
     }
   }
 }
-export default ImageListRender;
+export default ImageRender;

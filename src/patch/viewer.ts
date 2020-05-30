@@ -187,7 +187,7 @@ export function initImageExpand(this: any, done: any) {
     }
 
     if (dedupperImage && dedupperImage.trim !== "") {
-      _this2.imageData = ViewerUtil.ajustImageData(
+      _this2.imageData = ViewerUtil.adjustImageData(
         JSON.parse(dedupperImage.trim)
       );
     } else {

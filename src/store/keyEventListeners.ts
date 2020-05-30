@@ -1,8 +1,6 @@
 import { Store } from "unistore";
 import produce from "immer";
-import hotkeys from "hotkeys-js";
 import { State } from "../types/unistore";
-import actions from "../actions";
 
 export default function(store: Store<State>) {
   const setKey = (event: KeyboardEvent) => {
@@ -19,6 +17,7 @@ export default function(store: Store<State>) {
   document.addEventListener("keydown", setKey);
   document.addEventListener("keyup", setKey);
 
+  /*
   hotkeys(
     "1,2,3,4,5"
       .split(",")
@@ -47,4 +46,5 @@ export default function(store: Store<State>) {
       actions(store).updateTag(state, currentImage.hash, value, "t1");
     }
   });
+  */
 }

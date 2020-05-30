@@ -6,41 +6,8 @@ import {
   SnackbarCustomState
 } from "../../types/unistore";
 
-const anchorOrigin: SnackbarOrigin = {
-  horizontal: "right",
-  vertical: "top"
-};
-
-const snackbarConfigLookup: {
-  [_ in SnackbarKind]: [React.ReactNode, OptionsObject | undefined];
-} = {
-  tagUpdated: [
-    "The tag has been updated.",
-    {
-      variant: "success",
-      autoHideDuration: 3000,
-      anchorOrigin
-    }
-  ],
-  ratingUpdated: [
-    "The rating has been updated.",
-    {
-      variant: "success",
-      autoHideDuration: 3000,
-      anchorOrigin
-    }
-  ],
-  layoutUpdated: [
-    "The layout has been updated.",
-    {
-      variant: "success",
-      autoHideDuration: 3000,
-      anchorOrigin
-    }
-  ]
-};
-
 type SnackbarProps = {
+  anchorOrigin: SnackbarOrigin;
   state: SnackbarState;
   close: (x: SnackbarKind) => void;
   stateCustom: SnackbarCustomState;
@@ -48,11 +15,41 @@ type SnackbarProps = {
 };
 
 const Snackbar: React.FunctionComponent<SnackbarProps> = ({
+  anchorOrigin,
   state,
   close,
   stateCustom,
   closeCustom
 }) => {
+  const snackbarConfigLookup: {
+    [_ in SnackbarKind]: [React.ReactNode, OptionsObject | undefined];
+  } = {
+    tagUpdated: [
+      "The tag has been updated.",
+      {
+        variant: "success",
+        autoHideDuration: 3000,
+        anchorOrigin
+      }
+    ],
+    ratingUpdated: [
+      "The rating has been updated.",
+      {
+        variant: "success",
+        autoHideDuration: 3000,
+        anchorOrigin
+      }
+    ],
+    layoutUpdated: [
+      "The layout has been updated.",
+      {
+        variant: "success",
+        autoHideDuration: 3000,
+        anchorOrigin
+      }
+    ]
+  };
+
   const { enqueueSnackbar } = useSnackbar();
 
   (Object.keys(state) as (keyof SnackbarState)[]).forEach(

@@ -7,4 +7,9 @@ export interface ImageData {
   height: number;
   left: number;
   top: number;
+  scaleX?: number;
+  scaleY?: number;
+  rotate?: number;
+  translateX?: number;
+  translateY?: number;
 }

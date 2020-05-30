@@ -124,7 +124,7 @@ interface MultiImageViewerProps {
   load: () => Promise<void>;
   unload: () => void;
 }
-const MultiImageViewer: React.SFC<MultiImageViewerProps> = ({
+const MultiImageViewer: React.FunctionComponent<MultiImageViewerProps> = ({
   load,
   unload,
   images,

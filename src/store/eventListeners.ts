@@ -92,21 +92,25 @@ export default function(store: Store<State>) {
   document.body.addEventListener<any>("viewed", function(
     event: CustomEvent<any>
   ) {
-    actions(store).viewed(
-      store.getState(),
-      DomUtil.getCurrentHash(event),
-      event.detail.index
-    );
-    // console.log("viewed", event);
-    if (DomUtil.getViewer().index === 0) {
-      actions(store).showSnackbarCustom(store.getState(), [
-        "This is first image.",
-        {
-          variant: "info",
-          autoHideDuration: 3000,
-          anchorOrigin: { horizontal: "right", vertical: "top" }
-        }
-      ]);
+    try {
+      actions(store).viewed(
+        store.getState(),
+        DomUtil.getCurrentHash(event),
+        event.detail.index
+      );
+      // console.log("viewed", event);
+      if (DomUtil.getViewer().index === 0) {
+        actions(store).showSnackbarCustom(store.getState(), [
+          "This is first image.",
+          {
+            variant: "info",
+            autoHideDuration: 3000,
+            anchorOrigin: { horizontal: "right", vertical: "top" }
+          }
+        ]);
+      }
+    } catch (e) {
+      // ignore
     }
   });
   document.body.addEventListener<any>("ready", function() {

@@ -14,6 +14,20 @@ export default class UrlUtil {
     return u;
   };
 
+  static isInGridViewer = () => {
+    return window.location.pathname.split("/").includes("grid");
+  };
+
+  static togglePlay = () => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("play")) {
+      url.searchParams.delete("play");
+    } else {
+      url.searchParams.set("play", "1");
+    }
+    window.history.replaceState(null, document.title, url.toString());
+  };
+
   static generateImageUrl = (hash: string) => {
     const auth = AuthUtil.getAuthToken();
     return `${UrlUtil.BASE_URL}rpc/image/download?hash=${hash}&type=TYPE_IMAGE&auth=${auth}`;

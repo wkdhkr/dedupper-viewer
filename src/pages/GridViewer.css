@@ -1,0 +1,19 @@
+img {
+  /* border-radius: 16px; */
+}
+::-webkit-scrollbar {
+    display: none;
+}
+
+.react-photo-gallery--gallery {
+  background-color: black;
+}
+
+.react-photo-gallery--gallery img{
+  backface-visibility: hidden;
+}
+
+.react-photo-gallery--gallery > div {
+
+  /* margin-right: -1px; */
+}
