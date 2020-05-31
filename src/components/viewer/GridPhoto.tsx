@@ -1,10 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import React from "react";
+import React, { MouseEventHandler } from "react";
 import { RenderImageProps } from "react-photo-gallery";
 import { Box } from "@material-ui/core";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import { CheckCircle } from "@material-ui/icons";
 import store from "../../store";
 import ViewerUtil from "../../utils/ViewerUtil";
@@ -67,9 +66,11 @@ const GridPhoto = ({
   currentIndex,
   image,
   selectedImage,
+  unit,
   onClick,
   updateTag,
   updateRating,
+  toggleSubViewer,
   photo,
   margin,
   direction,
@@ -77,15 +78,17 @@ const GridPhoto = ({
   left
 }: RenderImageProps & {
   isPlay: boolean;
+  unit: number;
   image: DedupperImage | null;
   currentIndex: number;
   selectedImage: DedupperImage | null;
+  toggleSubViewer: Function;
   updateTag: (hash: string, x: number | null, name: string) => void;
   updateRating: (hash: string, x: number | null) => void;
 }) => {
   const imgStyle: React.CSSProperties = {
     boxSizing: "border-box",
-    margin,
+    // margin,
     backgroundColor: "black",
     display: "block"
   };
@@ -107,36 +110,65 @@ const GridPhoto = ({
     const state = store.getState();
     if (photo.key) {
       const di = state.imageByHash[photo.key];
+      const aspectRatio = di.width / di.height;
+
+      let { height } = photo;
+      let { width } = photo;
+
+      if (photo.height * aspectRatio <= photo.width) {
+        height = photo.width / aspectRatio;
+      } else {
+        width = photo.height * aspectRatio;
+      }
       let trim = {
         naturalWidth: di.width,
         naturalHeight: di.height,
-        aspectRatio: di.width / di.height,
+        aspectRatio,
         ratio: di.width / di.width,
         width: di.width,
         height: di.height,
         left: 0,
         top: 0
+        // left: (photo.width - width) / 2,
+        // top: (photo.height - height) / 2
       };
       let ratio = photo.height / trim.naturalHeight;
+      // let ratio = photo.width / trim.naturalWidth;
       if (di.trim) {
         ratio = photo.height / STANDARD_WIDTH;
         trim = JSON.parse(di.trim);
       }
       // const ratio = photo.width / STANDARD_WIDTH;
       const imageData = ViewerUtil.adjustImageData(trim, ratio);
-      style.width = imageData.width;
-      style.height = imageData.height;
-      style.marginLeft = imageData.left;
-      style.marginTop = imageData.top;
+      if (di.trim) {
+        style.width = imageData.width;
+        style.height = imageData.height;
+        style.marginLeft = imageData.left;
+        style.marginTop = imageData.top;
+      } else {
+        style.width = width;
+        style.height = height;
+        style.marginLeft = (photo.width - width) / 2;
+        style.marginTop = (photo.height - height) / 2;
+      }
 
       style = { ...style, ...getTransforms(imageData) };
     }
     return style;
   };
-  const isLazy = false;
   const isSelected = !isPlay && photo.key === selectedImage?.hash;
-  const isNeighbour = Math.abs(currentIndex - index) < 5;
+  const isNeighbour = Math.abs(currentIndex - index) < unit * unit;
   const isShowRatingAndTag = isNeighbour;
+  // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
+  const isVirtual = false;
+
+  const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
+    if (event.button === 1) {
+      toggleSubViewer();
+    }
+    event.preventDefault();
+  };
+  const sizeFactor = 1.25;
   return (
     <Box
       id={`photo-container__${photo.key}`}
@@ -151,7 +183,16 @@ const GridPhoto = ({
       height={photo.height}
     >
       {isShowRatingAndTag ? (
-        <Box style={{ opacity: 0.4 }} position="absolute" zIndex="1400" m={2}>
+        <Box
+          style={{
+            marginTop: "8px",
+            opacity: 0.4,
+            transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`
+          }}
+          position="absolute"
+          zIndex="1400"
+          m={2}
+        >
           <RatingAndTag
             currentImage={image}
             onTagChange={updateTag}
@@ -159,16 +200,24 @@ const GridPhoto = ({
           />
         </Box>
       ) : null}
-      {isSelected ? (
+      {!isVirtual && isSelected ? (
         <Box zIndex={1000} position="absolute" right="0px">
-          <CheckCircle fontSize="large" color="secondary" />
+          <CheckCircle
+            fontSize={unit < 7 ? "large" : "default"}
+            color="secondary"
+          />
         </Box>
       ) : null}
-      {isLazy ? (
-        <LazyLoadImage
-          src={photo.src}
-          style={createStyle()}
+      {isVirtual ? (
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+        <div
+          style={{
+            ...imgWithClick,
+            width: photo.width,
+            height: photo.height
+          }}
           onClick={onClick ? handleClick : undefined}
+          onMouseDown={mouseDownHandler}
         />
       ) : (
         <img
@@ -176,6 +225,7 @@ const GridPhoto = ({
           src={photo.src}
           style={createStyle()}
           onClick={onClick ? handleClick : undefined}
+          onMouseDown={mouseDownHandler}
         />
       )}
     </Box>

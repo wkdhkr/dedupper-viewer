@@ -35,8 +35,10 @@ interface BaseAppProps {
   deleteChannel: (id: string) => Promise<void>;
   updateChannel: (c: DedupperChannel) => Promise<void>;
   createChannel: (c: DedupperChannel) => Promise<void>;
+  changeUnit: (x: number) => void;
   togglePlay: Function;
   toggleGridPlay: Function;
+  toggleSubViewer: Function;
   selected: (hash: string, index: number) => void;
   finishSnackbar: (x: SnackbarKind) => void;
   finishSnackbarCustom: () => void;
@@ -46,6 +48,7 @@ interface BaseAppProps {
   gridViewer: GridViewerState;
   mainViewer: MainViewerState;
   unloadMainViewerImages: () => void;
+  loadMainViewerImage: (hash: string) => Promise<void>;
   loadMainViewerImages: (channelId: string) => Promise<void>;
 }
 type AppProps = BaseAppProps;
@@ -63,16 +66,29 @@ const App = connect<{}, {}, State, AppProps>(
       <Router>
         <GridViewer
           path="channel/grid/:channelId"
-          imageByHash={props.imageByHash}
           updateRating={props.updateRating}
           togglePlay={props.toggleGridPlay}
+          toggleSubViewer={props.toggleSubViewer}
           updateTag={props.updateTag}
+          changeUnit={props.changeUnit}
           selected={props.selected}
           unload={props.unloadMainViewerImages}
           load={props.loadMainViewerImages}
           images={props.mainViewer.images}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props.gridViewer}
+        />
+        <MainViewer
+          path="image/:hash"
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...{
+            ...props.mainViewer,
+            updateRating: props.updateRating,
+            updateTag: props.updateTag,
+            togglePlay: () => {},
+            unload: props.unloadMainViewerImages,
+            load: props.loadMainViewerImage
+          }}
         />
         <MainViewer
           path="channel/:channelId"

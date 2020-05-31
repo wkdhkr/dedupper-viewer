@@ -14,8 +14,16 @@ export default class UrlUtil {
     return u;
   };
 
+  static isInChannel = () => {
+    return window.location.pathname.split("/").includes("channel");
+  };
+
   static isInGridViewer = () => {
     return window.location.pathname.split("/").includes("grid");
+  };
+
+  static isInSingleViewer = () => {
+    return window.location.pathname.split("/").includes("image");
   };
 
   static togglePlay = () => {
@@ -31,6 +39,24 @@ export default class UrlUtil {
   static generateImageUrl = (hash: string) => {
     const auth = AuthUtil.getAuthToken();
     return `${UrlUtil.BASE_URL}rpc/image/download?hash=${hash}&type=TYPE_IMAGE&auth=${auth}`;
+  };
+
+  static generateImageViewerUrl = (hash: string) => {
+    return `/image/${hash}`;
+  };
+
+  static extractChannelId = () => {
+    if (UrlUtil.isInChannel()) {
+      const matches = window.location.pathname
+        .split("/")
+        .filter(d =>
+          d.match(
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+          )
+        );
+      return matches.pop() || null;
+    }
+    return null;
   };
 
   static extractHashParam = (url: string) =>

@@ -17,12 +17,19 @@ export default class ViewerUtil {
     return window.innerWidth / ss;
   };
 
+  static isNonStandardScreen = () => {
+    const isPortrait = window.innerHeight > window.innerWidth;
+    return isPortrait
+      ? window.innerWidth !== STANDARD_HEIGHT
+      : window.innerWidth !== STANDARD_WIDTH;
+  };
+
   static adjustImageData = (
     imageData: ImageData,
     ratio: number | null = null
   ) => {
     const windowRatio = ratio || ViewerUtil.getWindowRatio();
-    if (window.devicePixelRatio !== 1 || ratio) {
+    if (ViewerUtil.isNonStandardScreen() || ratio) {
       return {
         ...imageData,
         ...{
@@ -39,7 +46,7 @@ export default class ViewerUtil {
 
   static restoreImageData = (imageData: ImageData) => {
     const windowRatio = ViewerUtil.getWindowRatio();
-    if (window.devicePixelRatio !== 1) {
+    if (ViewerUtil.isNonStandardScreen()) {
       return {
         ...imageData,
         ...{

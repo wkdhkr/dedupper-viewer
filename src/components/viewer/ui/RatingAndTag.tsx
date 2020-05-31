@@ -52,7 +52,7 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = ({
   if (currentImage) {
     return (
       <>
-        <Box>
+        <Box className="viewer-rating-container">
           <Rating
             value={currentImage.rating}
             name={`image__${currentImage.hash}`}
@@ -62,7 +62,7 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = ({
             max={5}
           />
         </Box>
-        <Box>
+        <Box className="viewer-rating-container">
           {["t1", "t2", "t3", "t4", "t5"].map(name => {
             const LabelRating = getLabelRating(name);
             return (

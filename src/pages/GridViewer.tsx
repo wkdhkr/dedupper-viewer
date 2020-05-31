@@ -5,21 +5,27 @@ import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
 // import PerfectScrollbar from "react-perfect-scrollbar";
 import { PlayCircleOutline, Stop } from "@material-ui/icons";
-import { Dictionary } from "lodash";
-import { DedupperImage } from "../types/unistore";
+import { DedupperImage, SubViewerState } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
 import {
   STANDARD_HEIGHT,
-  STANDARD_WIDTH
+  STANDARD_WIDTH,
+  GRID_UNIT_MAX,
+  GRID_UNIT_MIN
 } from "../constants/dedupperConstants";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
+import SubViewer from "../components/viewer/SubViewer";
+import PlayHotKey from "../components/viewer/ui/PlayHotkey";
+import GridViewerService from "../services/Viewer/GridViewerService";
+import store from "../store";
+
+const gs = new GridViewerService(store);
 
 type GridViewerProps = RouteComponentProps & {
-  imageByHash: Dictionary<DedupperImage>;
   updateTag: (
     hash: string | string[],
     x: number | null,
@@ -27,35 +33,44 @@ type GridViewerProps = RouteComponentProps & {
     next?: boolean
   ) => void;
   updateRating: (hash: string, x: number | null) => void;
+  unit: number;
+  subViewer: SubViewerState;
   channelId?: string;
   isPlay: boolean;
   togglePlay: Function;
+  changeUnit: (x: number) => void;
+  toggleSubViewer: Function;
   selected: (hash: string, index: number) => void;
   selectedImage: DedupperImage | null;
   unload: () => void;
   index: number;
-  load: (channelId: string, unit: number) => Promise<void>;
+  load: (channelId: string) => Promise<void>;
   images: DedupperImage[];
 };
 
 const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   images,
-  imageByHash,
+  unit,
+  subViewer,
   isPlay,
   selected,
   index,
   selectedImage,
   togglePlay,
+  changeUnit,
+  toggleSubViewer,
   load,
   unload,
   channelId,
   updateTag,
   updateRating
 }) => {
+  const fitImages = ImageArrayUtil.fitAmountForGridUnit(images, unit * unit);
+
   useEffect(() => {
     // load images
     if (channelId) {
-      load(channelId, 2);
+      load(channelId);
     }
 
     // setup play mode
@@ -81,8 +96,8 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       } else {
         finalIndex -= 1;
       }
-      if (images.length) {
-        selected(...ImageArrayUtil.detectDestination(images, finalIndex));
+      if (fitImages.length) {
+        selected(...ImageArrayUtil.detectDestination(fitImages, finalIndex));
       }
     };
 
@@ -93,32 +108,49 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   const [isPlayHover, setIsPlayHover] = useState(false);
 
-  const isShownPlayIcon = isPlayHover || !isPlay;
+  // const isShownPlayIcon = isPlayHover || !isPlay;
+  const isShownPlayIcon = isPlayHover;
 
-  const columnCount = 2;
+  const range = unit * unit;
+
   return (
     <>
+      <SubViewer
+        /* eslint-disable-next-line react/jsx-props-no-spreading */
+        {...subViewer}
+        toggle={toggleSubViewer}
+        image={selectedImage}
+      />
+      <PlayHotKey togglePlay={togglePlay} />
       <RatingAndTagHotkey
         updateTag={updateTag}
         updateRating={updateRating}
         image={selectedImage}
       />
       <Hotkeys
-        keyName="x"
+        keyName="g"
         onKeyUp={(keyName: string) => {
-          if (images.length) {
-            const leftTopIndex = index - (index % 4);
-            const hashList = images
-              .slice(leftTopIndex, leftTopIndex + 4)
-              .map(i => i.hash);
-            selected(
-              ...ImageArrayUtil.detectDestination(images, leftTopIndex + 4)
-            );
-            setTimeout(() => {
-              updateTag(hashList, 1, "t1", false);
-            });
+          // grid unit change
+          const nextUnit = unit + 1;
+          changeUnit(nextUnit > GRID_UNIT_MAX ? GRID_UNIT_MIN : nextUnit);
+          setTimeout(() => {
+            selected(...ImageArrayUtil.detectDestination(fitImages, index));
+          }, 2000);
+        }}
+      />
+      <Hotkeys
+        keyName="r"
+        onKeyUp={(keyName: string) => {
+          // reloading
+          unload();
+          if (channelId) {
+            load(channelId);
           }
         }}
+      />
+      <Hotkeys
+        keyName="x"
+        onKeyUp={(keyName: string) => gs.applyTagForImagesInScreen()}
       />
       <Hotkeys
         // keyName="left,right,up,down"
@@ -127,9 +159,9 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           event.preventDefault();
         }}
         onKeyUp={(keyName: string, event: KeyboardEvent) => {
-          if (images.length) {
+          if (fitImages.length) {
             let nextIndex = -1;
-            const leftTopIndex = index - (index % 4);
+            const leftTopIndex = index - (index % range);
             if (keyName === "left") {
               nextIndex = index - 1;
             }
@@ -137,13 +169,13 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               nextIndex = index + 1;
             }
             if (keyName === "up") {
-              nextIndex = leftTopIndex - 4;
+              nextIndex = leftTopIndex - range;
             }
             if (keyName === "down") {
-              nextIndex = leftTopIndex + 4;
+              nextIndex = leftTopIndex + range;
             }
 
-            selected(...ImageArrayUtil.detectDestination(images, nextIndex));
+            selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
           }
         }}
       />
@@ -155,7 +187,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         width={window.innerWidth}
         height={window.innerHeight}
       > */}
-      {images.length ? (
+      {fitImages.length ? (
         <>
           <Box
             id="play-icon-container"
@@ -196,20 +228,22 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               GridPhoto({
                 ...props,
                 // image: props.photo.key ? imageByHash[props.photo.key] : null,
-                image: images[props.index],
+                image: fitImages[props.index],
                 selectedImage,
                 currentIndex: index,
                 isPlay,
+                unit,
+                toggleSubViewer,
                 updateTag,
                 updateRating
               })
             }
             margin={0}
-            limitNodeSearch={columnCount - 0}
-            targetRowHeight={containerWidth => STANDARD_WIDTH / columnCount}
+            limitNodeSearch={unit}
+            targetRowHeight={containerWidth => STANDARD_WIDTH / unit}
             // columns={2}
             // direction="column"
-            photos={images.map(({ width, height, hash }) => ({
+            photos={fitImages.map(({ width, height, hash }) => ({
               key: hash,
               width: STANDARD_HEIGHT,
               height: STANDARD_WIDTH,

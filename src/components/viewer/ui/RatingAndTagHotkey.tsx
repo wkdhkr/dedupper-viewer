@@ -12,7 +12,7 @@ const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
   image,
   updateRating,
   updateTag
-}: RatingAndTagHotkeyProps) => {
+}) => {
   return (
     <Hotkeys
       allowRepeat={false}

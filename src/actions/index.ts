@@ -15,6 +15,10 @@ import {
 import DomUtil from "../utils/DomUtil";
 import ViewerUtil from "../utils/ViewerUtil";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import { DedupperWindow } from "../types/window";
+
+// let subWindowHandle: Window | null = null;
 
 const dc = new DedupperClient();
 const ps = new PlayerService();
@@ -54,6 +58,20 @@ const actions = (store: Store<State>) => ({
       })
     );
   },
+  changeUnit(state: State, unit: number) {
+    store.setState(
+      produce(state, draft => {
+        draft.gridViewer.unit = unit;
+      })
+    );
+  },
+  toggleSubViewer(state: State) {
+    store.setState(
+      produce(state, draft => {
+        draft.gridViewer.subViewer.isOpen = !draft.gridViewer.subViewer.isOpen;
+      })
+    );
+  },
   viewed(state: State, hash: string, index: number) {
     store.setState(
       produce(state, draft => {
@@ -63,8 +81,15 @@ const actions = (store: Store<State>) => ({
     );
   },
   selected(state: State, hash: string, index: number) {
+    const w = SubViewerHelper.getWindow();
+    if (w?.navigate) {
+      w.navigate(UrlUtil.generateImageViewerUrl(hash), {
+        replace: true
+      });
+    }
     store.setState(
       produce(store.getState(), draft => {
+        const range = draft.gridViewer.unit * draft.gridViewer.unit;
         if (
           draft.gridViewer.selectedImage?.hash === draft.imageByHash[hash]?.hash
         ) {
@@ -76,24 +101,27 @@ const actions = (store: Store<State>) => ({
         } else {
           draft.gridViewer.selectedImage = draft.imageByHash[hash] || null;
           draft.gridViewer.index = index;
-          let leftTopHash = null;
-          if (index % 4 === 0 || draft.gridViewer.isPlay) {
-            leftTopHash = hash;
-          }
-          if (index % 4 === 3 || draft.gridViewer.isPlay) {
-            leftTopHash = draft.mainViewer.images[index - 3].hash;
-          }
-          if (leftTopHash) {
-            const el = document.getElementById(
-              `photo-container__${leftTopHash}`
-            );
-            // scrollIntoView(el, { behavior: "smooth", block: "start" });
-            // scrollIntoView(el, { block: "start" });
-            // el.scrollIntoView({ block: "end" });
-            if (el) {
-              scrollIntoView(el, { scrollMode: "if-needed", block: "start" });
-              window.scrollBy(0, 1);
-            }
+        }
+
+        // scroll to next image
+        let leftTopHash = null;
+        if (index % range === 0 || draft.gridViewer.isPlay) {
+          leftTopHash = hash;
+        }
+        if (index % range === range - 1 || draft.gridViewer.isPlay) {
+          leftTopHash = draft.mainViewer.images[index - (range - 1)].hash;
+        }
+        if (index === draft.mainViewer.images.length - 1) {
+          leftTopHash = draft.mainViewer.images[index - (index % range)].hash;
+        }
+        if (leftTopHash) {
+          const el = document.getElementById(`photo-container__${leftTopHash}`);
+          // scrollIntoView(el, { behavior: "smooth", block: "start" });
+          // scrollIntoView(el, { block: "start" });
+          // el.scrollIntoView({ block: "end" });
+          if (el) {
+            scrollIntoView(el, { scrollMode: "if-needed", block: "start" });
+            window.scrollBy(0, 1);
           }
         }
       })
@@ -111,7 +139,8 @@ const actions = (store: Store<State>) => ({
     return produce(state, draft => {
       draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
       gps.switchGridPlay(draft.gridViewer.isPlay, () => {
-        let nextIndex = store.getState().gridViewer.index + 4;
+        const range = draft.gridViewer.unit * draft.gridViewer.unit;
+        let nextIndex = store.getState().gridViewer.index + range;
         if (!store.getState().mainViewer.images[nextIndex]) {
           nextIndex = 0;
         }
@@ -150,11 +179,22 @@ const actions = (store: Store<State>) => ({
       "layoutUpdated",
       store
     );
+    const updateFn = (w: DedupperWindow) => {
+      StoreUtil.updateFieldInState([hash], { trim: finalTrim }, w.store);
+      // debounce(() => w.renderDedupperViewer(), 50);
+      w.renderDedupperViewer();
+    };
+    SubViewerHelper.forChild(updateFn);
+    SubViewerHelper.forParent(updateFn);
   },
   updateRating(state: State, hash: string, rating: number | null, next = true) {
     if (next && rating && !state.keyStatus.shifted) {
       if (state.mainViewer.currentImage) {
-        DomUtil.getViewer().next(true);
+        try {
+          DomUtil.getViewer().next(true);
+        } catch (e) {
+          // ignored
+        }
       }
       if (state.gridViewer.selectedImage) {
         let nextIndex = state.gridViewer.index + 1;
@@ -174,6 +214,13 @@ const actions = (store: Store<State>) => ({
       "ratingUpdated",
       store
     );
+    const updateFn = (w: DedupperWindow) => {
+      StoreUtil.updateFieldInState([hash], { rating: rating || 0 }, w.store);
+      // debounce(() => w.renderDedupperViewer(), 50);
+      w.renderDedupperViewer();
+    };
+    SubViewerHelper.forChild(updateFn);
+    SubViewerHelper.forParent(updateFn);
   },
   updateTag(
     state: State,
@@ -185,32 +232,47 @@ const actions = (store: Store<State>) => ({
     const hashList = Array.isArray(hashOrHashList)
       ? hashOrHashList
       : [hashOrHashList];
-    hashList.forEach(hash => {
-      // no wait
-      if (next && value && !state.keyStatus.shifted) {
-        if (state.mainViewer.currentImage) {
+
+    if (next && value && !state.keyStatus.shifted) {
+      if (state.mainViewer.currentImage) {
+        try {
           DomUtil.getViewer().next(true);
+        } catch (e) {
+          // ignored for no viewer page
         }
-        if (state.gridViewer.selectedImage) {
-          if (state.gridViewer.selectedImage.hash === hash) {
-            let nextIndex = state.gridViewer.index + 1;
-            if (!state.mainViewer.images[nextIndex]) {
-              nextIndex = 0;
-            }
-            const nextHash = state.mainViewer.images[nextIndex]?.hash;
-            if (nextHash) {
-              actions(store).selected(store.getState(), nextHash, nextIndex);
-            }
+      }
+      if (state.gridViewer.selectedImage && hashList.length === 1) {
+        if (state.gridViewer.selectedImage.hash === hashList[0]) {
+          let nextIndex = state.gridViewer.index + 1;
+          if (!state.mainViewer.images[nextIndex]) {
+            nextIndex = 0;
+          }
+          const nextHash = state.mainViewer.images[nextIndex]?.hash;
+          if (nextHash) {
+            actions(store).selected(store.getState(), nextHash, nextIndex);
           }
         }
       }
-      StoreUtil.updateField(
-        hash,
-        { [name]: value },
-        "tagUpdated",
-        store,
-        "tag"
-      );
+    }
+    StoreUtil.updateField(
+      hashList,
+      { [name]: value },
+      "tagUpdated",
+      store,
+      "tag"
+    );
+    const updateFn = (w: DedupperWindow) => {
+      StoreUtil.updateFieldInState(hashList, { [name]: value }, w.store);
+      // debounce(() => w.renderDedupperViewer(), 50);
+    };
+    SubViewerHelper.forChild(updateFn);
+    SubViewerHelper.forParent(updateFn);
+    SubViewerHelper.forChild(w => {
+      w.renderDedupperViewer();
+    });
+    SubViewerHelper.forParent(w => {
+      w.renderDedupperViewer();
+      w.focus();
     });
   },
   async loadChannels(state: State) {
@@ -238,14 +300,42 @@ const actions = (store: Store<State>) => ({
   },
 
   unloadMainViewerImages(state: State) {
-    return produce(state, draft => {
-      draft.mainViewer.images = [];
-      draft.imageByHash = {};
-      draft.gridViewer.selectedImage = null;
-    });
+    store.setState(
+      produce(state, draft => {
+        draft.mainViewer.images = [];
+        draft.imageByHash = {};
+        draft.mainViewer.currentImage = null;
+        draft.gridViewer.selectedImage = null;
+      })
+    );
   },
 
-  async loadMainViewerImages(state: State, channelId: string, unit = 1) {
+  async loadMainViewerImage(state: State, hash: string) {
+    const sql = `select hash from hash where hash = '${hash}'`;
+    const images = await dc.query(sql);
+    store.setState(
+      produce(store.getState(), (draft: State) => {
+        if (images != null) {
+          draft.mainViewer.images = images;
+          if (images.length) {
+            [draft.gridViewer.selectedImage] = images;
+            draft.gridViewer.index = 0;
+          }
+          draft.imageByHash = keyBy<DedupperImage>(images, "hash");
+        }
+      })
+    );
+  },
+
+  async reloadMainViewerImages(state: State) {
+    await actions(store).unloadMainViewerImages(state);
+    const id = UrlUtil.extractChannelId();
+    if (id) {
+      await actions(store).loadMainViewerImages(store.getState(), id);
+    }
+  },
+
+  async loadMainViewerImages(state: State, channelId: string) {
     let images: DedupperImage[] | null = null;
     try {
       store.setState(
@@ -284,11 +374,13 @@ const actions = (store: Store<State>) => ({
           if (images.length) {
             [draft.gridViewer.selectedImage] = images;
             draft.gridViewer.index = 0;
+            /*
             const rest = images.length >= unit ? images.length % unit : 0;
             if (rest) {
               const finalImages = images.slice(0, images.length - rest);
               draft.mainViewer.images = finalImages;
             }
+            */
           }
           draft.imageByHash = keyBy<DedupperImage>(images, "hash");
         }

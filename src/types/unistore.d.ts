@@ -42,8 +42,14 @@ export interface MainViewerState {
   images: DedupperImage[];
 }
 
+export interface SubViewerState {
+  isOpen: boolean;
+}
+
 export interface GridViewerState {
   selectedImage: DedupperImage | null;
+  subViewer: SubViewerState;
+  unit: number;
   isPlay: boolean;
   index: number;
 }

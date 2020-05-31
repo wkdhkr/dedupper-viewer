@@ -8,6 +8,7 @@ import isEqual from "lodash/isEqual";
 import { State } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
 import actions from "../actions";
+import UrlUtil from "../utils/dedupper/UrlUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -99,7 +100,7 @@ export default function(store: Store<State>) {
         event.detail.index
       );
       // console.log("viewed", event);
-      if (DomUtil.getViewer().index === 0) {
+      if (!UrlUtil.isInSingleViewer() && DomUtil.getViewer().index === 0) {
         actions(store).showSnackbarCustom(store.getState(), [
           "This is first image.",
           {
@@ -114,15 +115,17 @@ export default function(store: Store<State>) {
     }
   });
   document.body.addEventListener<any>("ready", function() {
-    actions(store).showSnackbarCustom(store.getState(), [
-      "Viewer.js is ready.",
-      {
-        variant: "info",
-        autoHideDuration: 3000,
-        anchorOrigin: { horizontal: "right", vertical: "top" }
-      }
-    ]);
-    // console.log("ready", event);
+    if (!UrlUtil.isInSingleViewer()) {
+      actions(store).showSnackbarCustom(store.getState(), [
+        "Viewer.js is ready.",
+        {
+          variant: "info",
+          autoHideDuration: 3000,
+          anchorOrigin: { horizontal: "right", vertical: "top" }
+        }
+      ]);
+      // console.log("ready", event);
+    }
   });
   document.body.addEventListener<any>("show", function() {
     // console.log("show", event);

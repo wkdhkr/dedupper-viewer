@@ -59,6 +59,7 @@
     "react-hot-keys": "^2.5.2",
     "react-image": "^4.0.0",
     "react-lazy-load-image-component": "^1.4.3",
+    "react-new-window": "^0.1.2",
     "react-perfect-scrollbar": "^1.5.8",
     "react-photo-gallery": "^8.0.0",
     "react-shimmer": "^3.1.0",

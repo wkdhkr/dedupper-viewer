@@ -64,13 +64,6 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       options: customOptions
     } = this.props;
 
-    if (this.viewer) {
-      return;
-    }
-    if (images.length === 0) {
-      return;
-    }
-
     const {
       toolbar: customToolbar,
       hidden,
@@ -80,6 +73,9 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       show: true,
       size: "large" as Viewer.ToolbarButtonSize
     };
+
+    const hasMultiImage = images.length > 1;
+
     const options = {
       title: false,
       zoomRatio: 0.1,
@@ -94,14 +90,16 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         zoomOut: toolbarOptions,
         oneToOne: toolbarOptions,
         reset: toolbarOptions,
-        prev: toolbarOptions,
-        play: {
-          ...toolbarOptions,
-          click: () => {
-            togglePlay();
-          }
-        },
-        next: toolbarOptions,
+        prev: hasMultiImage ? toolbarOptions : false,
+        play: hasMultiImage
+          ? {
+              ...toolbarOptions,
+              click: () => {
+                togglePlay();
+              }
+            }
+          : false,
+        next: hasMultiImage ? toolbarOptions : false,
         rotateLeft: toolbarOptions,
         rotateRight: toolbarOptions,
         flipHorizontal: toolbarOptions,
@@ -118,12 +116,20 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         hide();
       }
     };
+    if (this.viewer) {
+      if (prevProps.images.length === 1 && images.length === 1) {
+        if (prevProps.images[0].hash !== images[0].hash) {
+          this.destroyViewer();
+          this.initViewer(options);
+        }
+      }
+      return;
+    }
+    if (images.length === 0) {
+      return;
+    }
     if (this.containerDiv.current && images.length) {
-      Viewer.noConflict();
-      const viewer = new Viewer(this.containerDiv.current, options);
-      (viewer as any).initImage = initImageExpand;
-      viewer.view(index);
-      this.viewer = viewer;
+      this.initViewer(options);
       const params = new URLSearchParams(window.location.search);
       if (params.get("play")) {
         togglePlay();
@@ -131,7 +137,18 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     }
   }
 
-  componentWillUnmount() {
+  initViewer = (options: Viewer.Options) => {
+    Viewer.noConflict();
+    const viewer = new Viewer(
+      document.getElementById("viewer-source-container") as any,
+      options
+    );
+    (viewer as any).initImage = initImageExpand;
+    viewer.view(0);
+    this.viewer = viewer;
+  };
+
+  destroyViewer = () => {
     const { viewer } = this as any;
     if (viewer) {
       (viewer as any).ready = true;
@@ -142,12 +159,16 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       }
       viewer.destroy();
       this.viewer = null;
-      const { isPlay, togglePlay, unload } = this.props;
-      if (isPlay && togglePlay) {
-        togglePlay();
-      }
-      unload();
     }
+  };
+
+  componentWillUnmount() {
+    this.destroyViewer();
+    const { isPlay, togglePlay, unload } = this.props;
+    if (isPlay && togglePlay) {
+      togglePlay();
+    }
+    unload();
   }
 }
 export default ImageListRender;

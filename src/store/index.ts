@@ -1,10 +1,13 @@
 import createStore from "unistore";
+import { navigate } from "@reach/router";
 import devtools from "unistore/devtools";
 import axios from "axios";
+import { setAutoFreeze } from "immer";
 import { State } from "../types/unistore";
 import addEventListeners from "./eventListeners";
 import addKeyEventListeners from "./keyEventListeners";
-import DedupperClient from "../services/dedupper/DedupperClient";
+import actions from "../actions";
+import addCustomEventListeners from "./customEventListeners";
 
 const initialState: State = {
   keyStatus: {
@@ -29,6 +32,10 @@ const initialState: State = {
     images: []
   },
   gridViewer: {
+    subViewer: {
+      isOpen: false
+    },
+    unit: 3,
     selectedImage: null,
     isPlay: false,
     index: -1
@@ -42,9 +49,12 @@ const store =
 
 addEventListeners(store);
 addKeyEventListeners(store);
+addCustomEventListeners(store);
 
 (window as any).store = store;
 (window as any).axios = axios;
-(window as any).dc = new DedupperClient();
+(window as any).actions = actions(store);
+(window as any).navigate = navigate;
 
+setAutoFreeze(false); // for cross-window processing
 export default store;
