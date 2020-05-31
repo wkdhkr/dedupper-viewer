@@ -51,7 +51,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
     return () => {};
   }, [hash]);
   return (
-    <>
+    <Box className="viewer-main-container">
       {!isPlay && (
         <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1400" m={2}>
           <RatingAndTag
@@ -116,7 +116,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
           images={images}
         />
       </Dialog>
-    </>
+    </Box>
   );
 };
 export default MainViewer;
