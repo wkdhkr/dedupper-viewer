@@ -27,16 +27,20 @@ export default class SubViewerHelper {
 
   static getParentWindow = (): DedupperWindow | null => {
     const w = window.opener || null;
-    if (SubViewerHelper.isDedupperWindow(w)) {
-      if (w?.subViewerWindow === window) {
-        return w;
+    try {
+      if (SubViewerHelper.isDedupperWindow(w)) {
+        if (w?.subViewerWindow === window) {
+          return w;
+        }
       }
+    } catch (e) {
+      // ignore security error
     }
     return null;
   };
 
   static getParentStore = (): Store<State> => {
-    return window.opener?.store || null;
+    return SubViewerHelper.getParentWindow()?.store || null;
   };
 
   static isChild = (): boolean => {

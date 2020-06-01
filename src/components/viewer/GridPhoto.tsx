@@ -72,6 +72,7 @@ const GridPhoto = ({
   updateRating,
   toggleSubViewer,
   photo,
+  range,
   margin,
   direction,
   top,
@@ -79,6 +80,7 @@ const GridPhoto = ({
 }: RenderImageProps & {
   isPlay: boolean;
   unit: number;
+  range: number;
   image: DedupperImage | null;
   currentIndex: number;
   selectedImage: DedupperImage | null;
@@ -104,12 +106,11 @@ const GridPhoto = ({
   };
   const createStyle = () => {
     let style: React.CSSProperties = imgStyle;
+    const di = image;
     if (onClick) {
       style = { ...style, ...imgWithClick };
     }
-    const state = store.getState();
-    if (photo.key) {
-      const di = state.imageByHash[photo.key];
+    if (di && photo.key) {
       const aspectRatio = di.width / di.height;
 
       let { height } = photo;
@@ -132,10 +133,16 @@ const GridPhoto = ({
         // left: (photo.width - width) / 2,
         // top: (photo.height - height) / 2
       };
-      let ratio = photo.height / trim.naturalHeight;
-      // let ratio = photo.width / trim.naturalWidth;
+      let ratio = photo.width / trim.naturalWidth;
+      if (ViewerUtil.isPortraitImage()) {
+        ratio = photo.height / trim.naturalHeight;
+      }
       if (di.trim) {
-        ratio = photo.height / STANDARD_WIDTH;
+        if (ViewerUtil.isPortraitImage()) {
+          ratio = photo.height / STANDARD_WIDTH;
+        } else {
+          ratio = photo.width / STANDARD_WIDTH;
+        }
         trim = JSON.parse(di.trim);
       }
       // const ratio = photo.width / STANDARD_WIDTH;
@@ -157,8 +164,8 @@ const GridPhoto = ({
     return style;
   };
   const isSelected = !isPlay && photo.key === selectedImage?.hash;
-  const isNeighbour = Math.abs(currentIndex - index) < unit * unit;
-  const isShowRatingAndTag = isNeighbour;
+  const isNeighbour = Math.abs(currentIndex - index) < range;
+  const isShowRatingAndTag = isNeighbour && !isPlay;
   // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
   const isVirtual = false;
 
@@ -170,64 +177,65 @@ const GridPhoto = ({
   };
   const sizeFactor = 1.25;
   return (
-    <Box
-      id={`photo-container__${photo.key}`}
-      overflow="hidden"
-      key={photo.key}
-      style={{
-        transform: isSelected ? selectedTransform : "none"
-        // transition:
-        //   "transform .035s cubic-bezier(0.0,0.0,0.2,1), opacity linear .35s"
-      }}
-      width={photo.width}
-      height={photo.height}
-    >
-      {isShowRatingAndTag ? (
-        <Box
-          style={{
-            marginTop: "8px",
-            opacity: 0.4,
-            transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`
-          }}
-          position="absolute"
-          zIndex="1400"
-          m={2}
-        >
-          <RatingAndTag
-            currentImage={image}
-            onTagChange={updateTag}
-            onRatingChange={updateRating}
+    <Box id={`photo-container__${photo.key}`}>
+      <Box
+        overflow="hidden"
+        key={photo.key}
+        style={{
+          transform: isSelected ? selectedTransform : "none"
+          // transition:
+          //   "transform .035s cubic-bezier(0.0,0.0,0.2,1), opacity linear .35s"
+        }}
+        width={photo.width}
+        height={photo.height}
+      >
+        {isShowRatingAndTag ? (
+          <Box
+            style={{
+              marginTop: "8px",
+              opacity: 0.4,
+              transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`
+            }}
+            position="absolute"
+            zIndex="1400"
+            m={2}
+          >
+            <RatingAndTag
+              currentImage={image}
+              onTagChange={updateTag}
+              onRatingChange={updateRating}
+            />
+          </Box>
+        ) : null}
+        {!isVirtual && isSelected ? (
+          <Box zIndex={1000} position="absolute" right="0px">
+            <CheckCircle
+              fontSize={unit < 7 ? "large" : "default"}
+              color="secondary"
+            />
+          </Box>
+        ) : null}
+        {isVirtual ? (
+          // eslint-disable-next-line jsx-a11y/no-static-element-interactions
+          <div
+            style={{
+              ...imgWithClick,
+              width: photo.width,
+              height: photo.height
+            }}
+            onClick={onClick ? handleClick : undefined}
+            onMouseDown={mouseDownHandler}
           />
-        </Box>
-      ) : null}
-      {!isVirtual && isSelected ? (
-        <Box zIndex={1000} position="absolute" right="0px">
-          <CheckCircle
-            fontSize={unit < 7 ? "large" : "default"}
-            color="secondary"
+        ) : (
+          <img
+            decoding={isPlay ? "sync" : "async"}
+            src={photo.src}
+            style={createStyle()}
+            onClick={onClick ? handleClick : undefined}
+            onMouseDown={mouseDownHandler}
           />
-        </Box>
-      ) : null}
-      {isVirtual ? (
-        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-        <div
-          style={{
-            ...imgWithClick,
-            width: photo.width,
-            height: photo.height
-          }}
-          onClick={onClick ? handleClick : undefined}
-          onMouseDown={mouseDownHandler}
-        />
-      ) : (
-        <img
-          decoding={isPlay ? "sync" : "async"}
-          src={photo.src}
-          style={createStyle()}
-          onClick={onClick ? handleClick : undefined}
-          onMouseDown={mouseDownHandler}
-        />
-      )}
+        )}
+      </Box>
     </Box>
   );
 };

@@ -42,6 +42,10 @@ import { Dictionary } from "lodash";
 import { DedupperChannel } from "../types/unistore";
 import ConfirmDialog from "../components/feedback/ConfirmDialog";
 
+const getOrientationByName = (name: string) => {
+  return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
+};
+
 const iconComponentByTableIconType: Record<keyof Icons, typeof SvgIcon> = {
   Add: AddBox,
   Check,
@@ -252,15 +256,17 @@ The channel will be permanently removed."
             {
               icon: () => <Slideshow />,
               tooltip: "grid play",
-              onClick: (event, rowData: any) => {
-                navigate(`/channel/grid/${rowData.id}?play=1`);
+              onClick: (event, rowData: DedupperChannel) => {
+                const o = getOrientationByName(rowData.name);
+                navigate(`/channel/grid/${rowData.id}?play=1&o=${o}`);
               }
             },
             {
               icon: () => <PhotoLibrary />,
               tooltip: "grid show",
               onClick: (event, rowData: any) => {
-                navigate(`/channel/grid/${rowData.id}`);
+                const o = getOrientationByName(rowData.name);
+                navigate(`/channel/grid/${rowData.id}?o=${o}`);
               }
             },
             {

@@ -3,6 +3,7 @@ import NewWindow from "react-new-window";
 import { DedupperImage, SubViewerState } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import SubViewerHelper from "../../helpers/viewer/SubViewerHelper";
+import ViewerUtil from "../../utils/ViewerUtil";
 
 interface SubViewerProps extends SubViewerState {
   image: DedupperImage | null;
@@ -35,13 +36,25 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = ({
     return <></>;
   }
 
+  let width = window.screen.width / 2;
+  let height = window.screen.height / 2;
+  const isPortraitImage = ViewerUtil.isPortraitImage();
+  if (
+    (isPortraitImage && width > height) ||
+    (!isPortraitImage && height > width)
+  ) {
+    const tmp = height;
+    height = width;
+    width = tmp;
+  }
+
   return (
     <NewWindow
       copyStyles={false}
       onOpen={w => SubViewerHelper.setWindow(w)}
       features={{
-        width: window.screen.width / 2,
-        height: window.screen.height / 2,
+        width,
+        height,
         location: "no",
         toolbar: "no",
         dependent: "yes"

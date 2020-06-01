@@ -62,6 +62,7 @@ const actions = (store: Store<State>) => ({
     store.setState(
       produce(state, draft => {
         draft.gridViewer.unit = unit;
+        UrlUtil.changeUnit(unit);
       })
     );
   },
@@ -89,7 +90,9 @@ const actions = (store: Store<State>) => ({
     }
     store.setState(
       produce(store.getState(), draft => {
-        const range = draft.gridViewer.unit * draft.gridViewer.unit;
+        const [unit, range] = ViewerUtil.detectUnitAndRange(
+          draft.gridViewer.unit
+        );
         if (
           draft.gridViewer.selectedImage?.hash === draft.imageByHash[hash]?.hash
         ) {
@@ -138,8 +141,9 @@ const actions = (store: Store<State>) => ({
     UrlUtil.togglePlay();
     return produce(state, draft => {
       draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
+      const sourceUnit = draft.gridViewer.unit;
       gps.switchGridPlay(draft.gridViewer.isPlay, () => {
-        const range = draft.gridViewer.unit * draft.gridViewer.unit;
+        const [unit, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
         let nextIndex = store.getState().gridViewer.index + range;
         if (!store.getState().mainViewer.images[nextIndex]) {
           nextIndex = 0;
@@ -311,8 +315,17 @@ const actions = (store: Store<State>) => ({
   },
 
   async loadMainViewerImage(state: State, hash: string) {
-    const sql = `select hash from hash where hash = '${hash}'`;
-    const images = await dc.query(sql);
+    let images: DedupperImage[] = [];
+
+    const parentStore = SubViewerHelper.getParentStore();
+    const cachedImage = parentStore?.getState().imageByHash[hash];
+    if (cachedImage) {
+      images = [cachedImage];
+    } else {
+      const sql = `select hash from hash where hash = '${hash}'`;
+      images = await dc.query(sql);
+    }
+
     store.setState(
       produce(store.getState(), (draft: State) => {
         if (images != null) {

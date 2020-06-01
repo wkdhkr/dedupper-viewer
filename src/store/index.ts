@@ -8,6 +8,7 @@ import addEventListeners from "./eventListeners";
 import addKeyEventListeners from "./keyEventListeners";
 import actions from "../actions";
 import addCustomEventListeners from "./customEventListeners";
+import UrlUtil from "../utils/dedupper/UrlUtil";
 
 const initialState: State = {
   keyStatus: {
@@ -35,7 +36,7 @@ const initialState: State = {
     subViewer: {
       isOpen: false
     },
-    unit: 3,
+    unit: parseInt(UrlUtil.extractParam("unit") || "0", 10) || 3,
     selectedImage: null,
     isPlay: false,
     index: -1

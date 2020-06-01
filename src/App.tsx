@@ -21,6 +21,7 @@ import Home from "./pages/Home";
 import Snackbar from "./components/feedback/Snackbar";
 import Channels from "./pages/Channels";
 import UrlUtil from "./utils/dedupper/UrlUtil";
+import SubViewer from "./components/viewer/SubViewer";
 
 interface BaseAppProps {
   channels: DedupperChannel[];
@@ -63,6 +64,12 @@ const App = connect<{}, {}, State, AppProps>(
 )((props: AppProps) => (
   <SnackbarProvider maxSnack={2}>
     <div className="App">
+      <SubViewer
+        /* eslint-disable-next-line react/jsx-props-no-spreading */
+        {...props.gridViewer.subViewer}
+        toggle={props.toggleSubViewer}
+        image={props.gridViewer.selectedImage}
+      />
       <Router>
         <GridViewer
           path="channel/grid/:channelId"

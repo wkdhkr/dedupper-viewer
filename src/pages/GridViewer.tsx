@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { LinearProgress, Box, IconButton } from "@material-ui/core";
+import { Dictionary } from "lodash";
 import Hotkeys from "react-hot-keys";
 import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
 // import PerfectScrollbar from "react-perfect-scrollbar";
 import { PlayCircleOutline, Stop } from "@material-ui/icons";
-import { DedupperImage, SubViewerState } from "../types/unistore";
+import {
+  DedupperImage,
+  SubViewerState,
+  DedupperChannel
+} from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
 import {
   STANDARD_HEIGHT,
-  STANDARD_WIDTH,
-  GRID_UNIT_MAX,
-  GRID_UNIT_MIN
+  STANDARD_WIDTH
 } from "../constants/dedupperConstants";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
-import SubViewer from "../components/viewer/SubViewer";
 import PlayHotKey from "../components/viewer/ui/PlayHotkey";
 import GridViewerService from "../services/Viewer/GridViewerService";
 import store from "../store";
+import ViewerUtil from "../utils/ViewerUtil";
 
 const gs = new GridViewerService(store);
 
@@ -50,8 +53,7 @@ type GridViewerProps = RouteComponentProps & {
 
 const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   images,
-  unit,
-  subViewer,
+  unit: sourceUnit,
   isPlay,
   selected,
   index,
@@ -65,7 +67,11 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   updateTag,
   updateRating
 }) => {
-  const fitImages = ImageArrayUtil.fitAmountForGridUnit(images, unit * unit);
+  const [unit, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
+  // console.log(unit, range);
+  const isPortraitImage = ViewerUtil.isPortraitImage();
+
+  const fitImages = ImageArrayUtil.fitAmountForGridUnit(images, range);
 
   useEffect(() => {
     // load images
@@ -90,14 +96,15 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
       event.preventDefault();
-      let finalIndex = index;
+      const leftTopIndex = index - (index % range);
+      let nextIndex = index;
       if (event.deltaY > 0) {
-        finalIndex += 1;
+        nextIndex = leftTopIndex + range;
       } else {
-        finalIndex -= 1;
+        nextIndex = leftTopIndex - range;
       }
       if (fitImages.length) {
-        selected(...ImageArrayUtil.detectDestination(fitImages, finalIndex));
+        selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
       }
     };
 
@@ -110,17 +117,8 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   // const isShownPlayIcon = isPlayHover || !isPlay;
   const isShownPlayIcon = isPlayHover;
-
-  const range = unit * unit;
-
   return (
     <>
-      <SubViewer
-        /* eslint-disable-next-line react/jsx-props-no-spreading */
-        {...subViewer}
-        toggle={toggleSubViewer}
-        image={selectedImage}
-      />
       <PlayHotKey togglePlay={togglePlay} />
       <RatingAndTagHotkey
         updateTag={updateTag}
@@ -131,8 +129,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         keyName="g"
         onKeyUp={(keyName: string) => {
           // grid unit change
-          const nextUnit = unit + 1;
-          changeUnit(nextUnit > GRID_UNIT_MAX ? GRID_UNIT_MIN : nextUnit);
+          changeUnit(ViewerUtil.detectNextUnit(sourceUnit));
           setTimeout(() => {
             selected(...ImageArrayUtil.detectDestination(fitImages, index));
           }, 2000);
@@ -232,6 +229,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 selectedImage,
                 currentIndex: index,
                 isPlay,
+                range,
                 unit,
                 toggleSubViewer,
                 updateTag,
@@ -240,13 +238,15 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
             }
             margin={0}
             limitNodeSearch={unit}
-            targetRowHeight={containerWidth => STANDARD_WIDTH / unit}
+            targetRowHeight={containerWidth =>
+              ViewerUtil.calcTargetLowHeight(unit, containerWidth, true)
+            }
             // columns={2}
             // direction="column"
             photos={fitImages.map(({ width, height, hash }) => ({
               key: hash,
-              width: STANDARD_HEIGHT,
-              height: STANDARD_WIDTH,
+              width: isPortraitImage ? STANDARD_HEIGHT : STANDARD_WIDTH,
+              height: isPortraitImage ? STANDARD_WIDTH : STANDARD_HEIGHT,
               src: UrlUtil.generateImageUrl(hash)
             }))}
             onClick={(event, { photo, index: currentIndex }) => {

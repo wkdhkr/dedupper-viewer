@@ -26,6 +26,16 @@ export default class UrlUtil {
     return window.location.pathname.split("/").includes("image");
   };
 
+  static changeUnit = (n?: number) => {
+    const url = new URL(window.location.href);
+    if (n) {
+      url.searchParams.set("unit", String(n));
+    } else {
+      url.searchParams.delete("unit");
+    }
+    window.history.replaceState(null, document.title, url.toString());
+  };
+
   static togglePlay = () => {
     const url = new URL(window.location.href);
     if (url.searchParams.get("play")) {
@@ -59,6 +69,8 @@ export default class UrlUtil {
     return null;
   };
 
-  static extractHashParam = (url: string) =>
-    new URL(url).searchParams.get("hash");
+  static extractParam = (name: string, url?: string) =>
+    new URL(url || window.location.href).searchParams.get(name);
+
+  static extractHashParam = (url?: string) => UrlUtil.extractParam("hash", url);
 }

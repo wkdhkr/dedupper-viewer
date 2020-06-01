@@ -2,6 +2,7 @@ import { Store } from "unistore";
 import ImageArrayUtil from "../../utils/ImageArrayUtil";
 import { State } from "../../types/unistore";
 import actions from "../../actions";
+import ViewerUtil from "../../utils/ViewerUtil";
 
 export default class GridViewerService {
   store: Store<State>;
@@ -13,10 +14,13 @@ export default class GridViewerService {
   applyTagForImagesInScreen = (t = "t1") => {
     const state = this.store.getState();
     const { images } = state.mainViewer;
-    const { unit, index } = state.gridViewer;
-    const range = unit * unit;
+    const { unit: sourceUnit, index } = state.gridViewer;
+    const [unit, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
 
-    const fitImages = ImageArrayUtil.fitAmountForGridUnit(images, unit * unit);
+    const fitImages = ImageArrayUtil.fitAmountForGridUnit(
+      images,
+      ViewerUtil.calcRange(unit)
+    );
     if (fitImages.length) {
       const leftTopIndex = index - (index % range);
       const hashList = fitImages
