@@ -66,10 +66,11 @@ const actions = (store: Store<State>) => ({
       })
     );
   },
-  toggleSubViewer(state: State) {
+  toggleSubViewer(state: State, close: boolean | null = null) {
     store.setState(
       produce(state, draft => {
-        draft.gridViewer.subViewer.isOpen = !draft.gridViewer.subViewer.isOpen;
+        draft.gridViewer.subViewer.isOpen =
+          close === null ? !draft.gridViewer.subViewer.isOpen : close;
       })
     );
   },
@@ -90,9 +91,7 @@ const actions = (store: Store<State>) => ({
     }
     store.setState(
       produce(store.getState(), draft => {
-        const [unit, range] = ViewerUtil.detectUnitAndRange(
-          draft.gridViewer.unit
-        );
+        const [, range] = ViewerUtil.detectUnitAndRange(draft.gridViewer.unit);
         if (
           draft.gridViewer.selectedImage?.hash === draft.imageByHash[hash]?.hash
         ) {
@@ -143,7 +142,7 @@ const actions = (store: Store<State>) => ({
       draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
       const sourceUnit = draft.gridViewer.unit;
       gps.switchGridPlay(draft.gridViewer.isPlay, () => {
-        const [unit, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
+        const [, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
         let nextIndex = store.getState().gridViewer.index + range;
         if (!store.getState().mainViewer.images[nextIndex]) {
           nextIndex = 0;
@@ -171,6 +170,16 @@ const actions = (store: Store<State>) => ({
     return produce(state, draft => {
       draft.snackbarCustom = null;
     });
+  },
+  async updateSize(state: State, hash: string, width: number, height: number) {
+    StoreUtil.updateFieldInState(
+      [hash],
+      {
+        width,
+        height
+      },
+      store
+    );
   },
   async updateTrim(state: State, hash: string, trim: string) {
     let finalTrim = trim;

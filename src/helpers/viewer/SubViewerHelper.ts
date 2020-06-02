@@ -61,4 +61,13 @@ export default class SubViewerHelper {
       fn(w);
     }
   };
+
+  static dispatchCustomEventForParent = (
+    name: string,
+    detail: Record<string, any> = {}
+  ) => {
+    const w = SubViewerHelper.getParentWindow();
+    const event = new CustomEvent(name, { detail });
+    w?.document.dispatchEvent(event);
+  };
 }

@@ -9,6 +9,8 @@ import { State } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
 import actions from "../actions";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import { EVENT_X_KEY } from "./customEventListeners";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -177,7 +179,10 @@ export default function(store: Store<State>) {
     }
     if (hash && viewer) {
       if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
-        if (pointerX !== event.clientX || pointerY !== event.clientY) {
+        if (event.button === 1) {
+          // TODO: correct event name
+          SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY);
+        } else if (pointerX !== event.clientX || pointerY !== event.clientY) {
           if (!isEqual(viewer.imageData, viewer.initialImageData)) {
             const trim = JSON.stringify(viewer.imageData);
             actions(store).updateTrim(store.getState(), hash, trim);

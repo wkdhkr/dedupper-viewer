@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import React, { MouseEventHandler } from "react";
+import React, { MouseEventHandler, useEffect } from "react";
 import { RenderImageProps } from "react-photo-gallery";
 import { Box } from "@material-ui/core";
 import { CheckCircle } from "@material-ui/icons";
@@ -14,8 +14,11 @@ import {
 import { ImageData } from "../../types/viewer";
 import { DedupperImage } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
+import GridViewerService from "../../services/Viewer/GridViewerService";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
+
+const gs = new GridViewerService(store);
 
 function isNumber(value: any): value is number {
   // eslint-disable-next-line no-restricted-globals
@@ -70,10 +73,10 @@ const GridPhoto = ({
   onClick,
   updateTag,
   updateRating,
-  toggleSubViewer,
   photo,
   range,
   margin,
+  updateSize,
   direction,
   top,
   left
@@ -81,10 +84,10 @@ const GridPhoto = ({
   isPlay: boolean;
   unit: number;
   range: number;
-  image: DedupperImage | null;
+  image: DedupperImage;
   currentIndex: number;
   selectedImage: DedupperImage | null;
-  toggleSubViewer: Function;
+  updateSize: (hash: string, w: number, h: number) => void;
   updateTag: (hash: string, x: number | null, name: string) => void;
   updateRating: (hash: string, x: number | null) => void;
 }) => {
@@ -171,16 +174,15 @@ const GridPhoto = ({
 
   const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
     if (event.button === 1) {
-      toggleSubViewer();
+      gs.applyTagForImagesInScreen();
     }
     event.preventDefault();
   };
   const sizeFactor = 1.25;
   return (
-    <Box id={`photo-container__${photo.key}`}>
+    <Box id={`photo-container__${photo.key}`} key={photo.key}>
       <Box
         overflow="hidden"
-        key={photo.key}
         style={{
           transform: isSelected ? selectedTransform : "none"
           // transition:
@@ -232,6 +234,17 @@ const GridPhoto = ({
             src={photo.src}
             style={createStyle()}
             onClick={onClick ? handleClick : undefined}
+            onLoad={e => {
+              const imageElement = e.target as HTMLImageElement;
+              if (image.width !== imageElement.naturalWidth) {
+                // may be rotated, fix it.
+                updateSize(
+                  image.hash,
+                  imageElement.naturalWidth,
+                  imageElement.naturalHeight
+                );
+              }
+            }}
             onMouseDown={mouseDownHandler}
           />
         )}

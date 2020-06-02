@@ -1,16 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { LinearProgress, Box, IconButton } from "@material-ui/core";
-import { Dictionary } from "lodash";
+import React, { useEffect } from "react";
+import { LinearProgress, Box } from "@material-ui/core";
 import Hotkeys from "react-hot-keys";
 import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
-// import PerfectScrollbar from "react-perfect-scrollbar";
 import { PlayCircleOutline, Stop } from "@material-ui/icons";
-import {
-  DedupperImage,
-  SubViewerState,
-  DedupperChannel
-} from "../types/unistore";
+import { DedupperImage, SubViewerState } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "react-perfect-scrollbar/dist/css/styles.css";
 import "./GridViewer.css";
@@ -25,6 +19,7 @@ import PlayHotKey from "../components/viewer/ui/PlayHotkey";
 import GridViewerService from "../services/Viewer/GridViewerService";
 import store from "../store";
 import ViewerUtil from "../utils/ViewerUtil";
+import InvisibleButton from "../components/viewer/ui/InvisibleButton";
 
 const gs = new GridViewerService(store);
 
@@ -35,6 +30,7 @@ type GridViewerProps = RouteComponentProps & {
     name: string,
     next?: boolean
   ) => void;
+  updateSize: (hash: string, w: number, h: number) => void;
   updateRating: (hash: string, x: number | null) => void;
   unit: number;
   subViewer: SubViewerState;
@@ -57,6 +53,8 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   isPlay,
   selected,
   index,
+  subViewer,
+  updateSize,
   selectedImage,
   togglePlay,
   changeUnit,
@@ -113,10 +111,6 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     return () => window.removeEventListener("wheel", handleScroll as any, {});
   }, [index]);
 
-  const [isPlayHover, setIsPlayHover] = useState(false);
-
-  // const isShownPlayIcon = isPlayHover || !isPlay;
-  const isShownPlayIcon = isPlayHover;
   return (
     <>
       <PlayHotKey togglePlay={togglePlay} />
@@ -127,7 +121,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       />
       <Hotkeys
         keyName="g"
-        onKeyUp={(keyName: string) => {
+        onKeyUp={() => {
           // grid unit change
           changeUnit(ViewerUtil.detectNextUnit(sourceUnit));
           setTimeout(() => {
@@ -137,7 +131,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       />
       <Hotkeys
         keyName="r"
-        onKeyUp={(keyName: string) => {
+        onKeyUp={() => {
           // reloading
           unload();
           if (channelId) {
@@ -145,10 +139,8 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           }
         }}
       />
-      <Hotkeys
-        keyName="x"
-        onKeyUp={(keyName: string) => gs.applyTagForImagesInScreen()}
-      />
+      <Hotkeys keyName="p" onKeyUp={() => togglePlay()} />
+      <Hotkeys keyName="x" onKeyUp={() => gs.applyTagForImagesInScreen()} />
       <Hotkeys
         // keyName="left,right,up,down"
         keyName="left,right,up,down"
@@ -189,20 +181,14 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           <Box
             id="play-icon-container"
             style={{
-              opacity: isShownPlayIcon ? 0.8 : 0,
-              transform: "translate(-50%, -50%)",
-              transition: "0.3s"
+              zIndex: 1399
             }}
             position="fixed"
             top={window.innerHeight / 2}
             left="50%"
             zIndex="1400"
           >
-            <IconButton
-              onMouseEnter={() => setIsPlayHover(true)}
-              onMouseLeave={() => setIsPlayHover(false)}
-              onClick={() => togglePlay()}
-            >
+            <InvisibleButton onClick={() => togglePlay()}>
               {isPlay ? (
                 <Stop
                   color="secondary"
@@ -218,7 +204,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                   }}
                 />
               )}
-            </IconButton>
+            </InvisibleButton>
           </Box>
           <Gallery
             renderImage={props =>
@@ -231,7 +217,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 isPlay,
                 range,
                 unit,
-                toggleSubViewer,
+                updateSize,
                 updateTag,
                 updateRating
               })
@@ -251,7 +237,18 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
             }))}
             onClick={(event, { photo, index: currentIndex }) => {
               if (photo.key) {
-                selected(photo.key, currentIndex);
+                if (photo.key === selectedImage?.hash) {
+                  let skip = false;
+                  if (subViewer.isOpen === true) {
+                    // eslint-disable-next-line no-alert
+                    skip = !window.confirm("close sub viewer?");
+                  }
+                  if (!skip) {
+                    toggleSubViewer();
+                  }
+                } else {
+                  selected(photo.key, currentIndex);
+                }
               }
             }}
           />

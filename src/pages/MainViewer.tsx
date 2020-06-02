@@ -49,7 +49,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
       load(hash);
     }
     return () => {};
-  }, [hash]);
+  }, [load, hash]);
   return (
     <Box className="viewer-main-container">
       {!isPlay && (
@@ -78,11 +78,9 @@ const MainViewer: React.SFC<MainViewerProps> = ({
       <PlayHotKey togglePlay={togglePlay} />
       <ReactHotkeys
         keyName="x"
-        onKeyUp={() => {
-          const w = SubViewerHelper.getParentWindow();
-          const event = new CustomEvent(EVENT_X_KEY);
-          w?.document.dispatchEvent(event);
-        }}
+        onKeyUp={() =>
+          SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY)
+        }
       />
       <ReactHotkeys
         keyName="r"

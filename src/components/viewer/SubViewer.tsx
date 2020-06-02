@@ -7,7 +7,7 @@ import ViewerUtil from "../../utils/ViewerUtil";
 
 interface SubViewerProps extends SubViewerState {
   image: DedupperImage | null;
-  toggle: Function;
+  toggle: (close: boolean | null) => void;
 }
 
 (window as any).subViewerWindow = null as Window | null;
@@ -60,9 +60,7 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = ({
         dependent: "yes"
       }}
       onUnload={() => {
-        if (isOpen) {
-          toggle();
-        }
+        toggle(false);
         SubViewerHelper.setWindow(null);
       }}
       name="dedupper_sub_viewer"

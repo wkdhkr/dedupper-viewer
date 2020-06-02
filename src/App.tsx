@@ -27,6 +27,7 @@ interface BaseAppProps {
   channels: DedupperChannel[];
   channelById: Dictionary<DedupperChannel>;
   updateRating: (hash: string, x: number | null) => void;
+  updateSize: (hash: string, w: number, h: number) => void;
   updateTag: (
     hash: string | string[],
     x: number | null,
@@ -39,7 +40,7 @@ interface BaseAppProps {
   changeUnit: (x: number) => void;
   togglePlay: Function;
   toggleGridPlay: Function;
-  toggleSubViewer: Function;
+  toggleSubViewer: (close: boolean | null) => void;
   selected: (hash: string, index: number) => void;
   finishSnackbar: (x: SnackbarKind) => void;
   finishSnackbarCustom: () => void;
@@ -74,6 +75,7 @@ const App = connect<{}, {}, State, AppProps>(
         <GridViewer
           path="channel/grid/:channelId"
           updateRating={props.updateRating}
+          updateSize={props.updateSize}
           togglePlay={props.toggleGridPlay}
           toggleSubViewer={props.toggleSubViewer}
           updateTag={props.updateTag}

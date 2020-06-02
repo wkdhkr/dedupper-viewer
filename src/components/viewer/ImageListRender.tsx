@@ -5,6 +5,7 @@ import "viewerjs/dist/viewer.min.css";
 import { initImageExpand } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
+import DomUtil from "../../utils/DomUtil";
 
 interface ImageListRenderProps {
   isPlay: boolean;
@@ -100,8 +101,18 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
             }
           : false,
         next: hasMultiImage ? toolbarOptions : false,
-        rotateLeft: toolbarOptions,
-        rotateRight: toolbarOptions,
+        rotateLeft: {
+          ...toolbarOptions,
+          click: () => {
+            this.viewer?.rotate(-18);
+          }
+        },
+        rotateRight: {
+          ...toolbarOptions,
+          click: () => {
+            this.viewer?.rotate(18);
+          }
+        },
         flipHorizontal: toolbarOptions,
         flipVertical: toolbarOptions,
         ...(typeof customToolbar === "object" ? customToolbar : {})
@@ -119,8 +130,11 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     if (this.viewer) {
       if (prevProps.images.length === 1 && images.length === 1) {
         if (prevProps.images[0].hash !== images[0].hash) {
+          /*
           this.destroyViewer();
           this.initViewer(options);
+          */
+          this.viewer.update();
         }
       }
       return;
