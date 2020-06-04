@@ -51,7 +51,11 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = ({
   return (
     <NewWindow
       copyStyles={false}
-      onOpen={w => SubViewerHelper.setWindow(w)}
+      onOpen={w => {
+        // eslint-disable-next-line no-underscore-dangle, no-param-reassign
+        (w as any).__DEDUPPER_VIEWER_SUB_VIEWER__ = true;
+        SubViewerHelper.setWindow(w);
+      }}
       features={{
         width,
         height,
@@ -64,7 +68,9 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = ({
         SubViewerHelper.setWindow(null);
       }}
       name="dedupper_sub_viewer"
-      url={UrlUtil.generateImageViewerUrl(image ? image.hash : "")}
+      url={`${UrlUtil.generateImageViewerUrl(
+        image ? image.hash : ""
+      )}?mode=subviewer`}
     />
   );
 };

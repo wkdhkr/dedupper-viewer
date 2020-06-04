@@ -48,6 +48,7 @@ const Home: React.FunctionComponent<HomeProps> = ({ children }) => {
     <>
       <AppBar position="static">
         <Toolbar>
+          {/*
           <IconButton
             edge="start"
             className={classes.menuButton}
@@ -57,6 +58,7 @@ const Home: React.FunctionComponent<HomeProps> = ({ children }) => {
           >
             <MenuIcon />
           </IconButton>
+          */}
           <Typography variant="h6" className={classes.title}>
             {APP_NAME}
           </Typography>

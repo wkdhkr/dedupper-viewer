@@ -1,8 +1,12 @@
 import AuthUtil from "./AuthUtil";
 
+/*
 const isLocalhost = window.location.hostname === "localhost";
 const port = isLocalhost ? 8080 : 3000;
 const hostname = isLocalhost ? "localhost" : window.location.hostname;
+*/
+const port = 8080;
+const { hostname } = window.location;
 
 export default class UrlUtil {
   static BASE_URL = `http://${hostname}:${port}/dedupper/v1/`;
@@ -12,6 +16,10 @@ export default class UrlUtil {
     u.searchParams.append("auth", AuthUtil.getAuthToken());
     u.searchParams.append("type", "TYPE_IMAGE");
     return u;
+  };
+
+  static isInChannels = () => {
+    return window.location.pathname.split("/").includes("channels");
   };
 
   static isInChannel = () => {
@@ -26,7 +34,18 @@ export default class UrlUtil {
     return window.location.pathname.split("/").includes("image");
   };
 
+  static isInMainViewer = () => {
+    return UrlUtil.isInGridViewer() === false && UrlUtil.isInChannel();
+  };
+
+  static isInStart = () => {
+    return window.location.pathname.split("/").includes("start");
+  };
+
   static changeUnit = (n?: number) => {
+    if (!UrlUtil.isInGridViewer()) {
+      return;
+    }
     const url = new URL(window.location.href);
     if (n) {
       url.searchParams.set("unit", String(n));
@@ -36,9 +55,9 @@ export default class UrlUtil {
     window.history.replaceState(null, document.title, url.toString());
   };
 
-  static togglePlay = () => {
+  static syncPlay = (isPlay: boolean) => {
     const url = new URL(window.location.href);
-    if (url.searchParams.get("play")) {
+    if (!isPlay) {
       url.searchParams.delete("play");
     } else {
       url.searchParams.set("play", "1");

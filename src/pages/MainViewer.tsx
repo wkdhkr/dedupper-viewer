@@ -14,6 +14,7 @@ import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import PlayHotKey from "../components/viewer/ui/PlayHotkey";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import { EVENT_X_KEY, EVENT_R_KEY } from "../store/customEventListeners";
+import AutoReload from "../components/behavior/AutoReload";
 
 type MainViewerProps = MainViewerState & {
   unload: () => void;
@@ -51,70 +52,84 @@ const MainViewer: React.SFC<MainViewerProps> = ({
     return () => {};
   }, [load, hash]);
   return (
-    <Box className="viewer-main-container">
-      {!isPlay && (
-        <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1400" m={2}>
-          <RatingAndTag
-            currentImage={currentImage}
-            onTagChange={updateTag}
-            onRatingChange={updateRating}
+    <>
+      <AutoReload
+        index={index}
+        load={() => {
+          if (channelId) {
+            load(channelId);
+          }
+        }}
+        isPlay={isPlay}
+        unit={1}
+        range={1}
+        imageCount={images.length}
+      />
+      <Box className="viewer-main-container">
+        {!isPlay && (
+          <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1400" m={2}>
+            <RatingAndTag
+              currentImage={currentImage}
+              onTagChange={updateTag}
+              onRatingChange={updateRating}
+            />
+          </Box>
+        )}
+        <Box
+          id="viewer-data-table"
+          style={{ opacity: "0.0" }}
+          position="fixed"
+          left="6px"
+          bottom="6px"
+          zIndex="1400"
+        >
+          <DataTable
+            index={index}
+            imageCount={images.length}
+            image={currentImage}
           />
         </Box>
-      )}
-      <Box
-        id="viewer-data-table"
-        style={{ opacity: "0.0" }}
-        position="fixed"
-        left="6px"
-        bottom="6px"
-        zIndex="1400"
-      >
-        <DataTable
-          index={index}
-          imageCount={images.length}
-          image={currentImage}
+        <PlayHotKey togglePlay={togglePlay} />
+        <ReactHotkeys
+          keyName="x"
+          onKeyUp={() =>
+            SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY)
+          }
         />
-      </Box>
-      <PlayHotKey togglePlay={togglePlay} />
-      <ReactHotkeys
-        keyName="x"
-        onKeyUp={() =>
-          SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY)
-        }
-      />
-      <ReactHotkeys
-        keyName="r"
-        onKeyUp={() => {
-          const w = SubViewerHelper.getParentWindow();
-          const event = new CustomEvent(EVENT_R_KEY);
-          w?.document.dispatchEvent(event);
-        }}
-      />
-      <RatingAndTagHotkey
-        image={currentImage}
-        updateRating={updateRating}
-        updateTag={updateTag}
-      />
-      <Dialog fullScreen open TransitionComponent={Transition}>
-        {isLoading && <LinearProgress color="secondary" />}
-        <MultiImageViewer
-          load={async () => {
-            if (channelId) {
-              load(channelId);
-            }
-            /*
+        <ReactHotkeys
+          keyName="r"
+          onKeyUp={() => {
+            const w = SubViewerHelper.getParentWindow();
+            const event = new CustomEvent(EVENT_R_KEY);
+            w?.document.dispatchEvent(event);
+          }}
+        />
+        <RatingAndTagHotkey
+          image={currentImage}
+          updateRating={updateRating}
+          updateTag={updateTag}
+        />
+        <Dialog fullScreen open TransitionComponent={Transition}>
+          {isLoading && <LinearProgress color="secondary" />}
+          <MultiImageViewer
+            load={async () => {
+              if (channelId) {
+                load(channelId);
+              }
+              /*
             if (hash) {
               load(hash);
             }
             */
-          }}
-          unload={unload}
-          isPlay={isPlay}
-          togglePlay={togglePlay}
-          images={images}
-        />
-      </Dialog>
-    </Box>
+            }}
+            unload={unload}
+            isPlay={isPlay}
+            togglePlay={togglePlay}
+            images={images}
+          />
+        </Dialog>
+      </Box>
+    </>
   );
 };
 export default MainViewer;

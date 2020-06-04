@@ -1,9 +1,8 @@
 import React, { useEffect } from "react";
-import { LinearProgress, Box } from "@material-ui/core";
+import { LinearProgress } from "@material-ui/core";
 import Hotkeys from "react-hot-keys";
 import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
-import { PlayCircleOutline, Stop } from "@material-ui/icons";
 import { DedupperImage, SubViewerState } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "react-perfect-scrollbar/dist/css/styles.css";
@@ -16,10 +15,10 @@ import {
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
 import PlayHotKey from "../components/viewer/ui/PlayHotkey";
-import GridViewerService from "../services/Viewer/GridViewerService";
 import store from "../store";
+import GridViewerService from "../services/Viewer/GridViewerService";
 import ViewerUtil from "../utils/ViewerUtil";
-import InvisibleButton from "../components/viewer/ui/InvisibleButton";
+import AutoReload from "../components/behavior/AutoReload";
 
 const gs = new GridViewerService(store);
 
@@ -113,6 +112,18 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   return (
     <>
+      <AutoReload
+        index={index}
+        load={() => {
+          if (channelId) {
+            load(channelId);
+          }
+        }}
+        isPlay={isPlay}
+        unit={unit}
+        range={range}
+        imageCount={fitImages.length}
+      />
       <PlayHotKey togglePlay={togglePlay} />
       <RatingAndTagHotkey
         updateTag={updateTag}
@@ -124,9 +135,6 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         onKeyUp={() => {
           // grid unit change
           changeUnit(ViewerUtil.detectNextUnit(sourceUnit));
-          setTimeout(() => {
-            selected(...ImageArrayUtil.detectDestination(fitImages, index));
-          }, 2000);
         }}
       />
       <Hotkeys
@@ -150,7 +158,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         onKeyUp={(keyName: string, event: KeyboardEvent) => {
           if (fitImages.length) {
             let nextIndex = -1;
-            const leftTopIndex = index - (index % range);
+            // const leftTopIndex = index - (index % range);
             if (keyName === "left") {
               nextIndex = index - 1;
             }
@@ -158,10 +166,12 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               nextIndex = index + 1;
             }
             if (keyName === "up") {
-              nextIndex = leftTopIndex - range;
+              // nextIndex = leftTopIndex - range;
+              nextIndex = index - unit;
             }
             if (keyName === "down") {
-              nextIndex = leftTopIndex + range;
+              // nextIndex = leftTopIndex + range;
+              nextIndex = index + unit;
             }
 
             selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
@@ -177,38 +187,11 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         height={window.innerHeight}
       > */}
       {fitImages.length ? (
-        <>
-          <Box
-            id="play-icon-container"
-            style={{
-              zIndex: 1399
-            }}
-            position="fixed"
-            top={window.innerHeight / 2}
-            left="50%"
-            zIndex="1400"
-          >
-            <InvisibleButton onClick={() => togglePlay()}>
-              {isPlay ? (
-                <Stop
-                  color="secondary"
-                  style={{
-                    fontSize: "3em"
-                  }}
-                />
-              ) : (
-                <PlayCircleOutline
-                  color="secondary"
-                  style={{
-                    fontSize: "3em"
-                  }}
-                />
-              )}
-            </InvisibleButton>
-          </Box>
-          <Gallery
-            renderImage={props =>
-              GridPhoto({
+        <Gallery
+          renderImage={props => (
+            <GridPhoto
+              // eslint-disable-next-line react/jsx-props-no-spreading
+              {...{
                 ...props,
                 // image: props.photo.key ? imageByHash[props.photo.key] : null,
                 image: fitImages[props.index],
@@ -220,39 +203,39 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 updateSize,
                 updateTag,
                 updateRating
-              })
-            }
-            margin={0}
-            limitNodeSearch={unit}
-            targetRowHeight={containerWidth =>
-              ViewerUtil.calcTargetLowHeight(unit, containerWidth, true)
-            }
-            // columns={2}
-            // direction="column"
-            photos={fitImages.map(({ width, height, hash }) => ({
-              key: hash,
-              width: isPortraitImage ? STANDARD_HEIGHT : STANDARD_WIDTH,
-              height: isPortraitImage ? STANDARD_WIDTH : STANDARD_HEIGHT,
-              src: UrlUtil.generateImageUrl(hash)
-            }))}
-            onClick={(event, { photo, index: currentIndex }) => {
-              if (photo.key) {
-                if (photo.key === selectedImage?.hash) {
-                  let skip = false;
-                  if (subViewer.isOpen === true) {
-                    // eslint-disable-next-line no-alert
-                    skip = !window.confirm("close sub viewer?");
-                  }
-                  if (!skip) {
-                    toggleSubViewer();
-                  }
-                } else {
-                  selected(photo.key, currentIndex);
+              }}
+            />
+          )}
+          margin={0}
+          limitNodeSearch={unit}
+          targetRowHeight={containerWidth =>
+            ViewerUtil.calcTargetLowHeight(unit, containerWidth, true)
+          }
+          // columns={2}
+          // direction="column"
+          photos={fitImages.map(({ width, height, hash }) => ({
+            key: hash,
+            width: isPortraitImage ? STANDARD_HEIGHT : STANDARD_WIDTH,
+            height: isPortraitImage ? STANDARD_WIDTH : STANDARD_HEIGHT,
+            src: UrlUtil.generateImageUrl(hash)
+          }))}
+          onClick={(event, { photo, index: currentIndex }) => {
+            if (photo.key) {
+              if (photo.key === selectedImage?.hash) {
+                let skip = false;
+                if (subViewer.isOpen === true) {
+                  // eslint-disable-next-line no-alert
+                  skip = !window.confirm("close sub viewer?");
                 }
+                if (!skip) {
+                  toggleSubViewer();
+                }
+              } else {
+                selected(photo.key, currentIndex);
               }
-            }}
-          />
-        </>
+            }
+          }}
+        />
       ) : (
         <LinearProgress color="secondary" />
       )}

@@ -1,6 +1,7 @@
 import { Store } from "unistore";
 import { DedupperWindow } from "../../types/window";
 import { State } from "../../types/unistore";
+import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 (window as any).subViewerWindow = null as DedupperWindow | null;
 (window as any).parentWindow = null as DedupperWindow | null;
@@ -43,9 +44,13 @@ export default class SubViewerHelper {
     return SubViewerHelper.getParentWindow()?.store || null;
   };
 
+  static isSubViewer = (): boolean =>
+    UrlUtil.extractParam("mode") === "subviewer" && UrlUtil.isInSingleViewer();
+
   static isChild = (): boolean => {
-    const w = SubViewerHelper.getParentWindow();
-    return w?.__DEDUPPER_VIEWER_IDENTITY__ || false;
+    const w = (window as any) as DedupperWindow;
+    // eslint-disable-next-line no-underscore-dangle
+    return w.__DEDUPPER_VIEWER_SUB_VIEWER__ || false;
   };
 
   static forChild = (fn: (x: DedupperWindow) => void) => {

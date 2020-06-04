@@ -2,7 +2,7 @@ import React from "react";
 import { connect } from "unistore/react";
 import "./App.css";
 import { SnackbarProvider } from "notistack";
-import { Router } from "@reach/router";
+import { Router, Redirect } from "@reach/router";
 import { Dictionary } from "lodash";
 import actions from "./actions";
 import {
@@ -22,6 +22,8 @@ import Snackbar from "./components/feedback/Snackbar";
 import Channels from "./pages/Channels";
 import UrlUtil from "./utils/dedupper/UrlUtil";
 import SubViewer from "./components/viewer/SubViewer";
+import Start from "./pages/Start";
+import NavigationButtonBar from "./components/NavigationButtonBar";
 
 interface BaseAppProps {
   channels: DedupperChannel[];
@@ -40,6 +42,7 @@ interface BaseAppProps {
   changeUnit: (x: number) => void;
   togglePlay: Function;
   toggleGridPlay: Function;
+  loadChannels: Function;
   toggleSubViewer: (close: boolean | null) => void;
   selected: (hash: string, index: number) => void;
   finishSnackbar: (x: SnackbarKind) => void;
@@ -51,7 +54,7 @@ interface BaseAppProps {
   mainViewer: MainViewerState;
   unloadMainViewerImages: () => void;
   loadMainViewerImage: (hash: string) => Promise<void>;
-  loadMainViewerImages: (channelId: string) => Promise<void>;
+  loadMainViewerImages: (channelId: string, silent?: boolean) => Promise<void>;
 }
 type AppProps = BaseAppProps;
 
@@ -72,6 +75,7 @@ const App = connect<{}, {}, State, AppProps>(
         image={props.gridViewer.selectedImage}
       />
       <Router>
+        <Redirect noThrow from="/" to="start/" />
         <GridViewer
           path="channel/grid/:channelId"
           updateRating={props.updateRating}
@@ -112,9 +116,11 @@ const App = connect<{}, {}, State, AppProps>(
           }}
         />
         <Home path="/">
+          <Start path="start/" />
           <Channels
             channels={props.channels}
             channelById={props.channelById}
+            changeUnit={props.changeUnit}
             handleCreate={props.createChannel}
             handleDelete={props.deleteChannel}
             handleUpdate={props.updateChannel}
@@ -122,6 +128,13 @@ const App = connect<{}, {}, State, AppProps>(
           />
         </Home>
       </Router>
+      <NavigationButtonBar
+        loadChannels={props.loadChannels}
+        togglePlay={props.toggleGridPlay}
+        changeUnit={props.changeUnit}
+        selected={props.selected}
+        gridViewer={props.gridViewer}
+      />
       <Snackbar
         anchorOrigin={
           UrlUtil.isInGridViewer()

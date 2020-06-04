@@ -39,51 +39,54 @@ const getLabelRating = (name: string) =>
     }
   })(Rating);
 
+const labelRatingList = ["t1", "t2", "t3", "t4", "t5"].map(name =>
+  getLabelRating(name)
+);
+
 interface RatingAndTagProps {
   currentImage: DedupperImage | null;
   onRatingChange: (hash: string, x: number | null) => void;
   onTagChange: (hash: string, x: number | null, name: string) => void;
 }
-const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = ({
-  currentImage,
-  onRatingChange,
-  onTagChange
-}) => {
-  if (currentImage) {
-    return (
-      <>
-        <Box className="viewer-rating-container">
-          <Rating
-            value={currentImage.rating}
-            name={`image__${currentImage.hash}`}
-            onChange={(event, value) =>
-              onRatingChange(currentImage.hash, value)
-            }
-            max={5}
-          />
-        </Box>
-        <Box className="viewer-rating-container">
-          {["t1", "t2", "t3", "t4", "t5"].map(name => {
-            const LabelRating = getLabelRating(name);
-            return (
-              <LabelRating
-                key={name}
-                value={(currentImage as any)[name]}
-                icon={<Label fontSize="inherit" />}
-                name={`tag__${name}__${currentImage.hash}`}
-                onChange={(event, value) =>
-                  onTagChange(currentImage.hash, value, name)
-                }
-                max={1}
-              />
-            );
-          })}
-        </Box>
-      </>
-    );
-  }
+const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
+  ({ currentImage, onRatingChange, onTagChange }) => {
+    if (currentImage) {
+      return (
+        <>
+          <Box className="viewer-rating-container">
+            <Rating
+              value={currentImage.rating}
+              name={`image__${currentImage.hash}`}
+              onChange={(event, value) =>
+                onRatingChange(currentImage.hash, value)
+              }
+              max={5}
+            />
+          </Box>
+          <Box className="viewer-rating-container">
+            {["t1", "t2", "t3", "t4", "t5"].map(name => {
+              const LabelRating =
+                labelRatingList[parseInt(name.replace("t", ""), 10) - 1];
+              return (
+                <LabelRating
+                  key={name}
+                  value={(currentImage as any)[name]}
+                  icon={<Label fontSize="inherit" />}
+                  name={`tag__${name}__${currentImage.hash}`}
+                  onChange={(event, value) =>
+                    onTagChange(currentImage.hash, value, name)
+                  }
+                  max={1}
+                />
+              );
+            })}
+          </Box>
+        </>
+      );
+    }
 
-  return <></>;
-};
+    return <></>;
+  }
+);
 
 export default RatingAndTag;

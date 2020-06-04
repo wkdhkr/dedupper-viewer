@@ -41,6 +41,7 @@ import { Delete, FileCopy, PhotoLibrary, Slideshow } from "@material-ui/icons";
 import { Dictionary } from "lodash";
 import { DedupperChannel } from "../types/unistore";
 import ConfirmDialog from "../components/feedback/ConfirmDialog";
+import UnitMenu from "../components/channels/UnitMenu";
 
 const getOrientationByName = (name: string) => {
   return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
@@ -107,6 +108,7 @@ const Transition: any = React.forwardRef(function Transition(props: any, ref) {
 
 type ChannelsProps = {
   channelById: Dictionary<DedupperChannel>;
+  changeUnit: (x: number) => void;
   handleCreate: (c: DedupperChannel) => Promise<void>;
   handleDelete: (id: string) => Promise<void>;
   handleUpdate: (c: DedupperChannel) => Promise<void>;
@@ -116,6 +118,7 @@ type ChannelsProps = {
 const Channels: React.FunctionComponent<ChannelsProps> = ({
   channels,
   channelById,
+  changeUnit,
   handleCreate,
   handleUpdate,
   handleDelete
@@ -123,6 +126,11 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
   const classes = useStyles();
   const [isShowDialog, setIsShowDialog] = useState(false);
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
+  const [rowInfo, setRowInfo] = React.useState<null | {
+    anchorEl: HTMLElement;
+    orientation: "portrait" | "landscape";
+    url: string;
+  }>(null);
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null);
   const [sql, setSql] = useState("");
   const [channelName, setChannelName] = useState("");
@@ -135,6 +143,17 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
   };
   return (
     <>
+      <UnitMenu
+        onClose={() => setRowInfo(null)}
+        orientation={rowInfo?.orientation || "portrait"}
+        onClick={(e, n) => {
+          if (rowInfo) {
+            navigate(`${rowInfo.url}&unit=${n}`);
+            changeUnit(n);
+          }
+        }}
+        anchorEl={rowInfo?.anchorEl}
+      />
       <ConfirmDialog
         open={isShowDeleteDialog}
         title="Delete Channel"
@@ -258,7 +277,11 @@ The channel will be permanently removed."
               tooltip: "grid play",
               onClick: (event, rowData: DedupperChannel) => {
                 const o = getOrientationByName(rowData.name);
-                navigate(`/channel/grid/${rowData.id}?play=1&o=${o}`);
+                setRowInfo({
+                  anchorEl: event.currentTarget,
+                  orientation: o,
+                  url: `/channel/grid/${rowData.id}?play=1&o=${o}`
+                });
               }
             },
             {
@@ -266,7 +289,11 @@ The channel will be permanently removed."
               tooltip: "grid show",
               onClick: (event, rowData: any) => {
                 const o = getOrientationByName(rowData.name);
-                navigate(`/channel/grid/${rowData.id}?o=${o}`);
+                setRowInfo({
+                  anchorEl: event.currentTarget,
+                  orientation: o,
+                  url: `/channel/grid/${rowData.id}?o=${o}`
+                });
               }
             },
             {

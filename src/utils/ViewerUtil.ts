@@ -17,15 +17,21 @@ export default class ViewerUtil {
     }
   };
 
-  static rangeLookup = {
-    portraitImage: {
-      vertical: [1, 4, 9, 16, 25],
-      horizontal: [1, 2, 3, 4, 10, 12, 14]
-    },
-    landscapeImage: {
-      vertical: [3, 3 * 4, 9 * 3, 12],
-      horizontal: [1, 2, 3 * 2, 12]
+  static detectAllowedUnit = (o: "portrait" | "landscape") => {
+    const isPoraitImage = o === "portrait";
+
+    if (ViewerUtil.isPortrait()) {
+      // vertical screen
+      if (isPoraitImage) {
+        return [1, 2, 3, 4, 5];
+      }
+      return [1, 2, 3, 4];
     }
+    // horizontal screen
+    if (isPoraitImage) {
+      return [3, 6, 7];
+    }
+    return [1, 2, 3, 4];
   };
 
   static detectNextUnit = (unit: number) => {
@@ -79,10 +85,13 @@ export default class ViewerUtil {
     if (!isFit) {
       return height;
     }
+    return height;
+    /*
     const restHeight = window.innerHeight % height;
     const range = ViewerUtil.calcRange(unit, containerWidth);
     const visibleRowCount = range / unit;
     return height + restHeight / visibleRowCount;
+    */
   };
 
   static calcRange = (

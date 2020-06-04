@@ -64,6 +64,7 @@
     "react-photo-gallery": "^8.0.0",
     "react-shimmer": "^3.1.0",
     "scroll-into-view-if-needed": "^2.2.25",
+    "shallow-equal-object": "^1.1.1",
     "unistore": "^3.5.1",
     "viewerjs": "^1.5.0"
   },
