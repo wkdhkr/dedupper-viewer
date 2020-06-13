@@ -1,15 +1,12 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { forwardRef, Ref, useState } from "react";
+import React, { useState } from "react";
 import CloseIcon from "@material-ui/icons/Close";
-import MaterialTable, { Icons } from "material-table";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import { RouteComponentProps, navigate } from "@reach/router";
+import { RouteComponentProps } from "@reach/router";
 import {
   Button,
-  Container,
   Dialog,
-  SvgIcon,
   AppBar,
   Toolbar,
   IconButton,
@@ -17,68 +14,16 @@ import {
   Grid,
   Box
 } from "@material-ui/core";
-import Slide from "@material-ui/core/Slide";
-import PlayArrow from "@material-ui/icons/PlayArrow";
-import SkipNext from "@material-ui/icons/SkipNext";
-
-import AddBox from "@material-ui/icons/AddBox";
-// import ArrowUpward from "@material-ui/icons/ArrowUpward";
-import ArrowDownward from "@material-ui/icons/ArrowDownward";
-import Check from "@material-ui/icons/Check";
-import ChevronLeft from "@material-ui/icons/ChevronLeft";
-import ChevronRight from "@material-ui/icons/ChevronRight";
-import Clear from "@material-ui/icons/Clear";
-import DeleteOutline from "@material-ui/icons/DeleteOutline";
-import Edit from "@material-ui/icons/Edit";
-import FilterList from "@material-ui/icons/FilterList";
-import FirstPage from "@material-ui/icons/FirstPage";
-import LastPage from "@material-ui/icons/LastPage";
-import Remove from "@material-ui/icons/Remove";
-import SaveAlt from "@material-ui/icons/SaveAlt";
-import Search from "@material-ui/icons/Search";
-import ViewColumn from "@material-ui/icons/ViewColumn";
-import { Delete, FileCopy, PhotoLibrary, Slideshow } from "@material-ui/icons";
 import { Dictionary } from "lodash";
 import { DedupperChannel } from "../types/unistore";
 import ConfirmDialog from "../components/feedback/ConfirmDialog";
 import UnitMenu from "../components/channels/UnitMenu";
+import { useQueryString } from "../hooks/queryString";
+import SlideUp from "../transitions/SlideUp";
+import ChannelTable from "../components/channels/ChannelTable";
+import RouterUtil from "../utils/RouterUtil";
+// import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 
-const getOrientationByName = (name: string) => {
-  return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
-};
-
-const iconComponentByTableIconType: Record<keyof Icons, typeof SvgIcon> = {
-  Add: AddBox,
-  Check,
-  Clear,
-  Delete: DeleteOutline,
-  DetailPanel: ChevronRight,
-  Edit,
-  Export: SaveAlt,
-  Filter: FilterList,
-  FirstPage,
-  LastPage,
-  NextPage: ChevronRight,
-  PreviousPage: ChevronLeft,
-  ResetSearch: Clear,
-  Search,
-  SortArrow: ArrowDownward,
-  ThirdStateCheck: Remove,
-  ViewColumn
-};
-
-const tableIcons = Object.entries(iconComponentByTableIconType).reduce(
-  (currentTableIcons: Icons, [tableIconType, IconComponent]) => {
-    // eslint-disable-next-line no-param-reassign
-    currentTableIcons[
-      tableIconType as keyof Icons
-    ] = forwardRef((props, ref: Ref<SVGSVGElement>) => (
-      <IconComponent {...props} ref={ref} />
-    ));
-    return currentTableIcons;
-  },
-  {}
-);
 const useStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1
@@ -101,11 +46,6 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Transition: any = React.forwardRef(function Transition(props: any, ref) {
-  // eslint-disable-next-line react/jsx-props-no-spreading
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
 type ChannelsProps = {
   channelById: Dictionary<DedupperChannel>;
   changeUnit: (x: number) => void;
@@ -124,13 +64,22 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
   handleDelete
 }) => {
   const classes = useStyles();
-  const [isShowDialog, setIsShowDialog] = useState(false);
+  // const [isShowDialog, setIsShowDialog] = useState(false);
+  const [edit, setEdit] = useQueryString("edit");
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
   const [rowInfo, setRowInfo] = React.useState<null | {
     anchorEl: HTMLElement;
     orientation: "portrait" | "landscape";
     url: string;
   }>(null);
+
+  /*
+  useEffect(() => {
+    if (edit && edit !== "new" && !channelById[edit]) {
+      setEdit("new");
+    }
+  }, [edit]);
+  */
   const [currentChannelId, setCurrentChannelId] = useState<string | null>(null);
   const [sql, setSql] = useState("");
   const [channelName, setChannelName] = useState("");
@@ -139,7 +88,8 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
     setSql("");
     setChannelName("");
     setCurrentChannelId(null);
-    setIsShowDialog(false);
+    // setIsShowDialog(false);
+    setEdit(null);
   };
   return (
     <>
@@ -148,8 +98,15 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
         orientation={rowInfo?.orientation || "portrait"}
         onClick={(e, n) => {
           if (rowInfo) {
-            navigate(`${rowInfo.url}&unit=${n}`);
+            RouterUtil.navigateForIFWrap(`${rowInfo.url}&unit=${n}`);
             changeUnit(n);
+            /*
+            setTimeout(
+              () =>
+                SubViewerHelper.spawnParentWindow(`${rowInfo.url}&unit=${n}`),
+              500
+            );
+            */
           }
         }}
         anchorEl={rowInfo?.anchorEl}
@@ -168,7 +125,14 @@ The channel will be permanently removed."
           setIsShowDeleteDialog(false);
         }}
       />
-      <Dialog fullScreen open={isShowDialog} TransitionComponent={Transition}>
+      <Dialog
+        onBackdropClick={handleClose}
+        // maxWidth="xl"
+        // fullWidth
+        fullScreen
+        open={Boolean(edit)}
+        TransitionComponent={SlideUp as any}
+      >
         <AppBar color="secondary" className={classes.appBar}>
           <Toolbar>
             <IconButton
@@ -180,15 +144,15 @@ The channel will be permanently removed."
               <CloseIcon />
             </IconButton>
             <Typography variant="h6" className={classes.title}>
-              {currentChannelId ? "Edit channel" : "Create new channel"}
+              {channelById[edit || ""] ? "Edit channel" : "Create new channel"}
             </Typography>
             <Button
               autoFocus
               color="inherit"
               onClick={() => {
-                if (currentChannelId) {
+                if (edit && edit !== "new" && channelById[edit]) {
                   handleUpdate({
-                    id: currentChannelId,
+                    id: edit,
                     name: channelName,
                     sql
                   });
@@ -242,108 +206,17 @@ The channel will be permanently removed."
           </Grid>
         </div>
       </Dialog>
-      <Container maxWidth="lg">
-        <h2>Channels</h2>
-        <MaterialTable
-          icons={tableIcons}
-          columns={[
-            {
-              title: "Channel Name",
-              field: "name"
-            }
-          ]}
-          data={channels
-            .map(c => ({ ...c }))
-            .sort((a, b) => (a.name > b.name ? 1 : -1))}
-          options={{
-            // grouping: true,
-            actionsColumnIndex: -1,
-            showTitle: false,
-            headerStyle: { fontWeight: "bold" },
-            paging: false
-          }}
-          onRowClick={(event, rowData: any) =>
-            navigate(`/channel/${rowData.id}`)
-          }
-          actions={[
-            {
-              icon: () => <AddBox />,
-              tooltip: "Add Channel",
-              isFreeAction: true,
-              onClick: () => setIsShowDialog(true)
-            },
-            {
-              icon: () => <Slideshow />,
-              tooltip: "grid play",
-              onClick: (event, rowData: DedupperChannel) => {
-                const o = getOrientationByName(rowData.name);
-                setRowInfo({
-                  anchorEl: event.currentTarget,
-                  orientation: o,
-                  url: `/channel/grid/${rowData.id}?play=1&o=${o}`
-                });
-              }
-            },
-            {
-              icon: () => <PhotoLibrary />,
-              tooltip: "grid show",
-              onClick: (event, rowData: any) => {
-                const o = getOrientationByName(rowData.name);
-                setRowInfo({
-                  anchorEl: event.currentTarget,
-                  orientation: o,
-                  url: `/channel/grid/${rowData.id}?o=${o}`
-                });
-              }
-            },
-            {
-              icon: () => <PlayArrow />,
-              tooltip: "play",
-              onClick: (event, rowData: any) => {
-                navigate(`/channel/${rowData.id}?play=1`);
-              }
-            },
-            {
-              icon: () => <SkipNext />,
-              tooltip: "show",
-              onClick: (event, rowData) => {
-                navigate(`/channel/${rowData.id}`);
-              }
-            },
-            {
-              icon: () => <Edit />,
-              tooltip: "edit",
-              onClick: (event, rowData: any) => {
-                const { id } = rowData as DedupperChannel;
-                setCurrentChannelId(id);
-                setChannelName(channelById[id].name);
-                setSql(channelById[id].sql);
-                setIsShowDialog(true);
-              }
-            },
-            {
-              icon: () => <FileCopy />,
-              tooltip: "copy",
-              onClick: (event, rowData: any) => {
-                const r = rowData as DedupperChannel;
-                handleCreate({
-                  id: "",
-                  name: `${r.name} (copy)`,
-                  sql: r.sql
-                });
-              }
-            },
-            {
-              icon: () => <Delete />,
-              tooltip: "delete",
-              onClick: (event, rowData: any) => {
-                setCurrentChannelId((rowData as DedupperChannel).id);
-                setIsShowDeleteDialog(true);
-              }
-            }
-          ]}
-        />
-      </Container>
+      <ChannelTable
+        channelById={channelById}
+        channels={channels}
+        setEdit={setEdit}
+        setRowInfo={setRowInfo}
+        setSql={setSql}
+        setIsShowDeleteDialog={setIsShowDeleteDialog}
+        setChannelName={setChannelName}
+        handleCreate={handleCreate}
+        setCurrentChannelId={setCurrentChannelId}
+      />
     </>
   );
 };

@@ -2,6 +2,75 @@ import React from "react";
 import { Dictionary } from "lodash";
 import { OptionsObject } from "notistack";
 
+export type FacePPGender = "Female" | "Male";
+export type FacePPGlass = "None" | "Dark" | "Normal";
+
+export interface FacePPRow {
+  landmark: string;
+  image_id: string;
+  hash: string;
+  face_token: string;
+  face_num: number;
+  version: number;
+  emotion_sadness: number;
+  emotion_neutral: number;
+  emotion_disgust: number;
+  emotion_anger: number;
+  emotion_surprise: number;
+  emotion_fear: number;
+  emotion_happiness: number;
+  beauty_female_score: number;
+  beauty_male_score: number;
+  gender: FacePPGender;
+  age: number;
+  mouth_close: number;
+  mouth_surgical_mask_or_respirator: number;
+  mouth_open: number;
+  mouth_other_occlusion: number;
+  glass: FacePPGlass;
+  skin_dark_circle: number;
+  skin_stain: number;
+  skin_acne: number;
+  skin_health: number;
+  headpose_status: number;
+  headpose_yaw_angle: number;
+  headpose_pitch_angle: number;
+  headpose_roll_angle: number;
+  gaussianblur: number;
+  motionblur: number;
+  blurness: number;
+  smile: number;
+  eye_status_left_normal_glass_eye_open: number;
+  eye_status_left_normal_glass_eye_close: number;
+  eye_status_left_no_glass_eye_close: number;
+  eye_status_left_no_glass_eye_open: number;
+  eye_status_left_occlusion: number;
+  eye_status_left_dark_glasses: number;
+  eye_status_right_normal_glass_eye_open: number;
+  eye_status_right_normal_glass_eye_close: number;
+  eye_status_right_no_glass_eye_close: number;
+  eye_status_right_no_glass_eye_open: number;
+  eye_status_right_occlusion: number;
+  eye_status_right_dark_glasses: number;
+  eyegaze_right_position_x_coordinate: number;
+  eyegaze_right_position_y_coordinate: number;
+  eyegaze_right_vector_z: number;
+  eyegaze_right_vector_x: number;
+  eyegaze_right_vector_y: number;
+  eyegaze_left_position_x_coordinate: number;
+  eyegaze_left_position_y_coordinate: number;
+  eyegaze_left_vector_z: number;
+  eyegaze_left_vector_x: number;
+  eyegaze_left_vector_y: number;
+  facequality: number;
+  ethnicity: string;
+  eye_gaze_status: number;
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+}
+
 export interface DedupperChannel {
   id: string;
   name: string;
@@ -54,10 +123,26 @@ export interface GridViewerState {
   index: number;
 }
 
+export interface ConfigurationState {
+  flipRandomInPlay: number;
+  standardWidth: number;
+  standardHeight: number;
+  enableSubViewer: boolean;
+  selectNextAfterEditInMainViewer: boolean;
+  selectNextAfterEditInGridViewer: boolean;
+  iframeOrigin: string;
+  maxJSHeapSize: number;
+  autoReload: boolean;
+  gridViewerPlayInterval: number;
+  mainViewerPlayInterval: number;
+  open: boolean;
+}
+
 export type SnackbarKind = "tagUpdated" | "ratingUpdated" | "layoutUpdated";
 export type SnackbarCustomState = [React.ReactNode, OptionsObject];
 export type SnackbarState = { [_ in SnackbarKind]: boolean };
 export interface State {
+  configuration: ConfigurationState;
   keyStatus: {
     shifted: boolean;
     controlled: boolean;

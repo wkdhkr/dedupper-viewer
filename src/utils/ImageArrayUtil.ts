@@ -20,7 +20,7 @@ export default class ImageArrayUtil {
   static detectDestination(
     images: DedupperImage[],
     nextIndex: number
-  ): [string, number] {
+  ): [string | null, number] {
     let finalNextIndex = nextIndex;
     if (finalNextIndex <= -1) {
       // go to last
@@ -30,6 +30,9 @@ export default class ImageArrayUtil {
       // go to first
       finalNextIndex = 0;
     }
-    return [images[finalNextIndex].hash, finalNextIndex];
+    if (images[finalNextIndex]) {
+      return [images[finalNextIndex].hash, finalNextIndex];
+    }
+    return [null, 0];
   }
 }

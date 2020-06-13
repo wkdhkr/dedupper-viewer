@@ -13,7 +13,8 @@ import {
   SnackbarCustomState,
   DedupperChannel,
   GridViewerState,
-  DedupperImage
+  DedupperImage,
+  ConfigurationState
 } from "./types/unistore";
 import MainViewer from "./pages/MainViewer";
 import GridViewer from "./pages/GridViewer";
@@ -24,11 +25,16 @@ import UrlUtil from "./utils/dedupper/UrlUtil";
 import SubViewer from "./components/viewer/SubViewer";
 import Start from "./pages/Start";
 import NavigationButtonBar from "./components/NavigationButtonBar";
+import ConfigurationDialog from "./components/configuration/ConfigurationDialog";
+import SubViewerHelper from "./helpers/viewer/SubViewerHelper";
+import IFrameUtil from "./utils/IFrameUtil";
 
 interface BaseAppProps {
+  configuration: ConfigurationState;
   channels: DedupperChannel[];
   channelById: Dictionary<DedupperChannel>;
   updateRating: (hash: string, x: number | null) => void;
+  updateColor: (hash: string, kind: string, value: number) => void;
   updateSize: (hash: string, w: number, h: number) => void;
   updateTag: (
     hash: string | string[],
@@ -44,7 +50,8 @@ interface BaseAppProps {
   toggleGridPlay: Function;
   loadChannels: Function;
   toggleSubViewer: (close: boolean | null) => void;
-  selected: (hash: string, index: number) => void;
+  selected: (hash: string | null, index: number) => void;
+  selectedByIndex: (index: number) => void;
   finishSnackbar: (x: SnackbarKind) => void;
   finishSnackbarCustom: () => void;
   imageByHash: Dictionary<DedupperImage>;
@@ -52,6 +59,7 @@ interface BaseAppProps {
   snackbarCustom: SnackbarCustomState;
   gridViewer: GridViewerState;
   mainViewer: MainViewerState;
+  updateConfiguration: (c: ConfigurationState) => void;
   unloadMainViewerImages: () => void;
   loadMainViewerImage: (hash: string) => Promise<void>;
   loadMainViewerImages: (channelId: string, silent?: boolean) => Promise<void>;
@@ -59,7 +67,7 @@ interface BaseAppProps {
 type AppProps = BaseAppProps;
 
 const mapStateToProps =
-  "channels,channelById,snackbar,snackbarCustom," +
+  "configuration,channels,channelById,snackbar,snackbarCustom," +
   "imageByHash,mainViewer,gridViewer";
 
 const App = connect<{}, {}, State, AppProps>(
@@ -68,20 +76,29 @@ const App = connect<{}, {}, State, AppProps>(
 )((props: AppProps) => (
   <SnackbarProvider maxSnack={2}>
     <div className="App">
-      <SubViewer
-        /* eslint-disable-next-line react/jsx-props-no-spreading */
-        {...props.gridViewer.subViewer}
-        toggle={props.toggleSubViewer}
-        image={props.gridViewer.selectedImage}
+      <ConfigurationDialog
+        configuration={props.configuration}
+        updateFn={props.updateConfiguration}
       />
+      {!IFrameUtil.isInIFrame() &&
+        !SubViewerHelper.isChild() &&
+        (UrlUtil.isInGridViewer() || props.gridViewer.subViewer.isOpen) && (
+          <SubViewer
+            /* eslint-disable-next-line react/jsx-props-no-spreading */
+            {...props.gridViewer.subViewer}
+            origin={props.configuration.iframeOrigin}
+            toggle={props.toggleSubViewer}
+            image={props.gridViewer.selectedImage}
+          />
+        )}
       <Router>
         <Redirect noThrow from="/" to="start/" />
         <GridViewer
+          configuration={props.configuration}
           path="channel/grid/:channelId"
           updateRating={props.updateRating}
           updateSize={props.updateSize}
           togglePlay={props.toggleGridPlay}
-          toggleSubViewer={props.toggleSubViewer}
           updateTag={props.updateTag}
           changeUnit={props.changeUnit}
           selected={props.selected}
@@ -92,18 +109,21 @@ const App = connect<{}, {}, State, AppProps>(
           {...props.gridViewer}
         />
         <MainViewer
+          configuration={props.configuration}
           path="image/:hash"
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...{
             ...props.mainViewer,
             updateRating: props.updateRating,
             updateTag: props.updateTag,
+            updateColor: props.updateColor,
             togglePlay: () => {},
             unload: props.unloadMainViewerImages,
             load: props.loadMainViewerImage
           }}
         />
         <MainViewer
+          configuration={props.configuration}
           path="channel/:channelId"
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...{
@@ -111,6 +131,7 @@ const App = connect<{}, {}, State, AppProps>(
             updateRating: props.updateRating,
             updateTag: props.updateTag,
             togglePlay: props.togglePlay,
+            updateColor: props.updateColor,
             unload: props.unloadMainViewerImages,
             load: props.loadMainViewerImages
           }}
@@ -128,13 +149,25 @@ const App = connect<{}, {}, State, AppProps>(
           />
         </Home>
       </Router>
-      <NavigationButtonBar
-        loadChannels={props.loadChannels}
-        togglePlay={props.toggleGridPlay}
-        changeUnit={props.changeUnit}
-        selected={props.selected}
-        gridViewer={props.gridViewer}
-      />
+      <Router>
+        <NavigationButtonBar
+          path="/*"
+          configuration={props.configuration}
+          updateConfiguration={props.updateConfiguration}
+          loadChannels={props.loadChannels}
+          togglePlay={() => {
+            if (UrlUtil.isInMainViewer()) {
+              props.togglePlay();
+            } else {
+              props.toggleGridPlay();
+            }
+          }}
+          changeUnit={props.changeUnit}
+          selectedByIndex={props.selectedByIndex}
+          gridViewer={props.gridViewer}
+          mainViewer={props.mainViewer}
+        />
+      </Router>
       <Snackbar
         anchorOrigin={
           UrlUtil.isInGridViewer()

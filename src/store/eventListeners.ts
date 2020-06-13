@@ -9,8 +9,9 @@ import { State } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
 import actions from "../actions";
 import UrlUtil from "../utils/dedupper/UrlUtil";
-import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import { EVENT_X_KEY } from "./customEventListeners";
+import { EVENT_X_KEY } from "../constants/dedupperConstants";
+import IFrameUtil from "../utils/IFrameUtil";
+import ColorUtil from "../utils/ColorUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -102,6 +103,23 @@ export default function(store: Store<State>) {
         event.detail.index
       );
       // console.log("viewed", event);
+      const { mainViewer, configuration } = store.getState();
+      const { flipRandomInPlay } = configuration;
+      const vc = DomUtil.getViewerCanvas();
+      if (flipRandomInPlay && mainViewer.isPlay) {
+        if (Math.random() * 100 < flipRandomInPlay) {
+          vc.style.transform = "scaleX(-1)";
+        } else {
+          vc.style.transform = "none";
+        }
+      } else {
+        vc.style.transform = "none";
+      }
+      const viewer = DomUtil.getViewer();
+      const filter = ColorUtil.createFilter(viewer.imageData);
+      if (filter) {
+        viewer.image.style.filter = filter;
+      }
       if (!UrlUtil.isInSingleViewer() && DomUtil.getViewer().index === 0) {
         actions(store).showSnackbarCustom(store.getState(), [
           "This is first image.",
@@ -149,13 +167,17 @@ export default function(store: Store<State>) {
   document.body.addEventListener<any>(
     "zoomed",
     debounce(function() {
-      const hash = DomUtil.getCurrentHash();
-      const viewer = DomUtil.getViewer();
-      if (hash && viewer) {
-        const trim = JSON.stringify(viewer.imageData);
-        actions(store).updateTrim(store.getState(), hash, trim);
-      } else {
-        console.log("hash not found.");
+      try {
+        const hash = DomUtil.getCurrentHash();
+        const viewer = DomUtil.getViewer();
+        if (hash && viewer) {
+          const trim = JSON.stringify(viewer.imageData);
+          actions(store).updateTrim(store.getState(), hash, trim);
+        } else {
+          console.log("hash not found.");
+        }
+      } catch (e) {
+        // ignored
       }
     }, 2000)
   );
@@ -179,9 +201,13 @@ export default function(store: Store<State>) {
     }
     if (hash && viewer) {
       if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
-        if (event.button === 1) {
-          // TODO: correct event name
-          SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY);
+        if (event.button === 1 && IFrameUtil.isInIFrame()) {
+          IFrameUtil.postMessageForParent({
+            type: "customEvent",
+            payload: {
+              name: EVENT_X_KEY
+            }
+          });
         } else if (pointerX !== event.clientX || pointerY !== event.clientY) {
           if (!isEqual(viewer.imageData, viewer.initialImageData)) {
             const trim = JSON.stringify(viewer.imageData);
@@ -196,6 +222,7 @@ export default function(store: Store<State>) {
       ) {
         // reset button clicked
         actions(store).updateTrim(store.getState(), hash, "");
+        viewer.image.style.filter = "";
       }
     } else {
       console.log("hash not found.");

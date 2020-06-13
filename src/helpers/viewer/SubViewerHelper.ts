@@ -1,10 +1,11 @@
-import { Store } from "unistore";
 import { DedupperWindow } from "../../types/window";
-import { State } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
-(window as any).subViewerWindow = null as DedupperWindow | null;
-(window as any).parentWindow = null as DedupperWindow | null;
+const currentWindow = (window as any) as DedupperWindow;
+
+currentWindow.subViewerWindow = null;
+currentWindow.parentWindow = null;
+currentWindow.managerWindow = null;
 
 // eslint-disable-next-line no-underscore-dangle
 (window as any).__DEDUPPER_VIEWER_IDENTITY__ = true;
@@ -18,15 +19,14 @@ export default class SubViewerHelper {
     return (window as any).subViewerWindow;
   };
 
-  static getStore = () => {
-    return SubViewerHelper.getWindow()?.store || null;
-  };
-
   static isDedupperWindow = (w: Window) =>
     // eslint-disable-next-line no-underscore-dangle
     Boolean((w as any)?.__DEDUPPER_VIEWER_IDENTITY__);
 
   static getParentWindow = (): DedupperWindow | null => {
+    if (SubViewerHelper.isParent()) {
+      return window as any;
+    }
     const w = window.opener || null;
     try {
       if (SubViewerHelper.isDedupperWindow(w)) {
@@ -37,33 +37,55 @@ export default class SubViewerHelper {
     } catch (e) {
       // ignore security error
     }
+    if ((window as any).parentWindow) {
+      return (window as any).parentWindow;
+    }
     return null;
   };
 
-  static getParentStore = (): Store<State> => {
-    return SubViewerHelper.getParentWindow()?.store || null;
+  static isParent = () => {
+    return UrlUtil.extractParam("mode") === "parent";
+  };
+
+  static isChild = (): boolean => {
+    // return w?.name === "dedupper_sub_viewer";
+    return UrlUtil.extractParam("mode") === "subviewer";
+    // eslint-disable-next-line no-underscore-dangle
+    // return (w as any).__DEDUPPER_VIEWER_SUB_VIEWER__ || false;
+  };
+
+  static isManager = () => {
+    /*
+    if (SubViewerHelper.isChild(w) || SubViewerHelper.isParent(w)) {
+      return null;
+    }
+    if (SubViewerHelper.isDedupperWindow(w)) {
+      // may be
+      return w;
+    }
+    return null;
+    */
+    return !SubViewerHelper.isChild() && !SubViewerHelper.isParent();
+  };
+
+  static spawnParentWindow = (url: string) => {
+    // const parentWindow = window.open(url, "dedupper_parent");
+    const e = document.createElement("a");
+    e.href = url;
+    e.target = "dedupper_parent";
+    e.rel = "noreferrer";
+    e.click();
   };
 
   static isSubViewer = (): boolean =>
     UrlUtil.extractParam("mode") === "subviewer" && UrlUtil.isInSingleViewer();
 
-  static isChild = (): boolean => {
-    const w = (window as any) as DedupperWindow;
-    // eslint-disable-next-line no-underscore-dangle
-    return w.__DEDUPPER_VIEWER_SUB_VIEWER__ || false;
-  };
-
   static forChild = (fn: (x: DedupperWindow) => void) => {
-    const w = SubViewerHelper.getWindow();
-    if (w && !w.closed) {
-      fn(w);
-    }
-  };
-
-  static forParent = (fn: (x: DedupperWindow) => void) => {
-    const w = SubViewerHelper.getParentWindow();
-    if (w && !w.closed) {
-      fn(w);
+    if (!SubViewerHelper.isChild()) {
+      const w = SubViewerHelper.getWindow();
+      if (w && !w.closed) {
+        fn(w);
+      }
     }
   };
 

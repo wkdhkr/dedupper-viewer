@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
 
 import Slide from "@material-ui/core/Slide";
@@ -7,20 +7,44 @@ import "./MainViewer.css";
 
 import ReactHotkeys from "react-hot-keys";
 import { MultiImageViewer } from "../components/viewer";
-import { MainViewerState } from "../types/unistore";
+import { MainViewerState, ConfigurationState } from "../types/unistore";
 import DataTable from "../components/viewer/DataTable";
 import RatingAndTag from "../components/viewer/ui/RatingAndTag";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import PlayHotKey from "../components/viewer/ui/PlayHotkey";
-import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import { EVENT_X_KEY, EVENT_R_KEY } from "../store/customEventListeners";
 import AutoReload from "../components/behavior/AutoReload";
+import { EVENT_X_KEY } from "../constants/dedupperConstants";
+import IFrameWrapper from "../components/IFrameWrapper";
+import IFrameUtil from "../utils/IFrameUtil";
+import ColorTuner from "../components/viewer/ui/ColorTuner";
+
+const reload = () => {
+  IFrameUtil.postMessageForParent({
+    type: "superReload",
+    payload: null
+  });
+};
+
+const applyTag = () => {
+  // SubViewerHelper.dispatchCustomEventForParent(event.type);
+  IFrameUtil.postMessageForParent({
+    type: "forGrid",
+    payload: {
+      type: "customEvent",
+      payload: {
+        name: EVENT_X_KEY
+      }
+    }
+  });
+};
 
 type MainViewerProps = MainViewerState & {
+  configuration: ConfigurationState;
   unload: () => void;
   load: (channelId: string) => Promise<void>;
   channelId?: string;
   hash?: string;
+  updateColor: (hash: string, kind: string, value: number) => void;
   updateTag: (hash: string, x: number | null, name: string) => void;
   updateRating: (hash: string, x: number | null) => void;
   togglePlay: Function;
@@ -32,6 +56,7 @@ const Transition: any = React.forwardRef(function Transition(props: any, ref) {
 });
 
 const MainViewer: React.SFC<MainViewerProps> = ({
+  configuration: c,
   isPlay,
   load,
   unload,
@@ -43,6 +68,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   images,
   updateTag,
   updateRating,
+  updateColor,
   togglePlay
 }) => {
   useEffect(() => {
@@ -51,14 +77,20 @@ const MainViewer: React.SFC<MainViewerProps> = ({
     }
     return () => {};
   }, [load, hash]);
+
+  const [colorReset, setColorReset] = useState<number>(0);
   return (
     <>
       <AutoReload
+        disabled={!c.autoReload}
         index={index}
         load={() => {
+          /*
           if (channelId) {
             load(channelId);
           }
+          */
+          reload();
         }}
         isPlay={isPlay}
         unit={1}
@@ -67,11 +99,33 @@ const MainViewer: React.SFC<MainViewerProps> = ({
       />
       <Box className="viewer-main-container">
         {!isPlay && (
-          <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1400" m={2}>
+          <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1355" m={2}>
             <RatingAndTag
               currentImage={currentImage}
               onTagChange={updateTag}
               onRatingChange={updateRating}
+            />
+          </Box>
+        )}
+        {!isPlay && (
+          <Box
+            position="fixed"
+            zIndex="1355"
+            m={2}
+            width={200}
+            right={0}
+            bottom={40}
+          >
+            <ColorTuner
+              reset={colorReset}
+              image={currentImage}
+              onUpdate={(k, v) => {
+                if (hash) {
+                  updateColor(hash, k, v);
+                } else if (currentImage) {
+                  updateColor(currentImage.hash, k, v);
+                }
+              }}
             />
           </Box>
         )}
@@ -90,20 +144,8 @@ const MainViewer: React.SFC<MainViewerProps> = ({
           />
         </Box>
         <PlayHotKey togglePlay={togglePlay} />
-        <ReactHotkeys
-          keyName="x"
-          onKeyUp={() =>
-            SubViewerHelper.dispatchCustomEventForParent(EVENT_X_KEY)
-          }
-        />
-        <ReactHotkeys
-          keyName="r"
-          onKeyUp={() => {
-            const w = SubViewerHelper.getParentWindow();
-            const event = new CustomEvent(EVENT_R_KEY);
-            w?.document.dispatchEvent(event);
-          }}
-        />
+        <ReactHotkeys keyName="x" onKeyUp={() => applyTag()} />
+        <ReactHotkeys keyName="r" onKeyUp={() => reload()} />
         <RatingAndTagHotkey
           image={currentImage}
           updateRating={updateRating}
@@ -122,6 +164,9 @@ const MainViewer: React.SFC<MainViewerProps> = ({
             }
             */
             }}
+            options={{}}
+            setColorReset={setColorReset}
+            colorReset={colorReset}
             unload={unload}
             isPlay={isPlay}
             togglePlay={togglePlay}
@@ -132,4 +177,16 @@ const MainViewer: React.SFC<MainViewerProps> = ({
     </>
   );
 };
-export default MainViewer;
+const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => (
+  <IFrameWrapper
+    id="main-viewer-iframe"
+    // eslint-disable-next-line react/destructuring-assignment
+    origin={props.configuration.iframeOrigin}
+  >
+    <MainViewer
+      // eslint-disable-next-line react/jsx-props-no-spreading
+      {...props}
+    />
+  </IFrameWrapper>
+);
+export default MainViewerWrapped;

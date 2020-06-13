@@ -5,7 +5,7 @@ let originalTransition = true;
 export default class PlayerService {
   timer: NodeJS.Timeout | null = null;
 
-  intervalMs = 2000;
+  initialWaitMs = 2000;
 
   saveOriginalTransition = () => {
     const viewer = DomUtil.getViewer();
@@ -21,23 +21,25 @@ export default class PlayerService {
     }
   };
 
-  switchGridPlay(isPlay: boolean, nextFn: Function) {
+  switchGridPlay(isPlay: boolean, nextFn: Function, interval: number) {
     if (this.timer === null) {
       if (isPlay) {
-        this.timer = setInterval(() => {
-          try {
-            nextFn();
-          } catch (e) {
-            this.clear();
-          }
-        }, this.intervalMs);
+        setTimeout(() => {
+          this.timer = setInterval(() => {
+            try {
+              nextFn();
+            } catch (e) {
+              this.clear();
+            }
+          }, interval * 1000);
+        }, this.initialWaitMs);
       }
     } else {
       this.clear();
     }
   }
 
-  switchPlay(isPlay: boolean) {
+  switchPlay(isPlay: boolean, interval: number) {
     if (this.timer === null) {
       if (isPlay) {
         this.saveOriginalTransition();
@@ -45,11 +47,13 @@ export default class PlayerService {
           try {
             const viewer = DomUtil.getViewer();
             viewer.options.transition = false;
-            viewer.next(true);
+            if (viewer.items.length) {
+              viewer.next(true);
+            }
           } catch (e) {
             this.clear();
           }
-        }, this.intervalMs);
+        }, interval * 1000);
       }
     } else {
       this.clear();

@@ -7,6 +7,12 @@ export interface ImageData {
   height: number;
   left: number;
   top: number;
+  hue?: number;
+  brightness?: number;
+  grayscale?: number;
+  saturate?: number;
+  sepia?: number;
+  contrast?: number;
   scaleX?: number;
   scaleY?: number;
   rotate?: number;

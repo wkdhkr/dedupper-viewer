@@ -5,4 +5,25 @@ export interface DedupperWindow extends Window {
   renderDedupperViewer: Function;
   navigate: NavigateFn;
   dedupperWS: DedupperWindowService;
+  subViewerWindow: DedupperWindow | null;
+  parentWindow: DedupperWindow | null;
+  managerWindow: DedupperWindow | null;
 }
+
+export type IFrameMessageType =
+  | "forGrid"
+  | "forSubViewer"
+  | "customEvent"
+  | "superReload"
+  | "navigate"
+  | "navigateSubViewer"
+  | "navigateParent"
+  | "navigateIF"
+  | "subViewer"
+  | "reload"
+  | "applyTag";
+
+export type IFrameMessage = {
+  type: IFrameMessageType;
+  payload: any;
+};

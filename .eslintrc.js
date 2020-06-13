@@ -30,6 +30,7 @@ module.exports = {
     }
   },
   rules: {
+    "@typescript-eslint/no-explicit-any": "off",
     // conflict with prettier
     "react/jsx-curly-newline": "off",
     // default exportを押す 無効化

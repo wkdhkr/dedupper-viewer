@@ -20,7 +20,7 @@ const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
       onKeyDown={(keyName: string, event: KeyboardEvent) => {
         event.preventDefault();
       }}
-      onKeyUp={(keyName: string, event: KeyboardEvent) => {
+      onKeyUp={(keyName: string) => {
         if (image) {
           const update = (rating: number) => {
             const newRating = image.rating === rating ? 0 : rating;

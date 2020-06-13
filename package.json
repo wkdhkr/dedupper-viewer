@@ -57,6 +57,7 @@
     "react-children-utilities": "^2.1.0",
     "react-dom": "^16.13.1",
     "react-hot-keys": "^2.5.2",
+    "react-iframe": "^1.8.0",
     "react-image": "^4.0.0",
     "react-lazy-load-image-component": "^1.4.3",
     "react-new-window": "^0.1.2",

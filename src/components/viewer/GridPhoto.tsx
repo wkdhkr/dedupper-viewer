@@ -3,7 +3,6 @@
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 import React, { MouseEventHandler } from "react";
 import omit from "lodash/omit";
-import omitBy from "lodash/omitBy";
 import { shallowEqual } from "shallow-equal-object";
 import { RenderImageProps } from "react-photo-gallery";
 import { Box } from "@material-ui/core";
@@ -15,6 +14,7 @@ import { ImageData } from "../../types/viewer";
 import { DedupperImage } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
+import ColorUtil from "../../utils/ColorUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -67,12 +67,10 @@ const GridPhoto = React.memo(
   ({
     isPlay,
     index,
-    currentIndex,
     image,
     selectedImage,
     unit,
     photo,
-    range,
     updateSize,
     onClick,
     updateTag,
@@ -83,7 +81,6 @@ const GridPhoto = React.memo(
   }: RenderImageProps & {
     isPlay: boolean;
     unit: number;
-    range: number;
     image: DedupperImage;
     currentIndex: number;
     selectedImage: DedupperImage | null;
@@ -162,12 +159,16 @@ const GridPhoto = React.memo(
           style.marginTop = (photo.height - height) / 2;
         }
 
-        style = { ...style, ...getTransforms(imageData) };
+        style = {
+          ...style,
+          ...getTransforms(imageData),
+          filter: ColorUtil.createFilter(imageData)
+        };
       }
       return style;
     };
     const isSelected = !isPlay && photo.key === selectedImage?.hash;
-    const isNeighbour = Math.abs(currentIndex - index) < range;
+    // const isNeighbour = Math.abs(currentIndex - index) < range;
     // const isShowRatingAndTag = isNeighbour && !isPlay;
     const isShowRatingAndTag = !isPlay;
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
@@ -200,7 +201,7 @@ const GridPhoto = React.memo(
                 transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`
               }}
               position="absolute"
-              zIndex="1400"
+              zIndex="1355"
               m={2}
             >
               <RatingAndTag

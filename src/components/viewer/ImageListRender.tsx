@@ -5,9 +5,10 @@ import "viewerjs/dist/viewer.min.css";
 import { initImageExpand } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
-import DomUtil from "../../utils/DomUtil";
 
 interface ImageListRenderProps {
+  colorReset: number;
+  setColorReset: (x: number) => void;
   isPlay: boolean;
   togglePlay: Function;
   load: () => Promise<void>;
@@ -58,8 +59,9 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps: ImageListRenderProps) {
     const {
+      colorReset,
+      setColorReset,
       images,
-      index,
       hide,
       togglePlay,
       options: customOptions
@@ -75,12 +77,10 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       size: "large" as Viewer.ToolbarButtonSize
     };
 
-    const hasMultiImage = images.length > 1;
-
     const options = {
       title: false,
       zoomRatio: 0.1,
-      zIndex: 1350, // under 1500, upper 1300, Snackbar  and modal z-index
+      zIndex: 1350, // under 1500, upper 1300, Snackbar and modal z-index
       transition: false,
       fullscreen: false,
       // transition: true,
@@ -90,7 +90,14 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         zoomIn: toolbarOptions,
         zoomOut: toolbarOptions,
         oneToOne: toolbarOptions,
-        reset: toolbarOptions,
+        reset: {
+          ...toolbarOptions,
+          click: () => {
+            this.viewer?.reset();
+            setColorReset(colorReset + 1);
+          }
+        },
+        /*
         prev: hasMultiImage ? toolbarOptions : false,
         play: hasMultiImage
           ? {
@@ -101,6 +108,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
             }
           : false,
         next: hasMultiImage ? toolbarOptions : false,
+        */
         rotateLeft: {
           ...toolbarOptions,
           click: () => {
@@ -113,7 +121,18 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
             this.viewer?.rotate(18);
           }
         },
-        flipHorizontal: toolbarOptions,
+        flipHorizontal: {
+          ...toolbarOptions
+          /*
+          click: () => {
+            const viewer = DomUtil.getViewer();
+            const { left } = viewer.imageData;
+            const finalLeft = -left;
+            viewer.imageData.left = finalLeft;
+            this.viewer?.scaleX(-(this.viewer as any)?.imageData.scaleX || -1);
+          }
+          */
+        },
         flipVertical: toolbarOptions,
         ...(typeof customToolbar === "object" ? customToolbar : {})
       },

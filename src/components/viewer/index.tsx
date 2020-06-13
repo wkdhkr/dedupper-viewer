@@ -33,6 +33,8 @@ const isRViewerTrigger = (el: any): el is RViewerTrigger => {
   return false;
 };
 interface RViewerProps {
+  colorReset: number;
+  setColorReset: (x: number) => void;
   isPlay: boolean;
   togglePlay: Function;
   options: Viewer.Options;
@@ -75,6 +77,8 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
       isPlay,
       unload,
       load,
+      colorReset,
+      setColorReset,
       images,
       togglePlay,
       options
@@ -85,6 +89,8 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
       <Fragment>
         {isShow ? (
           <ImageListRender
+            colorReset={colorReset}
+            setColorReset={setColorReset}
             togglePlay={togglePlay}
             load={load}
             unload={unload}
@@ -117,27 +123,26 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
   }
 }
 
-interface MultiImageViewerProps {
-  isPlay: boolean;
-  togglePlay: Function;
-  images: DedupperImage[];
-  load: () => Promise<void>;
-  unload: () => void;
-}
+type MultiImageViewerProps = RViewerProps;
 const MultiImageViewer: React.FunctionComponent<MultiImageViewerProps> = ({
+  colorReset,
+  setColorReset,
   load,
   unload,
   images,
   isPlay,
+  options,
   togglePlay
 }) => (
   <RViewer
+    colorReset={colorReset}
+    setColorReset={setColorReset}
     togglePlay={togglePlay}
     isPlay={isPlay}
     load={load}
     unload={unload}
     images={images}
-    options={{}}
+    options={options}
   >
     {/*
     <RViewerTrigger>

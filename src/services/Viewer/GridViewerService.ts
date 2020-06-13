@@ -14,8 +14,8 @@ export default class GridViewerService {
   applyTagForImagesInScreen = (t = "t1") => {
     const state = this.store.getState();
     const { images } = state.mainViewer;
-    const { unit: sourceUnit, index } = state.gridViewer;
-    const [unit, range] = ViewerUtil.detectUnitAndRange(sourceUnit);
+    const { unit, index } = state.gridViewer;
+    const range = ViewerUtil.detectRange(unit);
 
     const fitImages = ImageArrayUtil.fitAmountForGridUnit(
       images,

@@ -66,10 +66,12 @@ export default class DedupperClient {
     return data;
   };
 
-  query = async (sql: string) => {
+  query = async (sql: string, ff = true) => {
     const u = UrlUtil.setupApiUrlObj("rpc/sqlite/all");
     u.searchParams.append("q", sql);
-    u.searchParams.append("ff", "1");
+    if (ff) {
+      u.searchParams.append("ff", "1");
+    }
     const { data } = await http.get(u.href);
     return data;
   };

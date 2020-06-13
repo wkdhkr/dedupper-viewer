@@ -4,9 +4,7 @@ import { navigate, RouteComponentProps } from "@reach/router";
 import clsx from "clsx";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
 import HomeIcon from "@material-ui/icons/Home";
-import MenuIcon from "@material-ui/icons/Menu";
 
 import {
   Typography,
@@ -18,7 +16,7 @@ import {
   Divider
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { RssFeed, Fullscreen } from "@material-ui/icons";
+import { RssFeed } from "@material-ui/icons";
 import { APP_NAME } from "../constants/dedupperConstants";
 
 const useStyles = makeStyles(theme => ({
@@ -63,18 +61,6 @@ const Home: React.FunctionComponent<HomeProps> = ({ children }) => {
             {APP_NAME}
           </Typography>
           {/* <Button color="inherit">Login</Button> */}
-          <IconButton
-            onClick={() => {
-              if (document.fullscreenElement) {
-                document.exitFullscreen();
-              } else {
-                document.documentElement.requestFullscreen();
-              }
-            }}
-            color="inherit"
-          >
-            <Fullscreen />
-          </IconButton>
         </Toolbar>
       </AppBar>
       <Drawer

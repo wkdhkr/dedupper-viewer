@@ -1,5 +1,4 @@
 import React from "react";
-import Button from "@material-ui/core/Button";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import ViewerUtil from "../../utils/ViewerUtil";
@@ -26,7 +25,9 @@ const UnitMenu: React.FunctionComponent<UnitMenuProps> = ({
       onClose={onClose}
     >
       {ViewerUtil.detectAllowedUnit(orientation).map(n => (
-        <MenuItem key={n} onClick={e => onClick(e, n)}>{`${n}`}</MenuItem>
+        <MenuItem key={n} onClick={e => onClick(e, n)}>
+          {`Columns: ${n}`}
+        </MenuItem>
       ))}
     </Menu>
   );

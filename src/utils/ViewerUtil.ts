@@ -47,10 +47,7 @@ export default class ViewerUtil {
     return numbers[unit] || numbers[0];
   };
 
-  static detectUnitAndRange = (unit: number) => [
-    unit,
-    ViewerUtil.calcRange(unit)
-  ];
+  static detectRange = (unit: number) => ViewerUtil.calcRange(unit);
 
   static isPortraitImage = () => {
     const orientation = UrlUtil.extractParam("o");

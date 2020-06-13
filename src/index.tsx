@@ -3,10 +3,21 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import { Provider } from "unistore/react";
 import { LocationProvider } from "@reach/router";
+import ReactHotkeys from "react-hot-keys";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import store from "./store";
-import SubViewer from "./components/viewer/SubViewer";
+
+ReactHotkeys.defaultProps.filter = (event: KeyboardEvent) => {
+  const target = (event.target as HTMLElement) || event.srcElement;
+  const { tagName } = target;
+  return !(
+    target.isContentEditable ||
+    // tagName === "INPUT" ||
+    tagName === "SELECT" ||
+    tagName === "TEXTAREA"
+  );
+};
 
 /*
 ReactDOM.render(

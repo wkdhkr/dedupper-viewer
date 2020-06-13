@@ -1,4 +1,5 @@
 import AuthUtil from "./AuthUtil";
+import WindowUtil from "../WindowUtil";
 
 /*
 const isLocalhost = window.location.hostname === "localhost";
@@ -34,6 +35,12 @@ export default class UrlUtil {
     return window.location.pathname.split("/").includes("image");
   };
 
+  static isInSubViewer = () => {
+    return (
+      UrlUtil.isInSingleViewer() && UrlUtil.extractParam("mode") === "subviewer"
+    );
+  };
+
   static isInMainViewer = () => {
     return UrlUtil.isInGridViewer() === false && UrlUtil.isInChannel();
   };
@@ -52,7 +59,20 @@ export default class UrlUtil {
     } else {
       url.searchParams.delete("unit");
     }
+    UrlUtil.replace(url);
+  };
+
+  static replace = (url: URL) => {
     window.history.replaceState(null, document.title, url.toString());
+    if (WindowUtil.isInIFrame()) {
+      window.parent.postMessage(
+        {
+          type: "navigateParent",
+          payload: url.pathname + url.search
+        },
+        "*"
+      );
+    }
   };
 
   static syncPlay = (isPlay: boolean) => {
@@ -62,7 +82,7 @@ export default class UrlUtil {
     } else {
       url.searchParams.set("play", "1");
     }
-    window.history.replaceState(null, document.title, url.toString());
+    UrlUtil.replace(url);
   };
 
   static generateImageUrl = (hash: string) => {

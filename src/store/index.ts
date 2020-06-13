@@ -1,6 +1,6 @@
 import createStore from "unistore";
 import { navigate } from "@reach/router";
-import devtools from "unistore/devtools";
+// import devtools from "unistore/devtools";
 import axios from "axios";
 import { setAutoFreeze } from "immer";
 import { State } from "../types/unistore";
@@ -8,9 +8,18 @@ import addEventListeners from "./eventListeners";
 import addKeyEventListeners from "./keyEventListeners";
 import actions from "../actions";
 import addCustomEventListeners from "./customEventListeners";
+import addMessageEventListeners from "./messageEventListeners";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import ConfigurationHelper from "../helpers/ConfigurationHelper";
 
 const initialState: State = {
+  configuration: {
+    ...ConfigurationHelper.getInitialState(),
+    ...JSON.parse(
+      localStorage.getItem("_dedupper_viewer_configuration") || "{}"
+    ),
+    open: false
+  },
   keyStatus: {
     shifted: false,
     controlled: false
@@ -43,14 +52,18 @@ const initialState: State = {
   }
 };
 
+/*
 const store =
   process.env.NODE_ENV === "production"
     ? createStore(initialState)
     : devtools(createStore(initialState));
+ */
+const store = createStore(initialState);
 
 addEventListeners(store);
 addKeyEventListeners(store);
 addCustomEventListeners(store);
+addMessageEventListeners(store);
 
 (window as any).store = store;
 (window as any).axios = axios;
