@@ -27,7 +27,7 @@ const AutoReload: React.FunctionComponent<AutoReloadProps> = ({
         setTimeout(() => load());
       }
     }
-  }, [isPlay, index, range, imageCount]);
+  }, [isPlay, index, range, imageCount, disabled]);
   return <></>;
 };
 

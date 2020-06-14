@@ -109,7 +109,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         togglePlay();
       }
     };
-  }, [channelId]);
+  }, [channelId, togglePlay, load, unload]);
 
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {

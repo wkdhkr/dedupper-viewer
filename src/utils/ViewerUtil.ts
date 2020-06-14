@@ -5,6 +5,11 @@ import {
 import { ImageData } from "../types/viewer";
 import UrlUtil from "./dedupper/UrlUtil";
 
+function isNumber(value: any): value is number {
+  // eslint-disable-next-line no-restricted-globals
+  return typeof value === "number" && !isNaN(value);
+}
+
 export default class ViewerUtil {
   static nextUnitNumbers = {
     portraitImage: {
@@ -124,6 +129,44 @@ export default class ViewerUtil {
     return isPortrait
       ? window.innerWidth !== STANDARD_HEIGHT
       : window.innerWidth !== STANDARD_WIDTH;
+  };
+
+  static getTransforms = (_ref: ImageData) => {
+    const { rotate } = _ref;
+    const { scaleX } = _ref;
+    const { scaleY } = _ref;
+    const { translateX } = _ref;
+    const { translateY } = _ref;
+    const values = [];
+
+    if (isNumber(translateX) && translateX !== 0) {
+      values.push("translateX(".concat(String(translateX), "px)"));
+    }
+
+    if (isNumber(translateY) && translateY !== 0) {
+      values.push("translateY(".concat(String(translateY), "px)"));
+    } // Rotate should come first before scale to match orientation transform
+
+    if (isNumber(rotate) && rotate !== 0) {
+      values.push("rotate(".concat(String(rotate), "deg)"));
+    }
+
+    if (isNumber(scaleX) && scaleX !== 1) {
+      values.push("scaleX(".concat(String(scaleX), ")"));
+    }
+
+    if (isNumber(scaleY) && scaleY !== 1) {
+      values.push("scaleY(".concat(String(scaleY), ")"));
+    }
+
+    values.push("translate3d(0, 0, 0)");
+
+    const transform = values.length ? values.join(" ") : "none";
+    return {
+      // WebkitTransform: transform,
+      // msTransform: transform,
+      transform
+    };
   };
 
   static adjustImageData = (

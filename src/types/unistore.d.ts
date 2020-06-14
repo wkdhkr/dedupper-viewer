@@ -103,6 +103,7 @@ export interface DedupperImage {
   trim: string;
 }
 export interface MainViewerState {
+  faces: FacePPRow[];
   isLoading: boolean;
   isOpen: boolean;
   isPlay: boolean;

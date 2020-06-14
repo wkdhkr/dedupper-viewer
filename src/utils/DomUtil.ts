@@ -1,6 +1,5 @@
-import Viewer from "viewerjs";
+import { MainViewer } from "../types/viewer";
 import UrlUtil from "./dedupper/UrlUtil";
-import { ImageData } from "../types/viewer";
 
 export default class DomUtil {
   static getViewerFooter = () =>
@@ -29,16 +28,7 @@ export default class DomUtil {
     if (!container) {
       throw new Error("viewer container not found.");
     }
-    const viewer = (container as any).viewer as
-      | (Viewer & {
-          options: Viewer.Options;
-          index: number;
-          items: HTMLLIElement[];
-          image: HTMLImageElement;
-          imageData: ImageData;
-          initialImageData: ImageData;
-        })
-      | undefined;
+    const viewer = (container as any).viewer as MainViewer | undefined;
     if (!viewer) {
       throw new Error("viewer not found.");
     }

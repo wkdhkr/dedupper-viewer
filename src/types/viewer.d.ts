@@ -1,3 +1,5 @@
+import Viewer from "viewerjs";
+
 export interface ImageData {
   naturalWidth: number;
   naturalHeight: number;
@@ -19,3 +21,12 @@ export interface ImageData {
   translateX?: number;
   translateY?: number;
 }
+
+export type MainViewer = Viewer & {
+  options: Viewer.Options;
+  index: number;
+  items: HTMLLIElement[];
+  image: HTMLImageElement;
+  imageData: ImageData;
+  initialImageData: ImageData;
+};

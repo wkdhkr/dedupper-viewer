@@ -51,18 +51,21 @@ export default class StoreUtil {
     edit: Partial<DedupperImage>,
     snackbarName: SnackbarKind,
     store: Store<State>,
-    table: "process_state" | "tag" = "process_state"
+    table: "process_state" | "tag" = "process_state",
+    silent = false
   ) {
     const hashList = ImageArrayUtil.toArray(hash);
     StoreUtil.updateFieldInState(hashList, edit, store);
     // await dc.update(hash, edit, table);
     // no wait
     Promise.all(hashList.map(h => dc.update(h, edit, table)));
-    store.setState(
-      produce(store.getState(), draft => {
-        draft.snackbar[snackbarName] = true;
-      })
-    );
+    if (!silent) {
+      store.setState(
+        produce(store.getState(), draft => {
+          draft.snackbar[snackbarName] = true;
+        })
+      );
+    }
   }
 
   static editImageInImages(

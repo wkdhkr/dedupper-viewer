@@ -14,6 +14,9 @@ export default function(store: Store<State>) {
       const message: IFrameMessage = event.data;
 
       switch (message.type) {
+        case "copy":
+          navigator.clipboard.writeText(message.payload.text);
+          break;
         case "forSubViewer": {
           if (UrlUtil.isInGridViewer()) {
             const w = SubViewerHelper.getWindow();

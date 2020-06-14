@@ -1,5 +1,12 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import { Tooltip, IconButton, Box } from "@material-ui/core";
+import {
+  Assignment,
+  GetApp,
+  AssignmentReturned,
+  CameraAlt
+} from "@material-ui/icons";
 import Table from "@material-ui/core/Table";
 import orderBy from "lodash/orderBy";
 import filesize from "filesize.js";
@@ -9,9 +16,15 @@ import TableContainer from "@material-ui/core/TableContainer";
 // import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
+import Axios from "axios";
 import { DedupperImage } from "../../types/unistore";
+import IFrameUtil from "../../utils/IFrameUtil";
+import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 const useStyles = makeStyles({
+  noMaxWidth: {
+    maxWidth: "none"
+  },
   table: {
     maxWidth: 640
   }
@@ -41,7 +54,11 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
     },
     */
     // { name: "path", value: image.to_path },
-    { name: "index", value: `${index + 1}/${imageCount}` },
+    {
+      name: "index",
+      value: `${index + 1}/${imageCount}`,
+      skip: index === imageCount - 1
+    },
     { name: "date", value: new Date(image.timestamp).toLocaleDateString() },
     { name: "size", value: filesize(image.size) },
     { name: "resolution", value: `${image.width}x${image.height}` },
@@ -67,12 +84,92 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
     { name: "porn_sexy", value: image.porn_sexy },
     { name: "hentai_porn", value: image.hentai_porn },
     { name: "hentai_porn_sexy", value: image.hentai_porn_sexy }
-  ];
+  ].filter(r => !(r as any).skip);
+
+  const flickrUrl = image ? UrlUtil.getFlickrUrl(image.to_path) : null;
 
   return (
-    <TableContainer component={Paper}>
-      <Table className={classes.table} size="small" aria-label="a dense table">
-        {/*
+    <>
+      {image ? (
+        <Box marginBottom={1}>
+          <Paper elevation={1}>
+            <Tooltip arrow title="download" placement="top-end">
+              <IconButton
+                onClick={async () => {
+                  const { data } = await Axios.get(
+                    UrlUtil.generateImageUrl(image.hash),
+                    {
+                      responseType: "arraybuffer"
+                    }
+                  );
+                  const href = Buffer.from(data, "binary").toString("base64");
+                  const link = document.createElement("a");
+                  link.href = `data:application/octet-stream;base64,${href}`;
+                  link.download =
+                    `download.${image.to_path
+                      .split(".")
+                      .pop()
+                      ?.toLowerCase()}` || "jpg";
+                  link.style.display = "none";
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                <GetApp />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              classes={{ tooltip: classes.noMaxWidth }}
+              arrow
+              title={image.to_path}
+              placement="top-end"
+            >
+              <IconButton
+                onClick={() => {
+                  IFrameUtil.postMessageForParent({
+                    type: "copy",
+                    payload: { text: image.to_path }
+                  });
+                }}
+              >
+                <AssignmentReturned />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              classes={{ tooltip: classes.noMaxWidth }}
+              arrow
+              title={image.hash}
+              placement="top-end"
+            >
+              <IconButton
+                onClick={() => {
+                  IFrameUtil.postMessageForParent({
+                    type: "copy",
+                    payload: { text: image.hash }
+                  });
+                }}
+              >
+                <Assignment />
+              </IconButton>
+            </Tooltip>
+            {flickrUrl ? (
+              <Tooltip arrow title="flickr" placement="top-end">
+                <IconButton target="_blank" href={flickrUrl}>
+                  <CameraAlt />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+          </Paper>
+        </Box>
+      ) : null}
+      <TableContainer component={Paper}>
+        <Table
+          className={classes.table}
+          size="small"
+          aria-label="a dense table"
+        >
+          {/*
         <TableHead>
           <TableRow>
             <TableCell>Dessert (100g serving)</TableCell>
@@ -83,18 +180,19 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
           </TableRow>
         </TableHead>
       */}
-        <TableBody>
-          {rows.map(row => (
-            <TableRow key={row.name}>
-              <TableCell component="th" scope="row">
-                {row.name}
-              </TableCell>
-              <TableCell align="right">{row.value}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          <TableBody>
+            {rows.map(row => (
+              <TableRow key={row.name}>
+                <TableCell component="th" scope="row">
+                  {row.name}
+                </TableCell>
+                <TableCell align="right">{row.value}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 

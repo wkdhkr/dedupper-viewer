@@ -23,14 +23,14 @@ const queue = new Queue(maxConcurrent, maxQueue);
 const MAX_CONCURRENT_REQUESTS = 1;
 
 // init your manager.
-const http = axios;
+const http = axios.create();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const manager = ConcurrencyManager(http, MAX_CONCURRENT_REQUESTS);
 
 export default class DedupperClient {
   createChannel = async (channel: DedupperChannel) => {
     const u = UrlUtil.setupApiUrlObj(`channels/`);
-    const { data } = await axios.post(u.href, channel);
+    const { data } = await http.post(u.href, channel);
     return data;
   };
 
@@ -48,13 +48,13 @@ export default class DedupperClient {
 
   fetchChannels = async () => {
     const u = UrlUtil.setupApiUrlObj("channels");
-    const { data } = await http.get(u.href);
+    const { data } = await axios.get(u.href);
     return data;
   };
 
   fetchChannel = async (id: string): Promise<DedupperChannel> => {
     const u = UrlUtil.setupApiUrlObj(`channel/${id}`);
-    const { data } = await http.get(u.href);
+    const { data } = await axios.get(u.href);
     return data;
   };
 
@@ -72,7 +72,7 @@ export default class DedupperClient {
     if (ff) {
       u.searchParams.append("ff", "1");
     }
-    const { data } = await http.get(u.href);
+    const { data } = await axios.get(u.href);
     return data;
   };
 }

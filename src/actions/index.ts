@@ -11,7 +11,8 @@ import {
   SnackbarKind,
   SnackbarCustomState,
   DedupperChannel,
-  ConfigurationState
+  ConfigurationState,
+  FacePPRow
   // FacePPRow
 } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
@@ -29,15 +30,20 @@ const dc = new DedupperClient();
 const ps = new PlayerService();
 const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
-  /*
   async updateFacePPMap(state: State, hash: string) {
+    if (state.mainViewer.isPlay) {
+      return;
+    }
     const faces: FacePPRow[] = await dc.query(
       `SELECT * from facepp where hash = '${hash}'`,
       false
     );
-    // store.setState(produce(state, draft => {}));
+    store.setState(
+      produce(store.getState(), draft => {
+        draft.mainViewer.faces = faces;
+      })
+    );
   },
-  */
   updateColor(state: State, hash: string, kind: string, value: number) {
     const viewer = DomUtil.getViewerSafe();
     if (!viewer) {
@@ -139,7 +145,7 @@ const actions = (store: Store<State>) => ({
         draft.mainViewer.index = index;
       })
     );
-    // actions(store).updateFacePPMap(store.getState(), hash);
+    actions(store).updateFacePPMap(store.getState(), hash);
   },
   selectedByIndex(state: State, index: number) {
     const { images } = state.mainViewer;

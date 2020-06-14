@@ -34,6 +34,7 @@ const initialState: State = {
   channels: [],
   channelById: {},
   mainViewer: {
+    faces: [],
     isLoading: false,
     index: -1,
     isOpen: true,

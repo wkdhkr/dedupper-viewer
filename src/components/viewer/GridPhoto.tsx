@@ -20,48 +20,6 @@ const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
 const gs = new GridViewerService(store);
 
-function isNumber(value: any): value is number {
-  // eslint-disable-next-line no-restricted-globals
-  return typeof value === "number" && !isNaN(value);
-}
-function getTransforms(_ref: ImageData) {
-  const { rotate } = _ref;
-  const { scaleX } = _ref;
-  const { scaleY } = _ref;
-  const { translateX } = _ref;
-  const { translateY } = _ref;
-  const values = [];
-
-  if (isNumber(translateX) && translateX !== 0) {
-    values.push("translateX(".concat(String(translateX), "px)"));
-  }
-
-  if (isNumber(translateY) && translateY !== 0) {
-    values.push("translateY(".concat(String(translateY), "px)"));
-  } // Rotate should come first before scale to match orientation transform
-
-  if (isNumber(rotate) && rotate !== 0) {
-    values.push("rotate(".concat(String(rotate), "deg)"));
-  }
-
-  if (isNumber(scaleX) && scaleX !== 1) {
-    values.push("scaleX(".concat(String(scaleX), ")"));
-  }
-
-  if (isNumber(scaleY) && scaleY !== 1) {
-    values.push("scaleY(".concat(String(scaleY), ")"));
-  }
-
-  values.push("translate3d(0, 0, 0)");
-
-  const transform = values.length ? values.join(" ") : "none";
-  return {
-    // WebkitTransform: transform,
-    // msTransform: transform,
-    transform
-  };
-}
-
 const imgWithClick = { cursor: "pointer" };
 const GridPhoto = React.memo(
   ({
@@ -161,7 +119,7 @@ const GridPhoto = React.memo(
 
         style = {
           ...style,
-          ...getTransforms(imageData),
+          ...ViewerUtil.getTransforms(imageData),
           filter: ColorUtil.createFilter(imageData)
         };
       }

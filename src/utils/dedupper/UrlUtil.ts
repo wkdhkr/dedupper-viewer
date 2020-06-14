@@ -12,6 +12,22 @@ const { hostname } = window.location;
 export default class UrlUtil {
   static BASE_URL = `http://${hostname}:${port}/dedupper/v1/`;
 
+  static getFlickrUrl = (path: string) => {
+    const fileName = path.split(/(\\|\/)/g).pop();
+    if (!fileName) {
+      return null;
+    }
+    if (fileName.includes("flickr_")) {
+      const parsedFileName = fileName.split("_");
+      if (parsedFileName.length !== 2) {
+        return null;
+      }
+      const id = parsedFileName[1];
+      return `https://www.flickr.com/photo.gne?id=${id}`;
+    }
+    return null;
+  };
+
   static setupApiUrlObj = (path: string) => {
     const u = new URL(`${UrlUtil.BASE_URL}${path}`);
     u.searchParams.append("auth", AuthUtil.getAuthToken());

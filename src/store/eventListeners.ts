@@ -11,6 +11,7 @@ import actions from "../actions";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameUtil from "../utils/IFrameUtil";
+import { MainViewer } from "../types/viewer";
 import ColorUtil from "../utils/ColorUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
@@ -179,7 +180,7 @@ export default function(store: Store<State>) {
       } catch (e) {
         // ignored
       }
-    }, 2000)
+    }, 500)
   );
 
   let pointerX = -1;
@@ -191,8 +192,8 @@ export default function(store: Store<State>) {
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {
-    let hash;
-    let viewer;
+    let viewer: MainViewer | null = null;
+    let hash: string | null = null;
     try {
       hash = DomUtil.getCurrentHash();
       viewer = DomUtil.getViewer();
@@ -224,6 +225,25 @@ export default function(store: Store<State>) {
         actions(store).updateTrim(store.getState(), hash, "");
         viewer.image.style.filter = "";
       }
+      [
+        "viewer-rotate-left",
+        "viewer-rotate-right",
+        "viewer-flip-horizontal",
+        "viewer-flip-vertical"
+      ].forEach(name => {
+        if (
+          event
+            .composedPath()
+            .indexOf(document.getElementsByClassName(name)[0]) !== -1
+        ) {
+          setTimeout(() => {
+            if (viewer && hash) {
+              const trim = JSON.stringify(viewer.imageData);
+              actions(store).updateTrim(store.getState(), hash, trim);
+            }
+          });
+        }
+      });
     } else {
       console.log("hash not found.");
     }

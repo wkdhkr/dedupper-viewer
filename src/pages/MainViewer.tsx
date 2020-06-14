@@ -17,6 +17,7 @@ import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameWrapper from "../components/IFrameWrapper";
 import IFrameUtil from "../utils/IFrameUtil";
 import ColorTuner from "../components/viewer/ui/ColorTuner";
+import HudLayer from "../components/viewer/HudLayer";
 
 const reload = () => {
   IFrameUtil.postMessageForParent({
@@ -60,6 +61,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   isPlay,
   load,
   unload,
+  faces,
   isLoading,
   channelId,
   hash,
@@ -81,6 +83,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   const [colorReset, setColorReset] = useState<number>(0);
   return (
     <>
+      <HudLayer disabled={isPlay} faces={faces} image={currentImage} />
       <AutoReload
         disabled={!c.autoReload}
         index={index}
