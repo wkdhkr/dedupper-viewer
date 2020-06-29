@@ -5,7 +5,6 @@ import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
 import { DedupperImage, ConfigurationState } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
-import "react-perfect-scrollbar/dist/css/styles.css";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
 import {
@@ -60,7 +59,11 @@ type GridViewerProps = RouteComponentProps & {
   isPlay: boolean;
   togglePlay: Function;
   changeUnit: (x: number) => void;
-  selected: (hash: string | null, index: number) => void;
+  selected: (
+    hash: string | null,
+    index: number,
+    showSubViewer?: boolean
+  ) => void;
   selectedImage: DedupperImage | null;
   unload: () => void;
   index: number;
@@ -222,6 +225,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 ...props,
                 // image: props.photo.key ? imageByHash[props.photo.key] : null,
                 image: fitImages[props.index],
+                range,
                 selectedImage,
                 currentIndex: index,
                 isPlay,
@@ -266,7 +270,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 selected(photo.key, currentIndex);
               }
               */
-              selected(photo.key, currentIndex);
+              selected(photo.key, currentIndex, true);
               // setTimeout(() => toggleSubViewer());
             }
           }}

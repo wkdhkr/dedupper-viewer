@@ -84,6 +84,8 @@ export interface DedupperImage {
   t4: number | null;
   t5: number | null;
   to_path: string;
+  view_date: number;
+  view_count: number;
   size: number;
   width: number;
   height: number;
@@ -105,6 +107,7 @@ export interface DedupperImage {
 export interface MainViewerState {
   faces: FacePPRow[];
   isLoading: boolean;
+  subViewer: SubViewerState & { url: string | null };
   isOpen: boolean;
   isPlay: boolean;
   index: number;
@@ -125,6 +128,7 @@ export interface GridViewerState {
 }
 
 export interface ConfigurationState {
+  recordPlayStatistics: boolean;
   flipRandomInPlay: number;
   standardWidth: number;
   standardHeight: number;

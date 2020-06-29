@@ -33,6 +33,7 @@ const isRViewerTrigger = (el: any): el is RViewerTrigger => {
   return false;
 };
 interface RViewerProps {
+  channelId: string | null;
   colorReset: number;
   setColorReset: (x: number) => void;
   isPlay: boolean;
@@ -81,6 +82,7 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
       setColorReset,
       images,
       togglePlay,
+      channelId,
       options
     } = this.props;
     const { isShow, index } = this.state;
@@ -89,6 +91,7 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
       <Fragment>
         {isShow ? (
           <ImageListRender
+            channelId={channelId}
             colorReset={colorReset}
             setColorReset={setColorReset}
             togglePlay={togglePlay}
@@ -132,9 +135,11 @@ const MultiImageViewer: React.FunctionComponent<MultiImageViewerProps> = ({
   images,
   isPlay,
   options,
+  channelId,
   togglePlay
 }) => (
   <RViewer
+    channelId={channelId}
     colorReset={colorReset}
     setColorReset={setColorReset}
     togglePlay={togglePlay}

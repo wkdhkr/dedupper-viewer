@@ -2,6 +2,7 @@ import { ConfigurationState } from "../types/unistore";
 
 export default class ConfigurationHelper {
   static getInitialState = (): ConfigurationState => ({
+    recordPlayStatistics: true,
     flipRandomInPlay: 50,
     standardWidth: 1920,
     standardHeight: 1080,

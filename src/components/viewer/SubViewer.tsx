@@ -1,22 +1,35 @@
 import React, { useEffect } from "react";
 import NewWindow from "react-new-window";
-import { DedupperImage, SubViewerState } from "../../types/unistore";
+import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import SubViewerHelper from "../../helpers/viewer/SubViewerHelper";
 import ViewerUtil from "../../utils/ViewerUtil";
 import IFrameUtil from "../../utils/IFrameUtil";
 import { IFrameMessage } from "../../types/window";
 
-interface SubViewerProps extends SubViewerState {
+interface SubViewerProps {
+  url: string | null;
+  isGridOpen: boolean;
+  isMainOpen: boolean;
   origin: string;
   image: DedupperImage | null;
   toggle: (close: boolean | null) => void;
 }
 
 const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
-  ({ origin, isOpen, toggle, image }) => {
+  ({ origin, url, isGridOpen, isMainOpen, toggle, image }) => {
     useEffect(() => {
-      if (image) {
+      const w = SubViewerHelper.getWindow();
+      if (url && w) {
+        const message: IFrameMessage = {
+          type: "navigateSubViewer",
+          payload: {
+            path: url,
+            image
+          }
+        };
+        IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
+      } else if (image && w) {
         /*
       const w = SubViewerHelper.getWindow();
       if (w) {
@@ -27,23 +40,20 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
         }
       }
       */
-        const w = SubViewerHelper.getWindow();
-        if (w) {
-          const message: IFrameMessage = {
-            type: "navigateSubViewer",
-            payload: {
-              path: `${UrlUtil.generateImageViewerUrl(
-                image.hash
-              )}?mode=subviewer&parentHost=${window.location.hostname}`,
-              image
-            }
-          };
-          IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
-        }
+        const message: IFrameMessage = {
+          type: "navigateSubViewer",
+          payload: {
+            path: `${UrlUtil.generateImageViewerUrl(
+              image.hash
+            )}?mode=subviewer&parentHost=${window.location.hostname}`,
+            image
+          }
+        };
+        IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
       }
-    }, [image]);
+    }, [image, url]);
 
-    if (!isOpen) {
+    if (!isGridOpen && !isMainOpen) {
       return <></>;
     }
 
@@ -61,9 +71,14 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
 
     const u = new URL(window.location.origin);
     u.hostname = UrlUtil.extractParam("parentHost") || u.hostname;
-    const url = `${u.origin}${UrlUtil.generateImageViewerUrl(
-      image ? image.hash : ""
-    )}?mode=subviewer&parentHost=${window.location.hostname}`;
+    let subViewerUrl = "";
+    if (isMainOpen && url) {
+      subViewerUrl = `${u.origin}${url}`;
+    } else if (isGridOpen) {
+      subViewerUrl = `${u.origin}${UrlUtil.generateImageViewerUrl(
+        image ? image.hash : ""
+      )}?mode=subviewer&parentHost=${window.location.hostname}`;
+    }
 
     return (
       <NewWindow
@@ -86,7 +101,7 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
           SubViewerHelper.setWindow(null);
         }}
         name="dedupper_sub_viewer"
-        url={url}
+        url={subViewerUrl}
       />
     );
   }

@@ -134,6 +134,8 @@ const actions = (store: Store<State>) => ({
         produce(state, draft => {
           draft.gridViewer.subViewer.isOpen =
             close === null ? !draft.gridViewer.subViewer.isOpen : close;
+          draft.mainViewer.subViewer.isOpen =
+            close === null ? !draft.mainViewer.subViewer.isOpen : close;
         })
       );
     }
@@ -146,6 +148,9 @@ const actions = (store: Store<State>) => ({
       })
     );
     actions(store).updateFacePPMap(store.getState(), hash);
+    if (state.mainViewer.isPlay) {
+      actions(store).updateViewStat(store.getState(), hash);
+    }
   },
   selectedByIndex(state: State, index: number) {
     const { images } = state.mainViewer;
@@ -160,7 +165,12 @@ const actions = (store: Store<State>) => ({
       actions(store).selected(store.getState(), nextHash, nextIndex);
     }
   },
-  selected(state: State, hash: string | null, index: number) {
+  selected(
+    state: State,
+    hash: string | null,
+    index: number,
+    showSubViewer = false
+  ) {
     if (hash === null) {
       return;
     }
@@ -186,10 +196,23 @@ const actions = (store: Store<State>) => ({
           range
         );
         const leftTopIndex = index - (index % range);
-        const [leftTopHash] = ImageArrayUtil.detectDestination(
-          fitImages,
-          leftTopIndex
-        );
+        const [
+          leftTopHash,
+          fixedLeftTopIndex
+        ] = ImageArrayUtil.detectDestination(fitImages, leftTopIndex);
+
+        if (state.gridViewer.isPlay) {
+          for (
+            let i = fixedLeftTopIndex;
+            i < fixedLeftTopIndex + range;
+            i += 1
+          ) {
+            const image = fitImages[i];
+            if (image) {
+              actions(store).updateViewStat(store.getState(), image.hash);
+            }
+          }
+        }
 
         /*
         if (index % range === 0 || draft.gridViewer.isPlay) {
@@ -218,7 +241,7 @@ const actions = (store: Store<State>) => ({
         }
       })
     );
-    if (!state.gridViewer.isPlay) {
+    if (!state.gridViewer.isPlay && showSubViewer) {
       actions(store).toggleSubViewer(store.getState());
     }
   },
@@ -302,6 +325,10 @@ const actions = (store: Store<State>) => ({
     );
   },
   async updateTrim(state: State, hash: string, trim: string) {
+    if (state.mainViewer.isPlay) {
+      // if play mode, not update trim.
+      return;
+    }
     let finalTrim = trim;
     if (trim !== "") {
       finalTrim = JSON.stringify(ViewerUtil.restoreImageData(JSON.parse(trim)));
@@ -353,6 +380,34 @@ const actions = (store: Store<State>) => ({
         }
       }
     }
+  },
+  updateViewStat(state: State, hash: string) {
+    const image = state.imageByHash[hash];
+    if (!image) {
+      return;
+    }
+    if (state.configuration.recordPlayStatistics === false) {
+      return;
+    }
+    const edit = {
+      view_count: image.view_count + 1,
+      view_date: new Date().getTime()
+    };
+    // no wait
+    StoreUtil.updateField(hash, edit, null, store);
+    IFrameUtil.postMessageForParent({
+      type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",
+      payload: {
+        type: "customEvent",
+        payload: {
+          name: EVENT_UPDATE_IMAGE,
+          detail: {
+            hash: [hash],
+            edit
+          }
+        }
+      }
+    });
   },
   updateRating(state: State, hash: string, rating: number | null, next = true) {
     if (next && rating) {

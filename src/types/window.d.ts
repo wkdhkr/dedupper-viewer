@@ -21,6 +21,7 @@ export type IFrameMessageType =
   | "navigateParent"
   | "navigateIF"
   | "subViewer"
+  | "mainSubViewer"
   | "reload"
   | "applyTag";
 

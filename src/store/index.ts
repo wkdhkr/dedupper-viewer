@@ -35,6 +35,10 @@ const initialState: State = {
   channelById: {},
   mainViewer: {
     faces: [],
+    subViewer: {
+      url: null,
+      isOpen: false
+    },
     isLoading: false,
     index: -1,
     isOpen: true,

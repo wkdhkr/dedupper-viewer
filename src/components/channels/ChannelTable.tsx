@@ -28,9 +28,19 @@ import { Dictionary } from "lodash";
 import { DedupperChannel } from "../../types/unistore";
 // import SubViewerHelper from "../../helpers/viewer/SubViewerHelper";
 import RouterUtil from "../../utils/RouterUtil";
+import { IFrameMessage } from "../../types/window";
+import IFrameUtil from "../../utils/IFrameUtil";
 
 const getOrientationByName = (name: string) => {
   return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
+};
+
+const launchSubViewer = (url: string) => {
+  const message: IFrameMessage = {
+    type: "mainSubViewer",
+    payload: url
+  };
+  window.postMessage(message, "*");
 };
 
 const iconComponentByTableIconType: Record<keyof Icons, typeof SvgIcon> = {
@@ -67,6 +77,7 @@ const tableIcons = Object.entries(iconComponentByTableIconType).reduce(
   {}
 );
 type ChannelTableProps = {
+  enableSubViewer: boolean;
   channels: DedupperChannel[];
   channelById: Dictionary<DedupperChannel>;
   handleCreate: (c: DedupperChannel) => Promise<void>;
@@ -86,6 +97,7 @@ type ChannelTableProps = {
 
 const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
   ({
+    enableSubViewer,
     channelById,
     setRowInfo,
     handleCreate,
@@ -164,17 +176,27 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
               icon: () => <PlayArrow />,
               tooltip: "play",
               onClick: (event, rowData) =>
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r =>
-                  RouterUtil.navigateForIFWrap(`/channel/${r.id}?play=1`)
-                )
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                  const url = `/channel/${r.id}?play=1`;
+                  if (enableSubViewer) {
+                    launchSubViewer(url);
+                  } else {
+                    RouterUtil.navigateForIFWrap(url);
+                  }
+                })
             },
             {
               icon: () => <SkipNext />,
               tooltip: "show",
               onClick: (event, rowData) =>
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r =>
-                  RouterUtil.navigateForIFWrap(`/channel/${r.id}`)
-                )
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                  const url = `/channel/${r.id}`;
+                  if (enableSubViewer) {
+                    launchSubViewer(url);
+                  } else {
+                    RouterUtil.navigateForIFWrap(url);
+                  }
+                })
             },
             {
               icon: () => <Edit />,

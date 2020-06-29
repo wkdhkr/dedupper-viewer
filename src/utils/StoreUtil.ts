@@ -49,7 +49,7 @@ export default class StoreUtil {
   static async updateField(
     hash: string | string[],
     edit: Partial<DedupperImage>,
-    snackbarName: SnackbarKind,
+    snackbarName: SnackbarKind | null,
     store: Store<State>,
     table: "process_state" | "tag" = "process_state",
     silent = false
@@ -59,7 +59,7 @@ export default class StoreUtil {
     // await dc.update(hash, edit, table);
     // no wait
     Promise.all(hashList.map(h => dc.update(h, edit, table)));
-    if (!silent) {
+    if (!silent && snackbarName) {
       store.setState(
         produce(store.getState(), draft => {
           draft.snackbar[snackbarName] = true;

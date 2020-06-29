@@ -47,6 +47,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type ChannelsProps = {
+  enableSubViewer: boolean;
   channelById: Dictionary<DedupperChannel>;
   changeUnit: (x: number) => void;
   handleCreate: (c: DedupperChannel) => Promise<void>;
@@ -56,6 +57,7 @@ type ChannelsProps = {
 } & RouteComponentProps;
 
 const Channels: React.FunctionComponent<ChannelsProps> = ({
+  enableSubViewer,
   channels,
   channelById,
   changeUnit,
@@ -207,6 +209,7 @@ The channel will be permanently removed."
         </div>
       </Dialog>
       <ChannelTable
+        enableSubViewer={enableSubViewer}
         channelById={channelById}
         channels={channels}
         setEdit={setEdit}

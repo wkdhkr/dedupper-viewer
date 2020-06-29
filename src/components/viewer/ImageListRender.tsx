@@ -7,6 +7,7 @@ import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 interface ImageListRenderProps {
+  channelId: string | null;
   colorReset: number;
   setColorReset: (x: number) => void;
   isPlay: boolean;
@@ -59,6 +60,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps: ImageListRenderProps) {
     const {
+      channelId,
       colorReset,
       setColorReset,
       images,
@@ -147,14 +149,26 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       }
     };
     if (this.viewer) {
+      let isUpdate = false;
       if (prevProps.images.length === 1 && images.length === 1) {
         if (prevProps.images[0].hash !== images[0].hash) {
           /*
           this.destroyViewer();
           this.initViewer(options);
           */
-          this.viewer.update();
+          isUpdate = true;
         }
+      }
+      /*
+      if (prevProps.channelId !== channelId) {
+        this.destroyViewer();
+      }
+      */
+      if (prevProps.images !== images) {
+        isUpdate = true;
+      }
+      if (isUpdate) {
+        this.viewer.update();
       }
       return;
     }

@@ -76,9 +76,11 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   useEffect(() => {
     if (hash) {
       load(hash);
+    } else if (channelId) {
+      load(channelId);
     }
     return () => {};
-  }, [load, hash]);
+  }, [load, hash, channelId]);
 
   const [colorReset, setColorReset] = useState<number>(0);
   return (
@@ -158,15 +160,18 @@ const MainViewer: React.SFC<MainViewerProps> = ({
           {isLoading && <LinearProgress color="secondary" />}
           <MultiImageViewer
             load={async () => {
+              /*
               if (channelId) {
                 load(channelId);
               }
+              */
               /*
-            if (hash) {
-              load(hash);
-            }
-            */
+              if (hash) {
+                load(hash);
+              }
+              */
             }}
+            channelId={channelId || null}
             options={{}}
             setColorReset={setColorReset}
             colorReset={colorReset}

@@ -143,6 +143,17 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       label="Auto reload"
                       value={draftConfig.autoReload}
                     />
+                    <SwitchItem
+                      onChange={(e, value) =>
+                        setDraftConfig({
+                          ...draftConfig,
+                          recordPlayStatistics: value
+                        })
+                      }
+                      name="recordPlayStatistics"
+                      label="Record play statistics"
+                      value={draftConfig.recordPlayStatistics}
+                    />
                     <SliderItem
                       reset={reset}
                       title="Interval sec - Main"

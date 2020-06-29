@@ -74,22 +74,38 @@ export default function(store: Store<State>) {
             });
 
           break;
-        case "subViewer":
+        case "mainSubViewer":
           store.setState(
             produce(store.getState(), draft => {
-              draft.gridViewer.subViewer.isOpen = true;
-              draft.gridViewer.selectedImage = message.payload;
+              draft.mainViewer.subViewer.isOpen = true;
+              draft.mainViewer.subViewer.url = message.payload;
+              draft.gridViewer.subViewer.isOpen = false;
             })
           );
           (document.getElementById(
             "grid-viewer-iframe"
           ) as any)?.contentWindow?.focus();
           break;
+        case "subViewer":
+          if (UrlUtil.isInGridViewer()) {
+            store.setState(
+              produce(store.getState(), draft => {
+                draft.gridViewer.subViewer.isOpen = true;
+                draft.gridViewer.selectedImage = message.payload;
+              })
+            );
+            (document.getElementById(
+              "grid-viewer-iframe"
+            ) as any)?.contentWindow?.focus();
+          }
+          break;
         case "navigateSubViewer":
           store.setState(
             produce(store.getState(), draft => {
-              draft.imageByHash[message.payload.image.hash] =
-                message.payload.image;
+              if (message.payload.image) {
+                draft.imageByHash[message.payload.image.hash] =
+                  message.payload.image;
+              }
             })
           );
           navigate(message.payload.path, { replace: true });

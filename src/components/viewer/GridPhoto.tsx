@@ -10,7 +10,6 @@ import { CheckCircle } from "@material-ui/icons";
 import store from "../../store";
 import ViewerUtil from "../../utils/ViewerUtil";
 import { STANDARD_WIDTH } from "../../constants/dedupperConstants";
-import { ImageData } from "../../types/viewer";
 import { DedupperImage } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
@@ -20,9 +19,13 @@ const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
 const gs = new GridViewerService(store);
 
+let currentHover: string | null = null;
+
 const imgWithClick = { cursor: "pointer" };
 const GridPhoto = React.memo(
   ({
+    range,
+    currentIndex,
     isPlay,
     index,
     image,
@@ -37,6 +40,7 @@ const GridPhoto = React.memo(
     top,
     left
   }: RenderImageProps & {
+    range: number;
     isPlay: boolean;
     unit: number;
     image: DedupperImage;
@@ -46,6 +50,34 @@ const GridPhoto = React.memo(
     updateTag: (hash: string, x: number | null, name: string) => void;
     updateRating: (hash: string, x: number | null) => void;
   }) => {
+    // const isNeighbour = Math.abs(currentIndex - index) < range;
+
+    /*
+    useEffect(() => {
+      if (isNeighbour) {
+        const el: HTMLElement | null = document.getElementById(
+          `photo-image__${photo.key}`
+        );
+        if (el) {
+          setTimeout(async () => {
+            try {
+              const img: HTMLImageElement = el as any;
+              if (img.complete) {
+                // await img.decode();
+              }
+              const dummyImage = new Image();
+              dummyImage.src = img.src;
+              await dummyImage.decode();
+            } catch (e) {
+              // ignore decode error
+              console.log(e);
+            }
+          });
+        }
+      }
+    }, [isNeighbour, currentIndex, photo.key]);
+    */
+
     const imgStyle: React.CSSProperties = {
       boxSizing: "border-box",
       // margin,
@@ -62,6 +94,24 @@ const GridPhoto = React.memo(
         onClick(event, { photo, index } as any);
       }
     };
+    const createPredecodeStyle = () => {
+      const styles: React.CSSProperties = {};
+      const leftTopIndex = currentIndex - (currentIndex % range);
+      const isNextPageIndex =
+        leftTopIndex + range < index && index < leftTopIndex + range * 2;
+      if (isNextPageIndex) {
+        styles.position = "fixed";
+        styles.top = window.innerHeight + 1;
+        styles.left = 0;
+        styles.marginLeft = 0;
+        styles.marginTop = 0;
+        styles.pointerEvents = "none";
+        styles.transform = "none";
+        styles.zIndex = -1000;
+      }
+      return styles;
+    };
+
     const createStyle = () => {
       let style: React.CSSProperties = imgStyle;
       const di = image;
@@ -120,23 +170,29 @@ const GridPhoto = React.memo(
         style = {
           ...style,
           ...ViewerUtil.getTransforms(imageData),
-          filter: ColorUtil.createFilter(imageData)
+          filter: ColorUtil.createFilter(imageData),
+          ...createPredecodeStyle()
         };
       }
       return style;
     };
     const isSelected = !isPlay && photo.key === selectedImage?.hash;
-    // const isNeighbour = Math.abs(currentIndex - index) < range;
     // const isShowRatingAndTag = isNeighbour && !isPlay;
     const isShowRatingAndTag = !isPlay;
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;
+
+    // const decoding = isPlay || isNeighbour ? "sync" : "async";
+    // const decoding = isNeighbour ? "sync" : "async";
 
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
       if (event.button === 1) {
         gs.applyTagForImagesInScreen();
       }
       event.preventDefault();
+    };
+    const handleWheel = () => {
+      currentHover = null;
     };
     const sizeFactor = 1.25;
     return (
@@ -187,14 +243,32 @@ const GridPhoto = React.memo(
               }}
               onClick={onClick ? handleClick : undefined}
               onMouseDown={mouseDownHandler}
+              onWheel={handleWheel}
             />
           ) : (
             <img
-              decoding={isPlay ? "sync" : "async"}
+              id={`photo-image__${photo.key}`}
+              decoding="async"
               src={photo.src}
               style={createStyle()}
               onClick={onClick ? handleClick : undefined}
-              onLoad={e => {
+              onWheel={handleWheel}
+              onMouseEnter={(event: any) => {
+                if (!isPlay) {
+                  currentHover = photo.key || null;
+                  setTimeout(() => {
+                    if (currentHover === photo.key) {
+                      handleClick(event);
+                    }
+                  }, 500);
+                }
+              }}
+              onMouseLeave={() => {
+                if (currentHover === photo.key) {
+                  currentHover = null;
+                }
+              }}
+              onLoad={async e => {
                 const imageElement = e.target as HTMLImageElement;
                 if (image.width !== imageElement.naturalWidth) {
                   // may be rotated, fix it.
@@ -218,12 +292,11 @@ const GridPhoto = React.memo(
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;
     }
-    /*
-    const isNeighbour = Math.abs(n.currentIndex - n.index) < n.range;
+    const leftTopIndex = n.currentIndex - (n.currentIndex % n.range);
+    const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
     if (isNeighbour) {
       return false;
     }
-    */
     if (p.image.rating !== n.image.rating) {
       return false;
     }
