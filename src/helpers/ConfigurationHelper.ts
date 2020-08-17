@@ -2,6 +2,10 @@ import { ConfigurationState } from "../types/unistore";
 
 export default class ConfigurationHelper {
   static getInitialState = (): ConfigurationState => ({
+    amazonCloudDriveDomain: "www.amazon.com",
+    dedupperServerProtocol: "http",
+    dedupperServerPort: 8080,
+    showFacePP: "hover",
     recordPlayStatistics: true,
     flipRandomInPlay: 50,
     standardWidth: 1920,

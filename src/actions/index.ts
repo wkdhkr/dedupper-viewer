@@ -34,6 +34,9 @@ const actions = (store: Store<State>) => ({
     if (state.mainViewer.isPlay) {
       return;
     }
+    if (state.configuration.showFacePP === "none") {
+      return;
+    }
     const faces: FacePPRow[] = await dc.query(
       `SELECT * from facepp where hash = '${hash}'`,
       false
@@ -253,6 +256,11 @@ const actions = (store: Store<State>) => ({
     return produce(state, draft => {
       draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
       const display = draft.mainViewer.isPlay ? "none" : "block";
+      const viewer = DomUtil.getViewerSafe();
+      if (viewer) {
+        // avoid wheeling is play mode.
+        viewer.wheeling = draft.mainViewer.isPlay;
+      }
       const footer = DomUtil.getViewerFooter();
       if (footer) {
         footer.style.display = display;
@@ -448,6 +456,7 @@ const actions = (store: Store<State>) => ({
       : [hashOrHashList];
 
     if (next && value && !state.keyStatus.shifted) {
+      /*
       if (state.mainViewer.currentImage) {
         try {
           DomUtil.getViewer().next(true);
@@ -455,6 +464,7 @@ const actions = (store: Store<State>) => ({
           // ignored for no viewer page
         }
       }
+      */
       actions(store).selectNext(store.getState());
     }
     StoreUtil.updateField(

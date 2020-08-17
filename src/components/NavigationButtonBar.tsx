@@ -71,7 +71,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isPlay =
     (isInMainViewer && isMainViewerPlay) ||
     (isInGridViewer && isGridViewerPlay);
-  const isViewer = isInGridViewer || isInMainViewer || isSubViewer;
+  // const isViewer = isInGridViewer || isInMainViewer || isSubViewer;
 
   const isShowGrid = isInGridViewer;
   const isShowReload =

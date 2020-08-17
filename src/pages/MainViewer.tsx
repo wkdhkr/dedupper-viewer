@@ -18,6 +18,7 @@ import IFrameWrapper from "../components/IFrameWrapper";
 import IFrameUtil from "../utils/IFrameUtil";
 import ColorTuner from "../components/viewer/ui/ColorTuner";
 import HudLayer from "../components/viewer/HudLayer";
+import DomUtil from "../utils/DomUtil";
 
 const reload = () => {
   IFrameUtil.postMessageForParent({
@@ -83,9 +84,21 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   }, [load, hash, channelId]);
 
   const [colorReset, setColorReset] = useState<number>(0);
+  const onWheel = (event: React.WheelEvent<HTMLElement>) => {
+    if (event.deltaY > 0) {
+      DomUtil.getViewerSafe()?.next(true);
+    } else {
+      DomUtil.getViewerSafe()?.prev(true);
+    }
+  };
   return (
     <>
-      <HudLayer disabled={isPlay} faces={faces} image={currentImage} />
+      <HudLayer
+        mode={c.showFacePP}
+        disabled={isPlay}
+        faces={faces}
+        image={currentImage}
+      />
       <AutoReload
         disabled={!c.autoReload}
         index={index}
@@ -102,9 +115,37 @@ const MainViewer: React.SFC<MainViewerProps> = ({
         range={1}
         imageCount={images.length}
       />
+      {isPlay && (
+        <Box
+          onWheel={onWheel}
+          style={{
+            opacity: 0
+          }}
+          onClick={() => togglePlay()}
+          top="0"
+          left="0"
+          width={window.innerWidth}
+          height={window.innerHeight}
+          position="fixed"
+          zIndex="1355"
+          m={2}
+        />
+      )}
       <Box className="viewer-main-container">
         {!isPlay && (
-          <Box style={{ opacity: 0.4 }} position="fixed" zIndex="1355" m={2}>
+          <Box
+            onWheel={(event: React.WheelEvent<HTMLElement>) => {
+              if (event.deltaY > 0) {
+                DomUtil.getViewerSafe()?.next(true);
+              } else {
+                DomUtil.getViewerSafe()?.prev(true);
+              }
+            }}
+            style={{ opacity: 0.4 }}
+            position="fixed"
+            zIndex="1355"
+            m={2}
+          >
             <RatingAndTag
               currentImage={currentImage}
               onTagChange={updateTag}
@@ -146,6 +187,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
             index={index}
             imageCount={images.length}
             image={currentImage}
+            configuration={c}
           />
         </Box>
         <PlayHotKey togglePlay={togglePlay} />

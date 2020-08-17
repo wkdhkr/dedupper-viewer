@@ -1,16 +1,26 @@
 import AuthUtil from "./AuthUtil";
 import WindowUtil from "../WindowUtil";
+import { ConfigurationState } from "../../types/unistore";
 
 /*
 const isLocalhost = window.location.hostname === "localhost";
 const port = isLocalhost ? 8080 : 3000;
 const hostname = isLocalhost ? "localhost" : window.location.hostname;
 */
-const port = 8080;
 const { hostname } = window.location;
+// const { protocol } = window.location;
+// const { port } = window.location;
+// const port = 8443;
+
+const CONFIGURATION_LS_KEY = "_dedupper_viewer_configuration";
+
+const c: ConfigurationState = JSON.parse(
+  localStorage.getItem(CONFIGURATION_LS_KEY) || "{}"
+);
 
 export default class UrlUtil {
-  static BASE_URL = `http://${hostname}:${port}/dedupper/v1/`;
+  static BASE_URL = `${c.dedupperServerProtocol ||
+    "http"}://${hostname}:${c.dedupperServerPort || "8080"}/dedupper/v1/`;
 
   static getFlickrUrl = (path: string) => {
     const fileName = path.split(/(\\|\/)/g).pop();
@@ -26,6 +36,10 @@ export default class UrlUtil {
       return `https://www.flickr.com/photo.gne?id=${id}`;
     }
     return null;
+  };
+
+  static getAcdUrl = (acdId: string, domain: string) => {
+    return `https://${domain}/photos/all/gallery/${acdId}?ref_=cd_lts_sn&sort=sortDateUploaded`;
   };
 
   static setupApiUrlObj = (path: string) => {

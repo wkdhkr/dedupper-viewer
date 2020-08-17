@@ -83,6 +83,7 @@ export interface DedupperImage {
   t3: number | null;
   t4: number | null;
   t5: number | null;
+  acd_id: string | null;
   to_path: string;
   view_date: number;
   view_count: number;
@@ -128,10 +129,14 @@ export interface GridViewerState {
 }
 
 export interface ConfigurationState {
+  amazonCloudDriveDomain: string;
+  dedupperServerProtocol: "http" | "https";
+  dedupperServerPort: number;
   recordPlayStatistics: boolean;
   flipRandomInPlay: number;
   standardWidth: number;
   standardHeight: number;
+  showFacePP: "hover" | "always" | "none";
   enableSubViewer: boolean;
   selectNextAfterEditInMainViewer: boolean;
   selectNextAfterEditInGridViewer: boolean;

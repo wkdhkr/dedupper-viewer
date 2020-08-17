@@ -98,11 +98,12 @@ const GridPhoto = React.memo(
       const styles: React.CSSProperties = {};
       const leftTopIndex = currentIndex - (currentIndex % range);
       const isNextPageIndex =
-        leftTopIndex + range < index && index < leftTopIndex + range * 2;
+        leftTopIndex + range + unit <= index &&
+        index < leftTopIndex + range * 2;
       if (isNextPageIndex) {
         styles.position = "fixed";
         styles.top = window.innerHeight + 1;
-        styles.left = 0;
+        styles.left = window.innerWidth + 1;
         styles.marginLeft = 0;
         styles.marginTop = 0;
         styles.pointerEvents = "none";
@@ -292,9 +293,10 @@ const GridPhoto = React.memo(
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;
     }
+    const prevLeftTopIndex = p.currentIndex - (p.currentIndex % p.range);
     const leftTopIndex = n.currentIndex - (n.currentIndex % n.range);
     const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
-    if (isNeighbour) {
+    if (isNeighbour && prevLeftTopIndex !== leftTopIndex) {
       return false;
     }
     if (p.image.rating !== n.image.rating) {

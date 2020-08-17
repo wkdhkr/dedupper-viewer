@@ -6,7 +6,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio
 } from "@material-ui/core";
 import SlideUp from "../../transitions/SlideUp";
 import { ConfigurationState } from "../../types/unistore";
@@ -62,6 +65,44 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
           <Grid item xs={12}>
             <form noValidate autoComplete="off">
               <Grid item xs={12}>
+                <>
+                  <h2>Dedupper Server</h2>
+                  <h3>Port</h3>
+                  <TextField
+                    value={draftConfig.dedupperServerPort}
+                    onChange={e => {
+                      setDraftConfig({
+                        ...draftConfig,
+                        dedupperServerPort: parseInt(e.target.value, 10) || 8080
+                      });
+                    }}
+                    label="port (restart required)"
+                  />
+                  <h3>Protocol</h3>
+                  <RadioGroup
+                    name="protocol"
+                    row
+                    value={draftConfig.dedupperServerProtocol}
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                      setDraftConfig({
+                        ...draftConfig,
+                        dedupperServerProtocol: (event.target as HTMLInputElement)
+                          .value as any
+                      });
+                    }}
+                  >
+                    <FormControlLabel
+                      value="https"
+                      control={<Radio />}
+                      label="https"
+                    />
+                    <FormControlLabel
+                      value="http"
+                      control={<Radio />}
+                      label="http"
+                    />
+                  </RadioGroup>
+                </>
                 {IFrameUtil.isInIFrame() ? (
                   <>
                     <h2>Viewer</h2>
@@ -93,6 +134,49 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                         })
                       }
                     />
+                    <h3>Amazon Cloud Drive</h3>
+                    <TextField
+                      value={draftConfig.amazonCloudDriveDomain}
+                      onChange={e => {
+                        setDraftConfig({
+                          ...draftConfig,
+                          amazonCloudDriveDomain:
+                            e.target.value || "www.amazon.com"
+                        });
+                      }}
+                      label="Domain"
+                    />
+                    <h3>Face++</h3>
+                    <RadioGroup
+                      name="face++"
+                      row
+                      value={draftConfig.showFacePP}
+                      onChange={(
+                        event: React.ChangeEvent<HTMLInputElement>
+                      ) => {
+                        setDraftConfig({
+                          ...draftConfig,
+                          showFacePP: (event.target as HTMLInputElement)
+                            .value as any
+                        });
+                      }}
+                    >
+                      <FormControlLabel
+                        value="hover"
+                        control={<Radio />}
+                        label="hover"
+                      />
+                      <FormControlLabel
+                        value="always"
+                        control={<Radio />}
+                        label="always"
+                      />
+                      <FormControlLabel
+                        value="none"
+                        control={<Radio />}
+                        label="none"
+                      />
+                    </RadioGroup>
                     <h3>
                       Select the next image after editing the current image
                     </h3>

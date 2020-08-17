@@ -91,6 +91,8 @@ export default function(store: Store<State>) {
             store.setState(
               produce(store.getState(), draft => {
                 draft.gridViewer.subViewer.isOpen = true;
+                draft.mainViewer.subViewer.isOpen = false;
+                draft.mainViewer.subViewer.url = null;
                 draft.gridViewer.selectedImage = message.payload;
               })
             );

@@ -23,6 +23,7 @@ import DomUtil from "../../utils/DomUtil";
 import SlideUp from "../../transitions/SlideUp";
 
 type HudLayerProps = {
+  mode: "hover" | "always" | "none";
   faces: FacePPRow[];
   image: DedupperImage | null;
   hide?: boolean;
@@ -77,10 +78,12 @@ const getEmotionEmoji = (face: FacePPRow) => {
 };
 
 const HudLayer: React.FunctionComponent<HudLayerProps> = ({
+  mode,
   faces,
   image,
   disabled
 }) => {
+  const [hover, setHover] = useState<boolean>(false);
   const [hoverFace, setHoverFace] = useState<string | null>(null);
   const [selectedFace, setSelectedFace] = useState<FacePPRow | null>(null);
 
@@ -96,6 +99,8 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
     : DomUtil.getViewerSafe()?.imageData;
 
   const boxStyle = {
+    // eslint-disable-next-line no-nested-ternary
+    opacity: mode === "hover" ? (hover ? 1 : 0) : 1,
     pointerEvents: "none" as "none",
     height: imageData ? imageData.height : 0,
     width: imageData ? imageData.width : 0,
@@ -160,7 +165,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
       <Box
         className="viewer-hud-layer-container"
         style={boxStyle}
-        zIndex={1359}
+        zIndex={1354}
         position="absolute"
       >
         {faces.map(face => {
@@ -175,7 +180,8 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
 
           const faceStyle = {
             opacity: 0.4,
-            pointerEvents: "none" as "none",
+            pointerEvents:
+              mode === "hover" ? ("auto" as "auto") : ("none" as "none"),
             position: "absolute" as "absolute",
             border: `2px solid ${
               face.gender === "Female" ? pink[500] : blue[500]
@@ -199,8 +205,8 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                       pointerEvents: "none",
                       opacity: hoverFace === face.face_token ? 0.5 : 0,
                       background: green[500],
-                      width: height * 0.01,
-                      height: height * 0.01,
+                      width: height * 0.01 || 1,
+                      height: height * 0.01 || 1,
                       position: "absolute",
                       top: parseInt(y, 10) * ratio,
                       left: parseInt(x, 10) * ratio
@@ -208,7 +214,11 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                   />
                 );
               })}
-              <div style={faceStyle}>
+              <div
+                style={faceStyle}
+                onMouseLeave={() => setHover(false)}
+                onMouseEnter={() => setHover(true)}
+              >
                 <div
                   onMouseLeave={() => setHoverFace(null)}
                   onMouseEnter={() => setHoverFace(face.face_token)}

@@ -189,6 +189,29 @@ export default function(store: Store<State>) {
   addListener(document, EVENT_POINTER_DOWN, function(event: PointerEvent) {
     pointerX = event.clientX;
     pointerY = event.clientY;
+    if (UrlUtil.isInSingleViewer() || UrlUtil.isInMainViewer()) {
+      if (event.button === 1) {
+        event.preventDefault();
+        if (UrlUtil.isInSubViewer()) {
+          IFrameUtil.postMessageForParent({
+            type: "forGrid",
+            payload: {
+              type: "customEvent",
+              payload: {
+                name: EVENT_X_KEY
+              }
+            }
+          });
+        } else {
+          try {
+            const hash = DomUtil.getCurrentHash();
+            actions(store).updateTag(store.getState(), hash, 1, "t1");
+          } catch (e) {
+            // ignore
+          }
+        }
+      }
+    }
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {

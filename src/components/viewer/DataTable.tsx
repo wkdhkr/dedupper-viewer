@@ -5,7 +5,8 @@ import {
   Assignment,
   GetApp,
   AssignmentReturned,
-  CameraAlt
+  CameraAlt,
+  Cloud
 } from "@material-ui/icons";
 import Table from "@material-ui/core/Table";
 import orderBy from "lodash/orderBy";
@@ -17,7 +18,7 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import Axios from "axios";
-import { DedupperImage } from "../../types/unistore";
+import { DedupperImage, ConfigurationState } from "../../types/unistore";
 import IFrameUtil from "../../utils/IFrameUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
@@ -33,13 +34,15 @@ const useStyles = makeStyles({
 interface DataTableProps {
   index: number;
   imageCount: number;
+  configuration: ConfigurationState;
   image: DedupperImage | null;
 }
 
 const DataTable: React.FunctionComponent<DataTableProps> = ({
   image,
   index,
-  imageCount
+  imageCount,
+  configuration: c
 }) => {
   const classes = useStyles();
   if (image === null) {
@@ -87,6 +90,9 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
   ].filter(r => !(r as any).skip);
 
   const flickrUrl = image ? UrlUtil.getFlickrUrl(image.to_path) : null;
+  const acdUrl = image?.acd_id
+    ? UrlUtil.getAcdUrl(image.acd_id, c.amazonCloudDriveDomain)
+    : null;
 
   return (
     <>
@@ -157,6 +163,13 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
               <Tooltip arrow title="flickr" placement="top-end">
                 <IconButton target="_blank" href={flickrUrl}>
                   <CameraAlt />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+            {acdUrl ? (
+              <Tooltip arrow title="Amazon Cloud Drive" placement="top-end">
+                <IconButton target="_blank" href={acdUrl}>
+                  <Cloud />
                 </IconButton>
               </Tooltip>
             ) : null}

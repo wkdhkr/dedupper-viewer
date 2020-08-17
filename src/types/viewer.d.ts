@@ -23,6 +23,7 @@ export interface ImageData {
 }
 
 export type MainViewer = Viewer & {
+  wheeling: boolean;
   options: Viewer.Options;
   index: number;
   items: HTMLLIElement[];
