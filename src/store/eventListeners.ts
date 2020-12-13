@@ -277,6 +277,16 @@ export default function(store: Store<State>) {
     actions(store).loadChannels(store.getState());
   });
 
+  // auto hide mouse cursor
+  let timer: NodeJS.Timeout;
+  window.addEventListener("mousemove", () => {
+    document.body.classList.remove("hideCursor");
+    clearTimeout(timer);
+    timer = setTimeout(function() {
+      document.body.classList.add("hideCursor");
+    }, 1000);
+  });
+
   /*
   const changeScale = {
     container: 1080,
