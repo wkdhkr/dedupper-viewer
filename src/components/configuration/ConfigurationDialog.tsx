@@ -9,7 +9,13 @@ import {
   TextField,
   RadioGroup,
   FormControlLabel,
-  Radio
+  Radio,
+  TableContainer,
+  Paper,
+  Table,
+  TableBody,
+  TableRow,
+  TableCell
 } from "@material-ui/core";
 import SlideUp from "../../transitions/SlideUp";
 import { ConfigurationState } from "../../types/unistore";
@@ -39,12 +45,56 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
   };
 
   const handleSave = () => {
+    const modConfig: { dedupperServerPort?: number } = {};
+    if (!draftConfig.dedupperServerPort) {
+      modConfig.dedupperServerPort = 8080;
+    }
     updateFn({
       ...c,
       ...draftConfig,
+      ...modConfig,
       open: false
     });
   };
+
+  const keyboardShortcuts = [
+    {
+      name: "Rating 1(common)",
+      value: "1,c"
+    },
+    {
+      name: "Rating 2(accept)",
+      value: "2,a"
+    },
+    {
+      name: "Rating 3(wonder)",
+      value: "3,w"
+    },
+    {
+      name: "Rating 4(fantastic)",
+      value: "4,f"
+    },
+    {
+      name: "Rating 5(special)",
+      value: "5,s"
+    },
+    {
+      name: "Change grid count",
+      value: "g"
+    },
+    {
+      name: "Reload",
+      value: "r"
+    },
+    {
+      name: "Toggle play",
+      value: "p"
+    },
+    {
+      name: "Apply tag(block)",
+      value: "x"
+    }
+  ];
 
   return (
     <Dialog
@@ -69,11 +119,11 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                   <h2>Dedupper Server</h2>
                   <h3>Port</h3>
                   <TextField
-                    value={draftConfig.dedupperServerPort}
+                    value={draftConfig.dedupperServerPort || ""}
                     onChange={e => {
                       setDraftConfig({
                         ...draftConfig,
-                        dedupperServerPort: parseInt(e.target.value, 10) || 8080
+                        dedupperServerPort: parseInt(e.target.value, 10) || 0
                       });
                     }}
                     label="port (restart required)"
@@ -296,6 +346,21 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                     />
                   </>
                 )}
+                <h2>Keyboard Shortcut</h2>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableBody>
+                      {keyboardShortcuts.map(row => (
+                        <TableRow key={row.name}>
+                          <TableCell component="th" scope="row">
+                            {row.name}
+                          </TableCell>
+                          <TableCell align="right">{row.value}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
               </Grid>
             </form>
           </Grid>
