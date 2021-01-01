@@ -5,6 +5,7 @@ import "viewerjs/dist/viewer.min.css";
 import { initImageExpand } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
+import DomUtil from "../../utils/DomUtil";
 
 interface ImageListRenderProps {
   channelId: string | null;
@@ -60,7 +61,6 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   componentDidUpdate(prevProps: ImageListRenderProps) {
     const {
-      channelId,
       colorReset,
       setColorReset,
       images,
@@ -157,6 +157,17 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
           this.initViewer(options);
           */
           isUpdate = true;
+        } else {
+          // for delay loading issue
+          const viewer = DomUtil.getViewer();
+          const url = new URL(viewer.image.src);
+          const hash = url.searchParams.get("hash");
+          if (hash && hash !== images[0].hash) {
+            this.destroyViewer();
+            this.initViewer(options);
+            this.setupPlay(togglePlay);
+            return;
+          }
         }
       }
       /*
@@ -175,14 +186,18 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     if (images.length === 0) {
       return;
     }
-    if (this.containerDiv.current && images.length) {
+    if (this.containerDiv.current) {
       this.initViewer(options);
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("play")) {
-        togglePlay();
-      }
+      this.setupPlay(togglePlay);
     }
   }
+
+  setupPlay = (togglePlay: Function) => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("play")) {
+      togglePlay();
+    }
+  };
 
   initViewer = (options: Viewer.Options) => {
     Viewer.noConflict();

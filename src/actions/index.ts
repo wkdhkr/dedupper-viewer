@@ -12,7 +12,8 @@ import {
   SnackbarCustomState,
   DedupperChannel,
   ConfigurationState,
-  FacePPRow
+  FacePPRow,
+  GestureInfo
   // FacePPRow
 } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
@@ -30,6 +31,13 @@ const dc = new DedupperClient();
 const ps = new PlayerService();
 const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
+  setGestureInfo(state: State, info: GestureInfo) {
+    store.setState(
+      produce(store.getState(), draft => {
+        draft.gridViewer.gestureInfo = info;
+      })
+    );
+  },
   async updateFacePPMap(state: State, hash: string) {
     if (state.mainViewer.isPlay) {
       return;
@@ -115,7 +123,7 @@ const actions = (store: Store<State>) => ({
       );
       if (hash) {
         setTimeout(() => {
-          actions(store).selected(store.getState(), hash, index);
+          actions(store).selected(store.getState(), hash, index, true);
         }, 2000);
       }
     }
@@ -165,7 +173,7 @@ const actions = (store: Store<State>) => ({
       index
     );
     if (nextHash) {
-      actions(store).selected(store.getState(), nextHash, nextIndex);
+      actions(store).selected(store.getState(), nextHash, nextIndex, true);
     }
   },
   selected(
@@ -381,9 +389,14 @@ const actions = (store: Store<State>) => ({
             nextIndex = 0;
           }
           const nextHash = state.mainViewer.images[nextIndex]?.hash;
-          const range = ViewerUtil.detectRange(state.gridViewer.unit);
-          if (nextHash && nextIndex % range !== 0) {
-            actions(store).selected(store.getState(), nextHash, nextIndex);
+          // const range = ViewerUtil.detectRange(state.gridViewer.unit);
+          if (nextHash /* && nextIndex % range !== 0 */) {
+            actions(store).selected(
+              store.getState(),
+              nextHash,
+              nextIndex,
+              true
+            );
           }
         }
       }

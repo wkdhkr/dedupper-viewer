@@ -178,6 +178,10 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
           const width = face.width * ratio;
           const height = face.height * ratio;
 
+          if (Number.isNaN(height) || Number.isNaN(width)) {
+            return null;
+          }
+
           const faceStyle = {
             opacity: 0.4,
             pointerEvents:
@@ -208,8 +212,8 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                       width: height * 0.01 || 1,
                       height: height * 0.01 || 1,
                       position: "absolute",
-                      top: parseInt(y, 10) * ratio,
-                      left: parseInt(x, 10) * ratio
+                      top: parseInt(y, 10) * ratio || 0,
+                      left: parseInt(x, 10) * ratio || 0
                     }}
                   />
                 );

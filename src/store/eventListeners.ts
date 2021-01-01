@@ -147,6 +147,17 @@ export default function(store: Store<State>) {
       ]);
       // console.log("ready", event);
     }
+    const vc = DomUtil.getViewerCanvas();
+    vc.oncontextmenu = (e: MouseEvent) => {
+      e.preventDefault();
+      const hash = DomUtil.getCurrentHash();
+      const state = store.getState();
+      const image = state.imageByHash[hash];
+      if (image) {
+        const value = image.t1 ? null : 1;
+        actions(store).updateTag(state, hash, value, "t1");
+      }
+    };
   });
   document.body.addEventListener<any>("show", function() {
     // console.log("show", event);
@@ -283,8 +294,11 @@ export default function(store: Store<State>) {
     document.body.classList.remove("hideCursor");
     clearTimeout(timer);
     timer = setTimeout(function() {
-      document.body.classList.add("hideCursor");
-    }, 1000);
+      const state = store.getState();
+      if (state.gridViewer.isPlay || state.mainViewer.isPlay) {
+        document.body.classList.add("hideCursor");
+      }
+    }, 5000);
   });
 
   /*

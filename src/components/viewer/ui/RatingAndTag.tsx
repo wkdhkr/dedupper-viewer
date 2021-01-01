@@ -44,12 +44,18 @@ const labelRatingList = ["t1", "t2", "t3", "t4", "t5"].map(name =>
 );
 
 interface RatingAndTagProps {
+  next?: boolean;
   currentImage: DedupperImage | null;
-  onRatingChange: (hash: string, x: number | null) => void;
-  onTagChange: (hash: string, x: number | null, name: string) => void;
+  onRatingChange: (hash: string, x: number | null, next?: boolean) => void;
+  onTagChange: (
+    hash: string,
+    x: number | null,
+    name: string,
+    next?: boolean
+  ) => void;
 }
 const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
-  ({ currentImage, onRatingChange, onTagChange }) => {
+  ({ next, currentImage, onRatingChange, onTagChange }) => {
     if (currentImage) {
       return (
         <>
@@ -58,7 +64,7 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
               value={currentImage.rating}
               name={`image__${currentImage.hash}`}
               onChange={(event, value) =>
-                onRatingChange(currentImage.hash, value)
+                onRatingChange(currentImage.hash, value, next)
               }
               max={5}
             />
@@ -74,7 +80,7 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
                   icon={<Label fontSize="inherit" />}
                   name={`tag__${name}__${currentImage.hash}`}
                   onChange={(event, value) =>
-                    onTagChange(currentImage.hash, value, name)
+                    onTagChange(currentImage.hash, value, name, next)
                   }
                   max={1}
                 />

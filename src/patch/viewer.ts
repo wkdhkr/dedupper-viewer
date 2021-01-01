@@ -64,7 +64,7 @@ export function initImage(this: any, done: any) {
   const { image } = this;
   const { viewerData } = this;
   const footerHeight = this.footer.offsetHeight;
-  const viewerWidth = viewerData.width;
+  const viewerWidth: number = viewerData.width;
   const viewerHeight = Math.max(viewerData.height - footerHeight, footerHeight);
   const oldImageData = this.imageData || {};
   let sizingImage: any;
@@ -101,6 +101,15 @@ export function initImage(this: any, done: any) {
       left: (viewerWidth - width) / 2,
       top: (viewerHeight - height) / 2
     };
+
+    // ignore 1 pixel offset
+    if (Math.abs(imageData.left) < 2) {
+      imageData.left = 0;
+    }
+    if (Math.abs(imageData.top) < 2) {
+      imageData.top = 0;
+    }
+
     const initialImageData = { ...imageData };
 
     if (options.rotatable) {
@@ -192,6 +201,13 @@ export function initImageExpand(this: any, done: any) {
       );
     } else {
       _this2.imageData = imageData;
+    }
+    // ignore 1 pixel offset
+    if (Math.abs(_this2.imageData.left) < 2) {
+      _this2.imageData.left = 0;
+    }
+    if (Math.abs(_this2.imageData.top) < 2) {
+      _this2.imageData.top = 0;
     }
     _this2.initialImageData = initialImageData;
 

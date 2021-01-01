@@ -79,6 +79,10 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
       value: "5,s"
     },
     {
+      name: "tag 1(deny)",
+      value: "space,d"
+    },
+    {
       name: "Change grid count",
       value: "g"
     },

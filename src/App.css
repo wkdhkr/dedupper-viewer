@@ -39,6 +39,6 @@
   }
 }
 
-.hideCursor .viewer-canvas .viewer-move {
+.hideCursor {
   cursor: none !important;
 }

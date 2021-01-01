@@ -1,6 +1,7 @@
 import { Store } from "unistore";
 import { navigate } from "@reach/router";
 import produce from "immer";
+import copy from "copy-to-clipboard";
 import { State } from "../types/unistore";
 import { IFrameMessage } from "../types/window";
 import IFrameUtil from "../utils/IFrameUtil";
@@ -15,7 +16,8 @@ export default function(store: Store<State>) {
 
       switch (message.type) {
         case "copy":
-          navigator.clipboard.writeText(message.payload.text);
+          // navigator.clipboard.writeText(message.payload.text);
+          copy(message.payload.text);
           break;
         case "forSubViewer": {
           if (UrlUtil.isInGridViewer()) {
@@ -61,13 +63,21 @@ export default function(store: Store<State>) {
                 const iframeEl = (el as any) as HTMLIFrameElement;
                 const p = iframeEl.parentElement;
                 iframeEl.remove();
-                return [p, el];
+                return [p, iframeEl] as const;
               }
-              return [null, null];
+              return [null, null] as const;
             })
             .forEach(([p, el]) => {
               setTimeout(() => {
                 if (p && el) {
+                  const params = new URL(document.location.href).searchParams;
+                  el.setAttribute(
+                    "src",
+                    el.src.replace(
+                      /([?&])unit=[1-9]/,
+                      `$1unit=${params.get("unit")}` || "1"
+                    )
+                  );
                   p.appendChild(el);
                 }
               }, 1000);

@@ -14,7 +14,8 @@ import {
   DedupperChannel,
   GridViewerState,
   DedupperImage,
-  ConfigurationState
+  ConfigurationState,
+  GestureInfo
 } from "./types/unistore";
 import MainViewer from "./pages/MainViewer";
 import GridViewer from "./pages/GridViewer";
@@ -30,9 +31,11 @@ import SubViewerHelper from "./helpers/viewer/SubViewerHelper";
 import IFrameUtil from "./utils/IFrameUtil";
 
 interface BaseAppProps {
+  connectionCount: number;
   configuration: ConfigurationState;
   channels: DedupperChannel[];
   channelById: Dictionary<DedupperChannel>;
+  setGestureInfo: (x: GestureInfo) => void;
   updateRating: (hash: string, x: number | null) => void;
   updateColor: (hash: string, kind: string, value: number) => void;
   updateSize: (hash: string, w: number, h: number) => void;
@@ -71,7 +74,7 @@ interface BaseAppProps {
 type AppProps = BaseAppProps;
 
 const mapStateToProps =
-  "configuration,channels,channelById,snackbar,snackbarCustom," +
+  "connectionCount,configuration,channels,channelById,snackbar,snackbarCustom," +
   "imageByHash,mainViewer,gridViewer";
 
 const App = connect<{}, {}, State, AppProps>(
@@ -104,8 +107,10 @@ const App = connect<{}, {}, State, AppProps>(
         <Router>
           <Redirect noThrow from="/" to="start/" />
           <GridViewer
+            connectionCount={props.connectionCount}
             configuration={props.configuration}
             path="channel/grid/:channelId"
+            setGestureInfo={props.setGestureInfo}
             updateRating={props.updateRating}
             updateSize={props.updateSize}
             togglePlay={props.toggleGridPlay}

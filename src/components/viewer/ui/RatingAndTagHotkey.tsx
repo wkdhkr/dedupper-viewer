@@ -3,12 +3,19 @@ import Hotkeys from "react-hot-keys";
 import { DedupperImage } from "../../../types/unistore";
 
 interface RatingAndTagHotkeyProps {
+  next?: boolean;
   image: DedupperImage | null;
-  updateTag: (hash: string, x: number | null, name: string) => void;
-  updateRating: (hash: string, x: number | null) => void;
+  updateTag: (
+    hash: string,
+    x: number | null,
+    name: string,
+    next?: boolean
+  ) => void;
+  updateRating: (hash: string, x: number | null, next?: boolean) => void;
 }
 
 const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
+  next = true,
   image,
   updateRating,
   updateTag
@@ -24,7 +31,7 @@ const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
         if (image) {
           const update = (rating: number) => {
             const newRating = image.rating === rating ? 0 : rating;
-            updateRating(image.hash, newRating);
+            updateRating(image.hash, newRating, next);
           };
           switch (keyName) {
             case "5":
@@ -56,7 +63,7 @@ const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
             // eslint-disable-next-line no-fallthrough
             case "d":
               // deny
-              updateTag(image.hash, image.t1 ? null : 1, "t1");
+              updateTag(image.hash, image.t1 ? null : 1, "t1", next);
               break;
             default:
           }

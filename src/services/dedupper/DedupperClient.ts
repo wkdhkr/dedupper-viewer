@@ -19,7 +19,7 @@ const maxQueue = Infinity;
 const queue = new Queue(maxConcurrent, maxQueue);
 */
 
-// a concurrency parameter of 1 makes all api requests secuential
+// a concurrency parameter of 1 makes all api requests sequential
 const MAX_CONCURRENT_REQUESTS = 1;
 
 // init your manager.

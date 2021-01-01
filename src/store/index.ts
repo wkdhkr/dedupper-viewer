@@ -13,6 +13,7 @@ import UrlUtil from "../utils/dedupper/UrlUtil";
 import ConfigurationHelper from "../helpers/ConfigurationHelper";
 
 const initialState: State = {
+  connectionCount: 0,
   configuration: {
     ...ConfigurationHelper.getInitialState(),
     ...JSON.parse(
@@ -51,6 +52,11 @@ const initialState: State = {
       isOpen: false
     },
     unit: parseInt(UrlUtil.extractParam("unit") || "0", 10) || 3,
+    gestureInfo: {
+      image: null,
+      x: -1,
+      y: -1
+    },
     selectedImage: null,
     isPlay: false,
     index: -1

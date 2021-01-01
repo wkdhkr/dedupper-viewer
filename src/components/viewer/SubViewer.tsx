@@ -30,16 +30,6 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
         };
         IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
       } else if (image && w) {
-        /*
-      const w = SubViewerHelper.getWindow();
-      if (w) {
-        if ((w as any).navigate) {
-          (w as any).navigate(UrlUtil.generateImageViewerUrl(image.hash), {
-            replace: true
-          });
-        }
-      }
-      */
         const message: IFrameMessage = {
           type: "navigateSubViewer",
           payload: {

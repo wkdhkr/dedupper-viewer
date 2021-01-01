@@ -120,7 +120,14 @@ export interface SubViewerState {
   isOpen: boolean;
 }
 
+export interface GestureInfo {
+  image: DedupperImage | null;
+  x: number;
+  y: number;
+}
+
 export interface GridViewerState {
+  gestureInfo: GestureInfo;
   selectedImage: DedupperImage | null;
   subViewer: SubViewerState;
   unit: number;
@@ -158,6 +165,7 @@ export interface State {
     controlled: boolean;
   };
   channels: DedupperChannel[];
+  connectionCount: number;
   snackbar: SnackbarState;
   snackbarCustom: SnackbarCustomState | null;
   imageByHash: Dictionary<DedupperImage>;

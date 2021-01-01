@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import React, { MouseEventHandler } from "react";
+import React, { useState, MouseEventHandler } from "react";
 import omit from "lodash/omit";
 import { shallowEqual } from "shallow-equal-object";
 import { RenderImageProps } from "react-photo-gallery";
@@ -10,7 +10,7 @@ import { CheckCircle } from "@material-ui/icons";
 import store from "../../store";
 import ViewerUtil from "../../utils/ViewerUtil";
 import { STANDARD_WIDTH } from "../../constants/dedupperConstants";
-import { DedupperImage } from "../../types/unistore";
+import { DedupperImage, GestureInfo } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
 import ColorUtil from "../../utils/ColorUtil";
@@ -24,6 +24,8 @@ let currentHover: string | null = null;
 const imgWithClick = { cursor: "pointer" };
 const GridPhoto = React.memo(
   ({
+    gestureInfo,
+    setGestureInfo,
     range,
     currentIndex,
     isPlay,
@@ -46,9 +48,16 @@ const GridPhoto = React.memo(
     image: DedupperImage;
     currentIndex: number;
     selectedImage: DedupperImage | null;
+    gestureInfo: GestureInfo;
+    setGestureInfo: (x: GestureInfo) => void;
     updateSize: (hash: string, w: number, h: number) => void;
-    updateTag: (hash: string, x: number | null, name: string) => void;
-    updateRating: (hash: string, x: number | null) => void;
+    updateTag: (
+      hash: string,
+      x: number | null,
+      name: string,
+      next?: boolean
+    ) => void;
+    updateRating: (hash: string, x: number | null, next?: boolean) => void;
   }) => {
     // const isNeighbour = Math.abs(currentIndex - index) < range;
 
@@ -189,8 +198,10 @@ const GridPhoto = React.memo(
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
       if (event.button === 1) {
         gs.applyTagForImagesInScreen();
+        event.preventDefault();
+      } else {
+        setGestureInfo({ image, x: event.clientX, y: event.clientY });
       }
-      event.preventDefault();
     };
     const handleWheel = () => {
       currentHover = null;
@@ -220,6 +231,7 @@ const GridPhoto = React.memo(
               m={2}
             >
               <RatingAndTag
+                next={false}
                 currentImage={image}
                 onTagChange={updateTag}
                 onRatingChange={updateRating}
@@ -242,6 +254,7 @@ const GridPhoto = React.memo(
                 width: photo.width,
                 height: photo.height
               }}
+              onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
               onMouseDown={mouseDownHandler}
               onWheel={handleWheel}
@@ -252,8 +265,36 @@ const GridPhoto = React.memo(
               decoding="async"
               src={photo.src}
               style={createStyle()}
+              onMouseUp={(e: React.MouseEvent) => {
+                const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;
+                const moveX = e.clientX - prevX;
+                const moveY = e.clientY - prevY;
+                const isVertical = Math.abs(moveY) > Math.abs(moveX);
+                const move = isVertical ? moveY : moveX;
+                const isPositive = move > 0;
+                const hash = gestureImage?.hash;
+                if (hash && Math.abs(move) > 32) {
+                  let rating: number | null = null;
+                  if (isVertical) {
+                    rating = isPositive ? 4 : 1;
+                  } else {
+                    rating = isPositive ? 3 : 2;
+                  }
+                  if (gestureImage?.rating === rating) {
+                    rating = 0;
+                  }
+                  updateRating(hash, rating, false);
+                }
+                setGestureInfo({ x: -1, y: -1, image: null });
+              }}
+              onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
               onWheel={handleWheel}
+              onContextMenu={(event: React.MouseEvent) => {
+                event.preventDefault();
+                event.stopPropagation();
+                updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+              }}
               onMouseEnter={(event: any) => {
                 if (!isPlay) {
                   currentHover = photo.key || null;
@@ -289,6 +330,7 @@ const GridPhoto = React.memo(
   },
   (p, n) => {
     // console.log(omitBy(n, (v, k) => (p as any)[k] === v));
+    // ignore specific fields
     const skipFields = ["onClick", "photo", "currentIndex", "selectedImage"];
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;

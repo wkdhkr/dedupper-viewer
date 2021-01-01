@@ -3,7 +3,11 @@ import { LinearProgress } from "@material-ui/core";
 import Hotkeys from "react-hot-keys";
 import { RouteComponentProps } from "@reach/router";
 import Gallery from "react-photo-gallery";
-import { DedupperImage, ConfigurationState } from "../types/unistore";
+import {
+  DedupperImage,
+  ConfigurationState,
+  GestureInfo
+} from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
@@ -45,6 +49,9 @@ const reload = () => {
   });
 };
 type GridViewerProps = RouteComponentProps & {
+  gestureInfo: GestureInfo;
+  setGestureInfo: (x: GestureInfo) => void;
+  connectionCount: number;
   configuration: ConfigurationState;
   updateTag: (
     hash: string | string[],
@@ -72,6 +79,9 @@ type GridViewerProps = RouteComponentProps & {
 };
 
 const GridViewer: React.FunctionComponent<GridViewerProps> = ({
+  gestureInfo,
+  setGestureInfo,
+  connectionCount,
   configuration: c,
   images,
   unit,
@@ -136,6 +146,19 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   return (
     <>
+      {connectionCount > 0 ? (
+        <LinearProgress
+          variant="determinate"
+          value={Math.max(100 - connectionCount * 5, 0)}
+          style={{
+            width: "100%",
+            zIndex: 1000,
+            position: "fixed",
+            top: window.innerHeight - 4,
+            left: 0
+          }}
+        />
+      ) : null}
       <AutoReload
         disabled={!c.autoReload}
         index={index}
@@ -223,6 +246,8 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...{
                 ...props,
+                gestureInfo,
+                setGestureInfo,
                 // image: props.photo.key ? imageByHash[props.photo.key] : null,
                 image: fitImages[props.index],
                 range,

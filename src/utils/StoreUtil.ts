@@ -58,7 +58,22 @@ export default class StoreUtil {
     StoreUtil.updateFieldInState(hashList, edit, store);
     // await dc.update(hash, edit, table);
     // no wait
-    Promise.all(hashList.map(h => dc.update(h, edit, table)));
+    hashList.forEach(async h => {
+      store.setState(
+        produce(store.getState(), draft => {
+          draft.connectionCount += 1;
+        })
+      );
+      try {
+        await dc.update(h, edit, table);
+      } finally {
+        store.setState(
+          produce(store.getState(), draft => {
+            draft.connectionCount -= 1;
+          })
+        );
+      }
+    });
     if (!silent && snackbarName) {
       store.setState(
         produce(store.getState(), draft => {
