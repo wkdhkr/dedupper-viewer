@@ -24,6 +24,7 @@ import ViewerUtil from "../utils/ViewerUtil";
 import AutoReload from "../components/behavior/AutoReload";
 import IFrameUtil from "../utils/IFrameUtil";
 import IFrameWrapper from "../components/IFrameWrapper";
+import FullscreenButton from "../components/FullscreenButton";
 
 const gs = new GridViewerService(store);
 
@@ -126,16 +127,18 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
-      event.preventDefault();
-      const leftTopIndex = index - (index % range);
-      let nextIndex = index;
-      if (event.deltaY > 0) {
-        nextIndex = leftTopIndex + range;
-      } else {
-        nextIndex = leftTopIndex - range;
-      }
-      if (fitImages.length) {
-        selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
+      if (!c.open) {
+        event.preventDefault();
+        const leftTopIndex = index - (index % range);
+        let nextIndex = index;
+        if (event.deltaY > 0) {
+          nextIndex = leftTopIndex + range;
+        } else {
+          nextIndex = leftTopIndex - range;
+        }
+        if (fitImages.length) {
+          selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
+        }
       }
     };
 
@@ -149,7 +152,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       {connectionCount > 0 ? (
         <LinearProgress
           variant="determinate"
-          value={Math.max(100 - connectionCount * 5, 0)}
+          value={Math.max(100 - connectionCount * 2, 0)}
           style={{
             width: "100%",
             zIndex: 1000,
@@ -310,15 +313,18 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 };
 
 const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = props => (
-  <IFrameWrapper
-    id="grid-viewer-iframe"
-    // eslint-disable-next-line react/destructuring-assignment
-    origin={props.configuration.iframeOrigin}
-  >
-    <GridViewer
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...props}
-    />
-  </IFrameWrapper>
+  <>
+    <FullscreenButton />
+    <IFrameWrapper
+      id="grid-viewer-iframe"
+      // eslint-disable-next-line react/destructuring-assignment
+      origin={props.configuration.iframeOrigin}
+    >
+      <GridViewer
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...props}
+      />
+    </IFrameWrapper>
+  </>
 );
 export default GridViewerWrapped;

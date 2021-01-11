@@ -1,31 +1,10 @@
 import axios from "axios";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import { DedupperChannel } from "../../types/unistore";
-// import rateLimit from "axios-rate-limit";
-// import Queue from "promise-queue";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { ConcurrencyManager } = require("axios-concurrency");
-
-/*
-const http = rateLimit(axios.create(), {
-  maxRequests: 1,
-  perMilliseconds: 1000 * 30
-});
-*/
-
-/*
-const maxConcurrent = 1;
-const maxQueue = Infinity;
-const queue = new Queue(maxConcurrent, maxQueue);
-*/
-
-// a concurrency parameter of 1 makes all api requests sequential
-const MAX_CONCURRENT_REQUESTS = 1;
+import AxiosUtil from "../../utils/AxiosUtil";
 
 // init your manager.
 const http = axios.create();
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const manager = ConcurrencyManager(http, MAX_CONCURRENT_REQUESTS);
 
 export default class DedupperClient {
   createChannel = async (channel: DedupperChannel) => {
@@ -62,7 +41,7 @@ export default class DedupperClient {
     const u = UrlUtil.setupApiUrlObj("rpc/sqlite/update");
     u.searchParams.append("hash", hash);
     u.searchParams.append("table", table);
-    const { data } = await http.post(u.href, obj);
+    const { data } = await AxiosUtil.getInstance(hash).post(u.href, obj);
     return data;
   };
 

@@ -19,6 +19,7 @@ import IFrameUtil from "../utils/IFrameUtil";
 import ColorTuner from "../components/viewer/ui/ColorTuner";
 import HudLayer from "../components/viewer/HudLayer";
 import DomUtil from "../utils/DomUtil";
+import FullscreenButton from "../components/FullscreenButton";
 
 const reload = () => {
   IFrameUtil.postMessageForParent({
@@ -228,15 +229,18 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   );
 };
 const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => (
-  <IFrameWrapper
-    id="main-viewer-iframe"
-    // eslint-disable-next-line react/destructuring-assignment
-    origin={props.configuration.iframeOrigin}
-  >
-    <MainViewer
-      // eslint-disable-next-line react/jsx-props-no-spreading
-      {...props}
-    />
-  </IFrameWrapper>
+  <>
+    <FullscreenButton />
+    <IFrameWrapper
+      id="main-viewer-iframe"
+      // eslint-disable-next-line react/destructuring-assignment
+      origin={props.configuration.iframeOrigin}
+    >
+      <MainViewer
+        // eslint-disable-next-line react/jsx-props-no-spreading
+        {...props}
+      />
+    </IFrameWrapper>
+  </>
 );
 export default MainViewerWrapped;

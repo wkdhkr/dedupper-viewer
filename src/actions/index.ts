@@ -274,9 +274,10 @@ const actions = (store: Store<State>) => ({
         footer.style.display = display;
       }
       UrlUtil.syncPlay(draft.mainViewer.isPlay);
+      const forceInterval = UrlUtil.getPlayInterval();
       ps.switchPlay(
         draft.mainViewer.isPlay,
-        draft.configuration.mainViewerPlayInterval
+        forceInterval || draft.configuration.mainViewerPlayInterval
       );
     });
   },
@@ -285,6 +286,7 @@ const actions = (store: Store<State>) => ({
       draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
       const sourceUnit = draft.gridViewer.unit;
       UrlUtil.syncPlay(draft.gridViewer.isPlay);
+      const forceInterval = UrlUtil.getPlayInterval();
       gps.switchGridPlay(
         draft.gridViewer.isPlay,
         () => {
@@ -298,7 +300,7 @@ const actions = (store: Store<State>) => ({
             actions(store).selected(store.getState(), nextHash, nextIndex);
           }
         },
-        draft.configuration.gridViewerPlayInterval
+        forceInterval || draft.configuration.gridViewerPlayInterval
       );
     });
   },
@@ -353,7 +355,9 @@ const actions = (store: Store<State>) => ({
       hash,
       { trim: finalTrim },
       "layoutUpdated",
-      store
+      store,
+      "process_state",
+      false
     );
     IFrameUtil.postMessageForParent({
       type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",

@@ -52,7 +52,7 @@ export default class StoreUtil {
     snackbarName: SnackbarKind | null,
     store: Store<State>,
     table: "process_state" | "tag" = "process_state",
-    silent = false
+    silent = true
   ) {
     const hashList = ImageArrayUtil.toArray(hash);
     StoreUtil.updateFieldInState(hashList, edit, store);

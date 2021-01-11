@@ -105,6 +105,16 @@ export default class UrlUtil {
     }
   };
 
+  static isPlay = () => {
+    const url = new URL(window.location.href);
+    return Boolean(url.searchParams.get("play"));
+  };
+
+  static getPlayInterval = () => {
+    const url = new URL(window.location.href);
+    return parseInt(url.searchParams.get("interval") || "0", 10) || null;
+  };
+
   static syncPlay = (isPlay: boolean) => {
     const url = new URL(window.location.href);
     if (!isPlay) {
