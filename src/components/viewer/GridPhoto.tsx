@@ -177,6 +177,10 @@ const GridPhoto = React.memo(
           style.marginTop = (photo.height - height) / 2;
         }
 
+        // avoid 1 pixel margin
+        style.width += 1;
+        style.height += 1;
+
         style = {
           ...style,
           ...ViewerUtil.getTransforms(imageData),

@@ -2,7 +2,6 @@ import { Box, Fab } from "@material-ui/core";
 import { Fullscreen, FullscreenExit } from "@material-ui/icons";
 import React, { useEffect, useState } from "react";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import UrlUtil from "../utils/dedupper/UrlUtil";
 import IFrameUtil from "../utils/IFrameUtil";
 
 type FullscreenButtonProps = {};
@@ -38,22 +37,26 @@ function useWindowSize() {
 }
 
 const FullscreenButton: React.FunctionComponent<FullscreenButtonProps> = () => {
-  const isPlay = UrlUtil.isPlay();
+  const [isHover, setIsHover] = useState(false);
   useWindowSize();
 
-  if (isPlay || IFrameUtil.isInIFrame()) {
+  if (IFrameUtil.isInIFrame()) {
     return <></>;
   }
   const isFullscreen = document.fullscreenElement !== null;
   const button = isFullscreen ? <FullscreenExit /> : <Fullscreen />;
   return (
+    // eslint-disable-next-line jsx-a11y/mouse-events-have-key-events
     <Box
+      className="fullScreenButton"
       m={0}
       style={{
-        opacity: 0.7,
+        transition: "0.2s",
+        opacity: !isHover ? 0 : 0.7,
         transform: "translate(-50%, -0%)"
-        // transition: "0.3s"
       }}
+      onMouseOver={() => setIsHover(true)}
+      onMouseOut={() => setIsHover(false)}
       top={31}
       right={10}
       zIndex="1500"

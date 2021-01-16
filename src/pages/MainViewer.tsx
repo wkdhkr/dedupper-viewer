@@ -92,6 +92,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
       DomUtil.getViewerSafe()?.prev(true);
     }
   };
+
   return (
     <>
       <HudLayer
@@ -232,6 +233,11 @@ const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => (
   <>
     <FullscreenButton />
     <IFrameWrapper
+      keepAspectRatio
+      // eslint-disable-next-line react/destructuring-assignment
+      standardHeight={props.configuration.standardHeight}
+      // eslint-disable-next-line react/destructuring-assignment
+      standardWidth={props.configuration.standardWidth}
       id="main-viewer-iframe"
       // eslint-disable-next-line react/destructuring-assignment
       origin={props.configuration.iframeOrigin}

@@ -81,7 +81,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
 
     const options = {
       title: false,
-      zoomRatio: 0.1,
+      zoomRatio: 0.055,
       zIndex: 1350, // under 1500, upper 1300, Snackbar and modal z-index
       transition: false,
       fullscreen: false,

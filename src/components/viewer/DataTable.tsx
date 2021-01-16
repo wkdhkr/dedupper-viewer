@@ -1,4 +1,5 @@
 import React from "react";
+import copy from "copy-to-clipboard";
 import { makeStyles } from "@material-ui/core/styles";
 import { Tooltip, IconButton, Box } from "@material-ui/core";
 import {
@@ -133,10 +134,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
             >
               <IconButton
                 onClick={() => {
-                  IFrameUtil.postMessageForParent({
-                    type: "copy",
-                    payload: { text: image.to_path }
-                  });
+                  copy(image.to_path);
                 }}
               >
                 <AssignmentReturned />
@@ -150,10 +148,21 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
             >
               <IconButton
                 onClick={() => {
-                  IFrameUtil.postMessageForParent({
-                    type: "copy",
-                    payload: { text: image.hash }
-                  });
+                  copy(image.hash);
+                }}
+              >
+                <Assignment />
+              </IconButton>
+            </Tooltip>
+            <Tooltip
+              classes={{ tooltip: classes.noMaxWidth }}
+              arrow
+              title={UrlUtil.generateImageUrl(image.hash)}
+              placement="top-end"
+            >
+              <IconButton
+                onClick={() => {
+                  copy(UrlUtil.generateImageUrl(image.hash));
                 }}
               >
                 <Assignment />

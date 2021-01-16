@@ -2,6 +2,7 @@ import React, { ReactElement, useState, useEffect } from "react";
 import IFrame from "react-iframe";
 import { Box } from "@material-ui/core";
 import IFrameUtil from "../utils/IFrameUtil";
+import ViewerUtil from "../utils/ViewerUtil";
 
 const getHeight = () =>
   window.innerHeight ||
@@ -52,14 +53,33 @@ interface IFrameWrapperProps {
   id: string;
   origin: string;
   url?: string;
+  standardWidth?: number;
+  standardHeight?: number;
+  keepAspectRatio?: boolean;
   children: ReactElement;
 }
 
 const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
-  ({ id, url, children, origin }) => {
-    const [w, h] = useCurrentWitdhHeight();
+  ({
+    id,
+    standardWidth,
+    standardHeight,
+    keepAspectRatio,
+    url,
+    children,
+    origin
+  }) => {
+    let [w, h] = useCurrentWitdhHeight();
     if (IFrameUtil.isInIFrame()) {
       return children;
+    }
+    if (keepAspectRatio && standardWidth && standardHeight) {
+      const [fixedWidth, fixedHeight] = ViewerUtil.calcMainViewerSize(
+        standardWidth,
+        standardHeight
+      );
+      w = fixedWidth;
+      h = fixedHeight;
     }
     const iframeUrl = new URL(url || window.location.href);
     iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration

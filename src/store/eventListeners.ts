@@ -294,8 +294,7 @@ export default function(store: Store<State>) {
     document.body.classList.remove("hideCursor");
     clearTimeout(timer);
     timer = setTimeout(function() {
-      const state = store.getState();
-      if (state.gridViewer.isPlay || state.mainViewer.isPlay) {
+      if (UrlUtil.isPlay()) {
         document.body.classList.add("hideCursor");
       }
     }, 5000);

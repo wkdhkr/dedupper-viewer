@@ -22,6 +22,27 @@ export default class ViewerUtil {
     }
   };
 
+  static calcMainViewerSize = (
+    standardWidth: number,
+    standardHeight: number
+  ) => {
+    const { innerHeight, innerWidth } = window;
+    const isPortrait = ViewerUtil.isPortrait();
+    const standardRatio = standardWidth / standardHeight;
+    if (isPortrait) {
+      const windowRatio = innerHeight / innerWidth;
+      if (windowRatio > standardRatio) {
+        return [innerWidth, innerWidth * (standardWidth / standardHeight)];
+      }
+      return [innerHeight * (standardHeight / standardWidth), innerHeight];
+    }
+    const windowRatio = innerWidth / innerHeight;
+    if (windowRatio < standardRatio) {
+      return [innerWidth, innerWidth * (standardHeight / standardWidth)];
+    }
+    return [innerHeight * (standardWidth / standardHeight), innerHeight];
+  };
+
   static detectAllowedUnit = (o: "portrait" | "landscape") => {
     const isPoraitImage = o === "portrait";
 
