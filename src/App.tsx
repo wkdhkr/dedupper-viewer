@@ -179,6 +179,7 @@ const App = connect<{}, {}, State, AppProps>(
               }
             }}
             changeUnit={props.changeUnit}
+            updateTag={props.updateTag}
             selectedByIndex={props.selectedByIndex}
             gridViewer={props.gridViewer}
             mainViewer={props.mainViewer}

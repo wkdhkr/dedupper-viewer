@@ -68,15 +68,15 @@ const FullscreenButton: React.FunctionComponent<FullscreenButtonProps> = () => {
           const w = SubViewerHelper.getWindow();
           const parentWindow = SubViewerHelper.getParentWindow();
           if (document.fullscreenElement) {
-            w?.document.exitFullscreen().catch((e: any) => {});
-            parentWindow?.document.exitFullscreen().catch((e: any) => {});
-            document.exitFullscreen().catch((e: any) => {});
+            w?.document.exitFullscreen().catch(() => {});
+            parentWindow?.document.exitFullscreen().catch(() => {});
+            document.exitFullscreen().catch(() => {});
           } else {
-            w?.document.body.requestFullscreen().catch((e: any) => {});
-            parentWindow?.document.body
+            w?.document.documentElement.requestFullscreen().catch(() => {});
+            parentWindow?.document.documentElement
               .requestFullscreen()
-              .catch((e: any) => {});
-            document.body.requestFullscreen().catch((e: any) => {});
+              .catch(() => {});
+            document.body.requestFullscreen().catch(() => {});
           }
         }}
         color="secondary"

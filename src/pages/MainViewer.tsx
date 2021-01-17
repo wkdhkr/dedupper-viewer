@@ -96,6 +96,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   return (
     <>
       <HudLayer
+        updateTag={updateTag}
         mode={c.showFacePP}
         disabled={isPlay}
         faces={faces}

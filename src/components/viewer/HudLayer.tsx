@@ -23,6 +23,7 @@ import DomUtil from "../../utils/DomUtil";
 import SlideUp from "../../transitions/SlideUp";
 
 type HudLayerProps = {
+  updateTag: (hash: string, x: number | null, name: string) => void;
   mode: "hover" | "always" | "none";
   faces: FacePPRow[];
   image: DedupperImage | null;
@@ -78,6 +79,7 @@ const getEmotionEmoji = (face: FacePPRow) => {
 };
 
 const HudLayer: React.FunctionComponent<HudLayerProps> = ({
+  updateTag,
   mode,
   faces,
   image,
@@ -86,6 +88,12 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
   const [hover, setHover] = useState<boolean>(false);
   const [hoverFace, setHoverFace] = useState<string | null>(null);
   const [selectedFace, setSelectedFace] = useState<FacePPRow | null>(null);
+
+  const hoverFaceFixed = faces
+    .map(face => face.face_token)
+    .includes(hoverFace || "")
+    ? hoverFace
+    : null;
 
   if (!image || disabled) {
     return <></>;
@@ -104,8 +112,8 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
     pointerEvents: "none" as "none",
     height: imageData ? imageData.height : 0,
     width: imageData ? imageData.width : 0,
-    marginTop: imageData ? imageData.top : 0,
-    marginLeft: imageData ? imageData.left : 0,
+    marginTop: imageData ? imageData.top || 0 : 0,
+    marginLeft: imageData ? imageData.left || 0 : 0,
     ...(imageData ? ViewerUtil.getTransforms(imageData) : {})
   };
 
@@ -164,6 +172,14 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
       </Dialog>
       <Box
         className="viewer-hud-layer-container"
+        onContextMenu={(e: React.MouseEvent) => {
+          e.preventDefault();
+          setHover(false);
+          if (image) {
+            const value = image.t1 ? null : 1;
+            updateTag(image.hash, value, "t1");
+          }
+        }}
         style={boxStyle}
         zIndex={1354}
         position="absolute"
@@ -207,7 +223,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                     key={landmark}
                     style={{
                       pointerEvents: "none",
-                      opacity: hoverFace === face.face_token ? 0.5 : 0,
+                      opacity: hoverFaceFixed === face.face_token ? 0.5 : 0,
                       background: green[500],
                       width: height * 0.01 || 1,
                       height: height * 0.01 || 1,

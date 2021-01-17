@@ -3,7 +3,7 @@ import * as colors from "@material-ui/core/colors";
 import { Box } from "@material-ui/core";
 import Rating from "@material-ui/lab/Rating";
 import { withStyles } from "@material-ui/core/styles";
-import { Label } from "@material-ui/icons";
+import { Delete, Label } from "@material-ui/icons";
 import { DedupperImage } from "../../../types/unistore";
 
 const getColor = (name: string, isHover = false) => {
@@ -77,7 +77,13 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
                 <LabelRating
                   key={name}
                   value={(currentImage as any)[name]}
-                  icon={<Label fontSize="inherit" />}
+                  icon={
+                    name === "t1" ? (
+                      <Delete fontSize="inherit" />
+                    ) : (
+                      <Label fontSize="inherit" />
+                    )
+                  }
                   name={`tag__${name}__${currentImage.hash}`}
                   onChange={(event, value) =>
                     onTagChange(currentImage.hash, value, name, next)

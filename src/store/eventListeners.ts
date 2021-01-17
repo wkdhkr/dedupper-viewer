@@ -13,6 +13,7 @@ import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameUtil from "../utils/IFrameUtil";
 import { MainViewer } from "../types/viewer";
 import ColorUtil from "../utils/ColorUtil";
+import ViewerUtil from "../utils/ViewerUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -321,5 +322,25 @@ export default function(store: Store<State>) {
   window.addEventListener("resize", event => {
     changeScale.function();
   });
+  */
+  /*
+  if (IFrameUtil.isInIFrame()) {
+    window.addEventListener(
+      "resize",
+      debounce(event => {
+        const { configuration: c } = store.getState();
+        const [fixedWidth, fixedHeight] = ViewerUtil.calcMainViewerSize(
+          c.standardWidth,
+          c.standardHeight
+        );
+        const container = document.getElementById("viewerContainer");
+        if (container) {
+          container.style.width = `${fixedWidth}px`;
+          container.style.height = `${fixedHeight}px`;
+        }
+        // changeScale.function();
+      }, 200)
+    );
+  }
   */
 }

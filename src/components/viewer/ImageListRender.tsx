@@ -80,6 +80,8 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     };
 
     const options = {
+      container: "#viewerContainer",
+      focus: false,
       title: false,
       zoomRatio: 0.055,
       zIndex: 1350, // under 1500, upper 1300, Snackbar and modal z-index
@@ -175,7 +177,11 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         this.destroyViewer();
       }
       */
-      if (prevProps.images !== images) {
+
+      if (
+        prevProps.images.map(({ hash }) => hash).join("") !==
+        images.map(({ hash }) => hash).join("")
+      ) {
         isUpdate = true;
       }
       if (isUpdate) {

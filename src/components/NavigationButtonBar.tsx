@@ -7,12 +7,12 @@ import {
   RssFeed,
   Settings,
   ViewColumn,
-  Label,
   Cached,
   Fullscreen,
   FullscreenExit,
   NavigateNext,
-  NavigateBefore
+  NavigateBefore,
+  Delete
 } from "@material-ui/icons";
 import { Box, IconButton, Paper, Slide, Tooltip } from "@material-ui/core";
 import { RouteComponentProps } from "@reach/router";
@@ -36,6 +36,12 @@ type NavigationButtonBarProps = {
   updateConfiguration: (c: ConfigurationState) => void;
   changeUnit: (x: number) => void;
   selectedByIndex: (index: number) => void;
+  updateTag: (
+    hash: string,
+    x: number | null,
+    name: string,
+    next?: boolean
+  ) => void;
   loadChannels: Function;
   togglePlay: Function;
 } & RouteComponentProps;
@@ -52,6 +58,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   updateConfiguration,
   changeUnit,
   selectedByIndex,
+  updateTag,
   loadChannels,
   togglePlay
 }) => {
@@ -100,8 +107,44 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
     return null;
   }
 
+  if (configuration.open) {
+    setIsHover(false);
+    return null;
+  }
+
+  const navigateImage = (isPrev = false) => {
+    if (isInGridViewer) {
+      selectedByIndex(gridViewer.index + (isPrev ? -1 : 1));
+    }
+    if (isInMainViewer) {
+      if (isPrev) {
+        DomUtil.getViewerSafe()?.prev(true);
+      } else {
+        DomUtil.getViewerSafe()?.next(true);
+      }
+    }
+  };
+
   return (
     <Box
+      onWheel={(e: React.WheelEvent) => {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          navigateImage();
+        } else {
+          navigateImage(false);
+        }
+      }}
+      onContextMenu={(event: React.MouseEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const image = isInMainViewer
+          ? mainViewer.currentImage
+          : gridViewer.selectedImage;
+        if (image) {
+          updateTag(image.hash, image.t1 ? null : 1, "t1", isInMainViewer);
+        }
+      }}
       textAlign="center"
       m={0}
       style={{
@@ -155,16 +198,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
             ) : null}
             {isShowPrevNext ? (
               <Tooltip title="prev">
-                <IconButton
-                  onClick={() => {
-                    if (isInGridViewer) {
-                      selectedByIndex(gridViewer.index - 1);
-                    }
-                    if (isInMainViewer) {
-                      DomUtil.getViewerSafe()?.prev(true);
-                    }
-                  }}
-                >
+                <IconButton onClick={() => navigateImage(true)}>
                   <NavigateBefore
                     color="secondary"
                     style={{ ...buttonStyle }}
@@ -188,16 +222,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
             ) : null}
             {isShowPrevNext ? (
               <Tooltip title="next">
-                <IconButton
-                  onClick={() => {
-                    if (isInGridViewer) {
-                      selectedByIndex(gridViewer.index + 1);
-                    }
-                    if (isInMainViewer) {
-                      DomUtil.getViewerSafe()?.next(true);
-                    }
-                  }}
-                >
+                <IconButton onClick={() => navigateImage()}>
                   <NavigateNext color="secondary" style={{ ...buttonStyle }} />
                 </IconButton>
               </Tooltip>
@@ -234,7 +259,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                     }
                   }}
                 >
-                  <Label
+                  <Delete
                     style={{
                       color: colors.red.A400,
                       ...buttonStyle

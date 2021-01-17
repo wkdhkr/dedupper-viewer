@@ -243,15 +243,19 @@ export function initImageExpand(this: any, done: any) {
 
       // width = Math.min(width * 1.0, naturalWidth);
       // height = Math.min(height * 1.0, naturalHeight);
+      const left = (viewerWidth - width) / 2;
+      const top = (viewerHeight - height) / 2;
       const imageData = {
+        left,
+        top,
+        x: left,
+        y: top,
+        width,
+        height,
         naturalWidth,
         naturalHeight,
         aspectRatio,
-        ratio: width / naturalWidth,
-        width,
-        height,
-        left: (viewerWidth - width) / 2,
-        top: (viewerHeight - height) / 2
+        ratio: width / naturalWidth
       };
       const initialImageData = { ...imageData };
 
