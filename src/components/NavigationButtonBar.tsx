@@ -69,6 +69,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
 
   const isInIFrame = IFrameUtil.isInIFrame();
 
+  const isInThumbSlider = UrlUtil.isInThumbSlider();
   const isInGridViewer = UrlUtil.isInGridViewer();
   const isSubViewer = SubViewerHelper.isSubViewer();
   // const isParent = SubViewerHelper.isParent();
@@ -83,12 +84,12 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isShowGrid = isInGridViewer;
   const isShowReload =
     isInGridViewer || isInMainViewer || isSubViewer || isInChannels;
-  const isShowT1All = isInGridViewer || isSubViewer;
+  const isShowT1All = isInGridViewer || isSubViewer || isInMainViewer;
   const isShowStop = isPlay && (isInGridViewer || isInMainViewer);
   const isShowPlay = !isPlay && (isInGridViewer || isInMainViewer);
   const isShowPrevNext = !isPlay && (isInGridViewer || isInMainViewer);
   const isShowHome = !isSubViewer && !isInStart;
-  const isShowChannels = !isSubViewer && !isInChannels;
+  const isShowChannels = !isSubViewer && !isInChannels && !isInMainViewer;
   const isShowConfig = true;
   /*
   const isNativeFullscreen =
@@ -108,7 +109,10 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   }
 
   if (configuration.open) {
-    setIsHover(false);
+    return null;
+  }
+
+  if (isInThumbSlider) {
     return null;
   }
 
@@ -132,7 +136,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
         if (e.deltaY > 0) {
           navigateImage();
         } else {
-          navigateImage(false);
+          navigateImage(true);
         }
       }}
       onContextMenu={(event: React.MouseEvent) => {
@@ -168,6 +172,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
               <Tooltip title="configuration">
                 <IconButton
                   onClick={() => {
+                    setIsHover(false);
                     updateConfiguration({
                       ...configuration,
                       open: true
@@ -239,11 +244,10 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
               </Tooltip>
             ) : null}
             {isShowT1All ? (
-              <Tooltip title="apply tag">
+              <Tooltip title="apply tags to the displayed images.">
                 <IconButton
                   onClick={() => {
                     if (isSubViewer) {
-                      // SubViewerHelper.dispatchCustomEventForParent(event.type);
                       IFrameUtil.postMessageForParent({
                         type: "forGrid",
                         payload: {
@@ -271,7 +275,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
             {isShowReload ? (
               <Tooltip title="reload">
                 <IconButton
-                  onClick={() => {
+                  onClick={async () => {
                     if (isInChannels) {
                       loadChannels();
                     } else {
@@ -280,6 +284,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                         configuration.maxJSHeapSize
                       );
                       */
+                      await SubViewerHelper.prepareReference();
                       IFrameUtil.postMessageForParent({
                         type: "superReload",
                         payload: null

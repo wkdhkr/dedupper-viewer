@@ -29,7 +29,6 @@ import { DedupperChannel } from "../../types/unistore";
 // import SubViewerHelper from "../../helpers/viewer/SubViewerHelper";
 import RouterUtil from "../../utils/RouterUtil";
 import { IFrameMessage } from "../../types/window";
-import IFrameUtil from "../../utils/IFrameUtil";
 
 const getOrientationByName = (name: string) => {
   return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
@@ -177,7 +176,8 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
               tooltip: "play",
               onClick: (event, rowData) =>
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
-                  const url = `/channel/${r.id}?play=1`;
+                  const o = getOrientationByName(r.name);
+                  const url = `/channel/${r.id}?play=1&o=${o}`;
                   if (enableSubViewer) {
                     launchSubViewer(url);
                   } else {
@@ -190,7 +190,8 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
               tooltip: "show",
               onClick: (event, rowData) =>
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
-                  const url = `/channel/${r.id}`;
+                  const o = getOrientationByName(r.name);
+                  const url = `/channel/${r.id}?o=${o}`;
                   if (enableSubViewer) {
                     launchSubViewer(url);
                   } else {

@@ -2,11 +2,16 @@ import { Store } from "unistore";
 import { navigate } from "@reach/router";
 import produce from "immer";
 import copy from "copy-to-clipboard";
-import { State } from "../types/unistore";
+import { keyBy } from "lodash";
+import { DedupperImage, State } from "../types/unistore";
 import { IFrameMessage } from "../types/window";
 import IFrameUtil from "../utils/IFrameUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import DomUtil from "../utils/DomUtil";
+import WindowUtil from "../utils/WindowUtil";
+import ThumbSliderUtil from "../utils/ThumbSliderUtil";
+import PerformanceUtil from "../utils/PerformanceUtil";
 
 export default function(store: Store<State>) {
   window.addEventListener(
@@ -14,7 +19,103 @@ export default function(store: Store<State>) {
     (event: any) => {
       const message: IFrameMessage = event.data;
 
+      console.log(message, window.location.href);
+
       switch (message.type) {
+        case "toggleMainViewerPlay":
+          if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
+            store.setState(
+              produce(store.getState(), draft => {
+                draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
+              })
+            );
+          }
+          break;
+        case "selected":
+          if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
+            const state = store.getState();
+            const index = state.mainViewer.images
+              .map(x => x.hash)
+              .indexOf(message.payload.hash);
+            if (index !== -1) {
+              DomUtil.getViewer().view(index);
+            }
+          }
+          break;
+        case "loadImages":
+          if (UrlUtil.isInThumbSlider() && IFrameUtil.isInIFrame()) {
+            store.setState(
+              produce(store.getState(), draft => {
+                draft.mainViewer.images = message.payload;
+                draft.imageByHash = keyBy<DedupperImage>(
+                  message.payload,
+                  "hash"
+                );
+                draft.thumbSlider.index = 0;
+                draft.thumbSlider.selectedImage =
+                  draft.mainViewer.images[0] || null;
+              })
+            );
+          }
+          break;
+        case "thumbSliderViewed": {
+          const hash = store.getState().mainViewer.images[
+            message.payload.nextLeftIndex
+          ]?.hash;
+          PerformanceUtil.decodeImage(hash);
+          break;
+        }
+        case "viewed":
+          if (UrlUtil.isInThumbSlider()) {
+            store.setState(
+              produce(store.getState(), draft => {
+                const image = draft.imageByHash[message.payload.hash];
+                const { hash, index } = message.payload as {
+                  hash: string;
+                  index: number;
+                };
+                if (image) {
+                  draft.thumbSlider.selectedImage =
+                    draft.imageByHash[hash] || null;
+                  draft.thumbSlider.index = index;
+                }
+              })
+            );
+            setTimeout(() => {
+              const leftTopHash = ThumbSliderUtil.getLeftTopHash(
+                message.payload.hash,
+                store.getState().mainViewer.images,
+                store.getState().configuration
+              );
+              if (leftTopHash) {
+                const el = document.getElementById(
+                  `photo-container__${leftTopHash}`
+                );
+                WindowUtil.scrollToNative(el);
+              }
+            });
+            IFrameUtil.postMessageForOther({
+              type: "thumbSliderViewed",
+              payload: {
+                ...message.payload,
+                nextLeftIndex: ThumbSliderUtil.getNextLeftTopHash(
+                  message.payload.hash,
+                  store.getState().mainViewer.images,
+                  store.getState().configuration
+                )
+              }
+            });
+          }
+          break;
+        case "prepareSubViewerReference":
+          if (window.opener) {
+            try {
+              window.opener.subViewerWindow = window;
+            } catch (e) {
+              // ignore cross domain error
+            }
+          }
+          break;
         case "copy":
           // navigator.clipboard.writeText(message.payload.text);
           copy(message.payload.text);
@@ -33,6 +134,39 @@ export default function(store: Store<State>) {
           }
           break;
         }
+        case "forAll": {
+          ([
+            "forGrid",
+            "forMainViewer",
+            "forSubViewer",
+            "forThumbSlider"
+          ] as const).forEach(type => {
+            const newMessage: IFrameMessage = {
+              ...message,
+              type
+            };
+            const w = window.parent?.opener || window.parent || window;
+            w.postMessage(newMessage, "*");
+          });
+          break;
+        }
+        case "forThumbSlider": {
+          const w = SubViewerHelper.getWindow();
+          if (w) {
+            IFrameUtil.postMessageById(
+              message.payload,
+              "thumb-slider-iframe",
+              "*",
+              w
+            );
+          }
+          IFrameUtil.postMessageById(
+            message.payload,
+            "thumb-slider-iframe",
+            "*"
+          );
+          break;
+        }
         case "forGrid": {
           if (UrlUtil.isInGridViewer()) {
             IFrameUtil.postMessageById(
@@ -41,6 +175,27 @@ export default function(store: Store<State>) {
               "*"
             );
           }
+          break;
+        }
+        case "forMainViewer": {
+          if (UrlUtil.isInMainViewer()) {
+            IFrameUtil.postMessageById(
+              message.payload,
+              "main-viewer-iframe",
+              "*"
+            );
+          } else {
+            const w = SubViewerHelper.getWindow();
+            if (w) {
+              IFrameUtil.postMessageById(
+                message.payload,
+                "main-viewer-iframe",
+                "*",
+                w
+              );
+            }
+          }
+
           break;
         }
         case "customEvent": {
@@ -52,10 +207,14 @@ export default function(store: Store<State>) {
         }
         case "superReload":
           [
+            document.getElementById("thumb-slider-iframe"),
             document.getElementById("grid-viewer-iframe"),
             document.getElementById("main-viewer-iframe"),
             SubViewerHelper.getWindow()?.document.getElementById(
               "main-viewer-iframe"
+            ),
+            SubViewerHelper.getWindow()?.document.getElementById(
+              "thumb-slider-iframe"
             )
           ]
             .map(el => {

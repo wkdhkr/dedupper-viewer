@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import React, { MouseEventHandler } from "react";
+import React, { MouseEventHandler, useEffect } from "react";
 import omit from "lodash/omit";
 import { shallowEqual } from "shallow-equal-object";
 import { RenderImageProps } from "react-photo-gallery";
@@ -14,6 +14,8 @@ import { DedupperImage, GestureInfo } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
 import ColorUtil from "../../utils/ColorUtil";
+import useWindowSize from "../../hooks/windowSize";
+import PerformanceUtil from "../../utils/PerformanceUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -24,6 +26,7 @@ let currentHover: string | null = null;
 const imgWithClick = { cursor: "pointer" };
 const GridPhoto = React.memo(
   ({
+    isThumbSlider,
     gestureInfo,
     setGestureInfo,
     range,
@@ -42,6 +45,7 @@ const GridPhoto = React.memo(
     top,
     left
   }: RenderImageProps & {
+    isThumbSlider?: boolean;
     range: number;
     isPlay: boolean;
     unit: number;
@@ -60,6 +64,28 @@ const GridPhoto = React.memo(
     updateRating: (hash: string, x: number | null, next?: boolean) => void;
   }) => {
     // const isNeighbour = Math.abs(currentIndex - index) < range;
+
+    useWindowSize();
+
+    useEffect(() => {
+      const isNeighbour =
+        currentIndex - range - range < index &&
+        index < currentIndex + range + range;
+      if (isNeighbour) {
+        PerformanceUtil.decodeImage(image.hash);
+      }
+      /*
+      if (UrlUtil.isInThumbSlider() && currentIndex === index) {
+        setTimeout(() => {
+          const el = document.getElementById(`photo-container__${image.hash}`);
+          // WindowUtil.scrollTo(el, false);
+          if (el) {
+            el.scrollIntoView();
+          }
+        });
+      }
+      */
+    }, [image, isThumbSlider, currentIndex, range]);
 
     /*
     useEffect(() => {
@@ -103,6 +129,8 @@ const GridPhoto = React.memo(
         onClick(event, { photo, index } as any);
       }
     };
+
+    /*
     const createPredecodeStyle = () => {
       const styles: React.CSSProperties = {};
       const leftTopIndex = currentIndex - (currentIndex % range);
@@ -121,6 +149,7 @@ const GridPhoto = React.memo(
       }
       return styles;
     };
+    */
 
     const createStyle = () => {
       let style: React.CSSProperties = imgStyle;
@@ -184,20 +213,30 @@ const GridPhoto = React.memo(
         style = {
           ...style,
           ...ViewerUtil.getTransforms(imageData),
-          filter: ColorUtil.createFilter(imageData),
-          ...createPredecodeStyle()
+          filter: ColorUtil.createFilter(imageData)
+          // ...createPredecodeStyle()
         };
       }
       return style;
     };
     const isSelected = !isPlay && photo.key === selectedImage?.hash;
     // const isShowRatingAndTag = isNeighbour && !isPlay;
-    const isShowRatingAndTag = !isPlay;
+    const isNeighbour =
+      currentIndex - range - range < index &&
+      index < currentIndex + range + range;
+    const isBigArea = photo.height > 120 && photo.width > 160;
+    const isShowRatingAndTag = isNeighbour && !isPlay && isBigArea;
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;
 
     // const decoding = isPlay || isNeighbour ? "sync" : "async";
     // const decoding = isNeighbour ? "sync" : "async";
+
+    const handleContextMenu = (event: React.MouseEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+    };
 
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
       if (event.button === 1) {
@@ -210,6 +249,22 @@ const GridPhoto = React.memo(
     const handleWheel = () => {
       currentHover = null;
     };
+    const onMouseEnter = (event: any) => {
+      if (!isPlay) {
+        currentHover = photo.key || null;
+        setTimeout(() => {
+          if (currentHover === photo.key) {
+            handleClick(event);
+          }
+        }, 500);
+      }
+    };
+    const onMouseLeave = () => {
+      if (currentHover === photo.key) {
+        currentHover = null;
+      }
+    };
+
     const sizeFactor = 1.25;
     return (
       <Box id={`photo-container__${photo.key}`} key={photo.key}>
@@ -225,6 +280,10 @@ const GridPhoto = React.memo(
         >
           {isShowRatingAndTag ? (
             <Box
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
+              onMouseDown={mouseDownHandler}
+              onContextMenu={handleContextMenu}
               style={{
                 marginTop: "8px",
                 opacity: 0.4,
@@ -294,26 +353,9 @@ const GridPhoto = React.memo(
               onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
               onWheel={handleWheel}
-              onContextMenu={(event: React.MouseEvent) => {
-                event.preventDefault();
-                event.stopPropagation();
-                updateTag(image.hash, image.t1 ? null : 1, "t1", false);
-              }}
-              onMouseEnter={(event: any) => {
-                if (!isPlay) {
-                  currentHover = photo.key || null;
-                  setTimeout(() => {
-                    if (currentHover === photo.key) {
-                      handleClick(event);
-                    }
-                  }, 500);
-                }
-              }}
-              onMouseLeave={() => {
-                if (currentHover === photo.key) {
-                  currentHover = null;
-                }
-              }}
+              onContextMenu={handleContextMenu}
+              onMouseEnter={onMouseEnter}
+              onMouseLeave={onMouseLeave}
               onLoad={async e => {
                 const imageElement = e.target as HTMLImageElement;
                 if (image.width !== imageElement.naturalWidth) {
@@ -339,10 +381,12 @@ const GridPhoto = React.memo(
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;
     }
-    const prevLeftTopIndex = p.currentIndex - (p.currentIndex % p.range);
-    const leftTopIndex = n.currentIndex - (n.currentIndex % n.range);
-    const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
-    if (isNeighbour && prevLeftTopIndex !== leftTopIndex) {
+    const { range } = n;
+    const isNeighbour =
+      n.currentIndex - range - range < n.index &&
+      n.index < n.currentIndex + range + range;
+    // const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
+    if (isNeighbour) {
       return false;
     }
     if (p.image.rating !== n.image.rating) {

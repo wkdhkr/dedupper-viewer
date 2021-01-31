@@ -11,9 +11,11 @@ import actions from "../actions";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameUtil from "../utils/IFrameUtil";
-import { MainViewer } from "../types/viewer";
+import { ImageData, MainViewer } from "../types/viewer";
 import ColorUtil from "../utils/ColorUtil";
-import ViewerUtil from "../utils/ViewerUtil";
+import WindowUtil from "../utils/WindowUtil";
+import PerformanceUtil from "../utils/PerformanceUtil";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -95,12 +97,79 @@ function addListener(element: any, type: any, listener: any) {
 }
 
 export default function(store: Store<State>) {
+  const isInClassNameEvent = (event: MouseEvent, name: string) =>
+    event.composedPath().indexOf(document.getElementsByClassName(name)[0]) !==
+    -1;
+  const update = (
+    hash: string,
+    viewer: MainViewer,
+    fixedImageData: ImageData
+  ) => {
+    const trim = JSON.stringify(fixedImageData);
+    actions(store).updateTrim(store.getState(), hash, trim);
+    // eslint-disable-next-line no-param-reassign
+    viewer.imageData = fixedImageData;
+    viewer.zoomTo(fixedImageData.ratio);
+  };
+
+  document.body.addEventListener(
+    "contextmenu",
+    function(event) {
+      let viewer: MainViewer | null = null;
+      let hash: string | null = null;
+      try {
+        hash = DomUtil.getCurrentHash();
+        viewer = DomUtil.getViewer();
+      } catch (e) {
+        return;
+      }
+      if (isInClassNameEvent(event, "viewer-flip-horizontal")) {
+        event.preventDefault();
+        setTimeout(() => {
+          if (viewer && hash) {
+            const fixedImageData = { ...viewer.imageData };
+            if (fixedImageData.left !== 0) {
+              fixedImageData.left = 0;
+              fixedImageData.x = 0;
+            } else {
+              const left =
+                fixedImageData.naturalWidth * fixedImageData.ratio -
+                window.innerWidth;
+              fixedImageData.left = -left;
+              fixedImageData.x = -left;
+            }
+            update(hash, viewer, fixedImageData);
+          }
+        });
+      } else if (isInClassNameEvent(event, "viewer-flip-vertical")) {
+        event.preventDefault();
+        setTimeout(() => {
+          if (viewer && hash) {
+            const fixedImageData = { ...viewer.imageData };
+            if (fixedImageData.top !== 0) {
+              fixedImageData.top = 0;
+              fixedImageData.y = 0;
+            } else {
+              const top =
+                fixedImageData.naturalHeight * fixedImageData.ratio -
+                window.innerHeight;
+              fixedImageData.top = -top;
+              fixedImageData.y = -top;
+            }
+            update(hash, viewer, fixedImageData);
+          }
+        });
+      }
+    },
+    false
+  );
   document.body.addEventListener<any>("viewed", function(
     event: CustomEvent<any>
   ) {
     try {
+      const prevState = store.getState();
       actions(store).viewed(
-        store.getState(),
+        prevState,
         DomUtil.getCurrentHash(event),
         event.detail.index
       );
@@ -122,15 +191,27 @@ export default function(store: Store<State>) {
       if (filter) {
         viewer.image.style.filter = filter;
       }
-      if (!UrlUtil.isInSingleViewer() && DomUtil.getViewer().index === 0) {
-        actions(store).showSnackbarCustom(store.getState(), [
-          "This is first image.",
-          {
-            variant: "info",
-            autoHideDuration: 3000,
-            anchorOrigin: { horizontal: "right", vertical: "top" }
-          }
-        ]);
+      if (!UrlUtil.isInSingleViewer()) {
+        if (DomUtil.getViewer().index === 0) {
+          actions(store).showSnackbarCustom(store.getState(), [
+            "This is first image.",
+            {
+              variant: "info",
+              autoHideDuration: 3000,
+              anchorOrigin: { horizontal: "right", vertical: "top" }
+            }
+          ]);
+        }
+        // preload, for performance
+        PerformanceUtil.decodeImage(
+          mainViewer.images[event.detail.index + 1]?.hash
+        );
+        PerformanceUtil.decodeImage(
+          (
+            mainViewer.images[event.detail.index - 1] ||
+            mainViewer.images.slice(-1).pop()
+          )?.hash
+        ); // prev
       }
     } catch (e) {
       // ignore
@@ -205,14 +286,28 @@ export default function(store: Store<State>) {
       if (event.button === 1) {
         event.preventDefault();
         if (UrlUtil.isInSubViewer()) {
-          IFrameUtil.postMessageForParent({
-            type: "forGrid",
-            payload: {
-              type: "customEvent",
+          SubViewerHelper.prepareReference().then(() => {
+            IFrameUtil.postMessageForParent({
+              type: "forGrid",
               payload: {
-                name: EVENT_X_KEY
+                type: "customEvent",
+                payload: {
+                  name: EVENT_X_KEY
+                }
               }
-            }
+            });
+          });
+        } else if (UrlUtil.isInMainViewer()) {
+          SubViewerHelper.prepareReference().then(() => {
+            IFrameUtil.postMessageForParent({
+              type: "forThumbSlider",
+              payload: {
+                type: "customEvent",
+                payload: {
+                  name: EVENT_X_KEY
+                }
+              }
+            });
           });
         } else {
           try {
@@ -323,11 +418,11 @@ export default function(store: Store<State>) {
     changeScale.function();
   });
   */
-  /*
   if (IFrameUtil.isInIFrame()) {
     window.addEventListener(
       "resize",
-      debounce(event => {
+      debounce(() => {
+        /*
         const { configuration: c } = store.getState();
         const [fixedWidth, fixedHeight] = ViewerUtil.calcMainViewerSize(
           c.standardWidth,
@@ -339,8 +434,15 @@ export default function(store: Store<State>) {
           container.style.height = `${fixedHeight}px`;
         }
         // changeScale.function();
+        */
+        if (UrlUtil.isInThumbSlider()) {
+          const hash = store.getState().thumbSlider.selectedImage?.hash;
+          if (hash) {
+            const el = document.getElementById(`photo-container__${hash}`);
+            WindowUtil.scrollTo(el);
+          }
+        }
       }, 200)
     );
   }
-  */
 }

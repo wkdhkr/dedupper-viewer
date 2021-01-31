@@ -1,4 +1,5 @@
 import { IFrameMessage } from "../types/window";
+import UrlUtil from "./dedupper/UrlUtil";
 import WindowUtil from "./WindowUtil";
 
 export default class IFrameUtil {
@@ -14,6 +15,30 @@ export default class IFrameUtil {
       }
     }
     return null;
+  };
+
+  static postMessageForOther = (payload: IFrameMessage) => {
+    if (UrlUtil.isInGridViewer()) {
+      IFrameUtil.postMessageForParent({
+        type: "forSubViewer",
+        payload
+      });
+    } else {
+      IFrameUtil.postMessageForParent({
+        type: "forGrid",
+        payload
+      });
+      IFrameUtil.postMessageForParent({
+        type: "forThumbSlider",
+        payload
+      });
+    }
+    if (UrlUtil.isInThumbSlider()) {
+      IFrameUtil.postMessageForParent({
+        type: "forMainViewer",
+        payload
+      });
+    }
   };
 
   static postMessageForParent = (message: IFrameMessage) => {

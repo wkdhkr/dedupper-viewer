@@ -79,7 +79,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       size: "large" as Viewer.ToolbarButtonSize
     };
 
-    const options = {
+    const options: Viewer.Options & { focus: boolean } = {
       container: "#viewerContainer",
       focus: false,
       title: false,

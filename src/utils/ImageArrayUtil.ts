@@ -10,6 +10,13 @@ export default class ImageArrayUtil {
     return images;
   };
 
+  static findIndex = (hash: string | null, images: DedupperImage[]) => {
+    if (hash === null) {
+      return null;
+    }
+    return images.findIndex(i => i.hash === hash);
+  };
+
   static toArray(t: any | any[]) {
     if (Array.isArray(t)) {
       return t;

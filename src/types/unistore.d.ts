@@ -135,6 +135,12 @@ export interface GridViewerState {
   index: number;
 }
 
+export interface ThumbSliderState {
+  gestureInfo: GestureInfo;
+  selectedImage: DedupperImage | null;
+  index: number;
+}
+
 export interface ConfigurationState {
   amazonCloudDriveDomain: string;
   dedupperServerProtocol: "http" | "https";
@@ -172,4 +178,5 @@ export interface State {
   channelById: Dictionary<DedupperChannel>;
   gridViewer: GridViewerState;
   mainViewer: MainViewerState;
+  thumbSlider: ThumbSliderState;
 }

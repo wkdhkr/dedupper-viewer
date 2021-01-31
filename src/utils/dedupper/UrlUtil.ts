@@ -49,6 +49,10 @@ export default class UrlUtil {
     return u;
   };
 
+  static isInThumbSlider = () => {
+    return window.location.pathname.split("/").includes("thumbs");
+  };
+
   static isInChannels = () => {
     return window.location.pathname.split("/").includes("channels");
   };

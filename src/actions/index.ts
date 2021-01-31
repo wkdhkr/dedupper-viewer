@@ -1,6 +1,5 @@
 import produce from "immer";
 import keyBy from "lodash/keyBy";
-import scrollIntoView from "scroll-into-view-if-needed";
 import { Store } from "unistore";
 import PlayerService from "../services/Viewer/PlayerService";
 import DedupperClient from "../services/dedupper/DedupperClient";
@@ -24,6 +23,9 @@ import IFrameUtil from "../utils/IFrameUtil";
 import { EVENT_UPDATE_IMAGE } from "../constants/dedupperConstants";
 import CacheUtil from "../utils/CacheUtil";
 import ColorUtil from "../utils/ColorUtil";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import WindowUtil from "../utils/WindowUtil";
+import { IFrameMessage } from "../types/window";
 
 // let subWindowHandle: Window | null = null;
 
@@ -34,7 +36,12 @@ const actions = (store: Store<State>) => ({
   setGestureInfo(state: State, info: GestureInfo) {
     store.setState(
       produce(store.getState(), draft => {
-        draft.gridViewer.gestureInfo = info;
+        if (UrlUtil.isInGridViewer()) {
+          draft.gridViewer.gestureInfo = info;
+        }
+        if (UrlUtil.isInThumbSlider()) {
+          draft.thumbSlider.gestureInfo = info;
+        }
       })
     );
   },
@@ -151,7 +158,7 @@ const actions = (store: Store<State>) => ({
       );
     }
   },
-  viewed(state: State, hash: string, index: number) {
+  async viewed(state: State, hash: string, index: number) {
     store.setState(
       produce(state, draft => {
         draft.mainViewer.currentImage = draft.imageByHash[hash] || null;
@@ -162,6 +169,17 @@ const actions = (store: Store<State>) => ({
     if (state.mainViewer.isPlay) {
       actions(store).updateViewStat(store.getState(), hash);
     }
+    await SubViewerHelper.prepareReference();
+    IFrameUtil.postMessageForParent({
+      type: "forAll",
+      payload: {
+        type: "viewed",
+        payload: {
+          hash,
+          index
+        }
+      }
+    });
   },
   selectedByIndex(state: State, index: number) {
     const { images } = state.mainViewer;
@@ -179,10 +197,29 @@ const actions = (store: Store<State>) => ({
   selected(
     state: State,
     hash: string | null,
-    index: number,
+    mayIndex: number | null = null,
     showSubViewer = false
   ) {
     if (hash === null) {
+      return;
+    }
+    const index =
+      mayIndex === null
+        ? store.getState().mainViewer.images.findIndex(i => i.hash === hash)
+        : mayIndex;
+    if (UrlUtil.isInThumbSlider()) {
+      SubViewerHelper.prepareReference().then(() => {
+        IFrameUtil.postMessageForParent({
+          type: "forAll",
+          payload: {
+            type: "selected",
+            payload: {
+              hash,
+              index
+            }
+          }
+        });
+      });
       return;
     }
     store.setState(
@@ -238,17 +275,7 @@ const actions = (store: Store<State>) => ({
         */
         if (leftTopHash) {
           const el = document.getElementById(`photo-container__${leftTopHash}`);
-          // scrollIntoView(el, { behavior: "smooth", block: "start" });
-          // scrollIntoView(el, { block: "start" });
-          // el.scrollIntoView({ block: "end" });
-          if (el) {
-            scrollIntoView(el, {
-              // behavior: "smooth",
-              scrollMode: "if-needed",
-              block: "start"
-            });
-            window.scrollBy(0, 1);
-          }
+          WindowUtil.scrollTo(el);
         }
       })
     );
@@ -257,6 +284,17 @@ const actions = (store: Store<State>) => ({
     }
   },
   togglePlay(state: State) {
+    if (UrlUtil.isInThumbSlider()) {
+      SubViewerHelper.prepareReference().then(() =>
+        IFrameUtil.postMessageForParent({
+          type: "forAll",
+          payload: {
+            type: "toggleMainViewerPlay"
+          }
+        })
+      );
+      return state;
+    }
     const vc = DomUtil.getViewerCanvas();
     if (vc) {
       vc.style.transform = "none";
@@ -359,21 +397,19 @@ const actions = (store: Store<State>) => ({
       "process_state",
       false
     );
-    IFrameUtil.postMessageForParent({
-      type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",
+    const payload = {
+      type: "customEvent",
       payload: {
-        type: "customEvent",
-        payload: {
-          name: EVENT_UPDATE_IMAGE,
-          detail: {
-            hash: [hash],
-            edit: {
-              trim: finalTrim
-            }
+        name: EVENT_UPDATE_IMAGE,
+        detail: {
+          hash: [hash],
+          edit: {
+            trim: finalTrim
           }
         }
       }
-    });
+    } as IFrameMessage;
+    IFrameUtil.postMessageForOther(payload);
   },
   selectNext(state: State) {
     if (!state.keyStatus.shifted) {
@@ -387,26 +423,41 @@ const actions = (store: Store<State>) => ({
         }
       }
       if (state.configuration.selectNextAfterEditInGridViewer) {
+        let toNextFlag = false;
+        let nextHash: string | null = null;
+        let nextIndex: number | null = null;
         if (state.gridViewer.selectedImage) {
-          let nextIndex = state.gridViewer.index + 1;
+          nextIndex = state.gridViewer.index + 1;
           if (!state.mainViewer.images[nextIndex]) {
             nextIndex = 0;
           }
-          const nextHash = state.mainViewer.images[nextIndex]?.hash;
+          nextHash = state.mainViewer.images[nextIndex]?.hash;
           // const range = ViewerUtil.detectRange(state.gridViewer.unit);
           if (nextHash /* && nextIndex % range !== 0 */) {
-            actions(store).selected(
-              store.getState(),
-              nextHash,
-              nextIndex,
-              true
-            );
+            toNextFlag = true;
           }
+        }
+        if (state.thumbSlider.selectedImage) {
+          nextIndex = state.thumbSlider.index + 1;
+          if (!state.mainViewer.images[nextIndex]) {
+            nextIndex = 0;
+          }
+          nextHash = state.mainViewer.images[nextIndex]?.hash;
+          // const range = ViewerUtil.detectRange(state.gridViewer.unit);
+          if (nextHash /* && nextIndex % range !== 0 */) {
+            toNextFlag = true;
+          }
+        }
+        if (toNextFlag && nextIndex !== null) {
+          actions(store).selected(store.getState(), nextHash, nextIndex, true);
         }
       }
     }
   },
   updateViewStat(state: State, hash: string) {
+    if (UrlUtil.isInThumbSlider()) {
+      return;
+    }
     const image = state.imageByHash[hash];
     if (!image) {
       return;
@@ -420,19 +471,17 @@ const actions = (store: Store<State>) => ({
     };
     // no wait
     StoreUtil.updateField(hash, edit, null, store);
-    IFrameUtil.postMessageForParent({
-      type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",
+    const payload = {
+      type: "customEvent",
       payload: {
-        type: "customEvent",
-        payload: {
-          name: EVENT_UPDATE_IMAGE,
-          detail: {
-            hash: [hash],
-            edit
-          }
+        name: EVENT_UPDATE_IMAGE,
+        detail: {
+          hash: [hash],
+          edit
         }
       }
-    });
+    } as IFrameMessage;
+    IFrameUtil.postMessageForOther(payload);
   },
   updateRating(state: State, hash: string, rating: number | null, next = true) {
     if (next && rating) {
@@ -445,21 +494,19 @@ const actions = (store: Store<State>) => ({
       "ratingUpdated",
       store
     );
-    IFrameUtil.postMessageForParent({
-      type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",
+    const payload = {
+      type: "customEvent",
       payload: {
-        type: "customEvent",
-        payload: {
-          name: EVENT_UPDATE_IMAGE,
-          detail: {
-            hash: [hash],
-            edit: {
-              rating: rating || 0
-            }
+        name: EVENT_UPDATE_IMAGE,
+        detail: {
+          hash: [hash],
+          edit: {
+            rating: rating || 0
           }
         }
       }
-    });
+    } as IFrameMessage;
+    IFrameUtil.postMessageForOther(payload);
   },
   updateTag(
     state: State,
@@ -491,21 +538,19 @@ const actions = (store: Store<State>) => ({
       store,
       "tag"
     );
-    IFrameUtil.postMessageForParent({
-      type: UrlUtil.isInGridViewer() ? "forSubViewer" : "forGrid",
+    const payload = {
+      type: "customEvent",
       payload: {
-        type: "customEvent",
-        payload: {
-          name: EVENT_UPDATE_IMAGE,
-          detail: {
-            hash: hashList,
-            edit: {
-              [name]: value
-            }
+        name: EVENT_UPDATE_IMAGE,
+        detail: {
+          hash: hashList,
+          edit: {
+            [name]: value
           }
         }
       }
-    });
+    } as IFrameMessage;
+    IFrameUtil.postMessageForOther(payload);
   },
   async loadChannels(state: State) {
     store.setState(
@@ -647,6 +692,15 @@ const actions = (store: Store<State>) => ({
             */
           }
           draft.imageByHash = keyBy<DedupperImage>(images, "hash");
+          SubViewerHelper.prepareReference().then(() =>
+            IFrameUtil.postMessageForParent({
+              type: "forAll",
+              payload: {
+                type: "loadImages",
+                payload: images
+              }
+            })
+          );
         }
       })
     );

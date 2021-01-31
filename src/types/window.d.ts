@@ -11,8 +11,16 @@ export interface DedupperWindow extends Window {
 }
 
 export type IFrameMessageType =
+  | "thumbSliderViewed"
+  | "customEvent"
+  | "toggleMainViewerPlay"
+  | "selected"
+  | "viewed"
   | "copy"
+  | "forAll"
   | "forGrid"
+  | "forThumbSlider"
+  | "forMainViewer"
   | "forSubViewer"
   | "customEvent"
   | "superReload"
@@ -21,8 +29,10 @@ export type IFrameMessageType =
   | "navigateParent"
   | "navigateIF"
   | "subViewer"
+  | "prepareSubViewerReference"
   | "mainSubViewer"
   | "reload"
+  | "loadImages"
   | "applyTag";
 
 export type IFrameMessage = {

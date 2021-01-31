@@ -60,6 +60,15 @@ const initialState: State = {
     selectedImage: null,
     isPlay: false,
     index: -1
+  },
+  thumbSlider: {
+    gestureInfo: {
+      image: null,
+      x: -1,
+      y: -1
+    },
+    selectedImage: null,
+    index: -1
   }
 };
 

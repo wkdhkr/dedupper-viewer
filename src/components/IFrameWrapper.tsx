@@ -50,6 +50,10 @@ function useCurrentWitdhHeight() {
 
 // eslint-disable-next-line @typescript-eslint/interface-name-prefix
 interface IFrameWrapperProps {
+  forceTop?: number;
+  forceLeft?: number;
+  forceWidth?: number;
+  forceHeight?: number;
   id: string;
   origin: string;
   url?: string;
@@ -61,6 +65,10 @@ interface IFrameWrapperProps {
 
 const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
   ({
+    forceTop,
+    forceLeft,
+    forceWidth,
+    forceHeight,
     id,
     standardWidth,
     standardHeight,
@@ -84,7 +92,13 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
     const iframeUrl = new URL(url || window.location.href);
     iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
     return (
-      <Box position="absolute" top={0} left={0} width={w} height={h}>
+      <Box
+        position="absolute"
+        top={forceTop || 0}
+        left={forceLeft || 0}
+        width={forceWidth || w}
+        height={forceHeight || h}
+      >
         <IFrame
           id={id}
           // width={`${window.innerWidth}px`}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import IFrame from "react-iframe";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
 
 import Slide from "@material-ui/core/Slide";
@@ -20,8 +21,14 @@ import ColorTuner from "../components/viewer/ui/ColorTuner";
 import HudLayer from "../components/viewer/HudLayer";
 import DomUtil from "../utils/DomUtil";
 import FullscreenButton from "../components/FullscreenButton";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import useWindowSize from "../hooks/windowSize";
+import AjaxProgress from "../components/viewer/ui/AjaxProgress";
+import ThumbSliderUtil from "../utils/ThumbSliderUtil";
+import UrlUtil from "../utils/dedupper/UrlUtil";
 
-const reload = () => {
+const reload = async () => {
+  await SubViewerHelper.prepareReference();
   IFrameUtil.postMessageForParent({
     type: "superReload",
     payload: null
@@ -29,7 +36,6 @@ const reload = () => {
 };
 
 const applyTag = () => {
-  // SubViewerHelper.dispatchCustomEventForParent(event.type);
   IFrameUtil.postMessageForParent({
     type: "forGrid",
     payload: {
@@ -42,13 +48,20 @@ const applyTag = () => {
 };
 
 type MainViewerProps = MainViewerState & {
+  selected: (
+    hash: string | null,
+    index: number,
+    showSubViewer?: boolean
+  ) => void;
+  connectionCount: number;
   configuration: ConfigurationState;
   unload: () => void;
   load: (channelId: string) => Promise<void>;
   channelId?: string;
   hash?: string;
+  updateSize: (hash: string, w: number, h: number) => void;
   updateColor: (hash: string, kind: string, value: number) => void;
-  updateTag: (hash: string, x: number | null, name: string) => void;
+  updateTag: (hash: string | string[], x: number | null, name: string) => void;
   updateRating: (hash: string, x: number | null) => void;
   togglePlay: Function;
 } & RouteComponentProps;
@@ -60,6 +73,7 @@ const Transition: any = React.forwardRef(function Transition(props: any, ref) {
 
 const MainViewer: React.SFC<MainViewerProps> = ({
   configuration: c,
+  connectionCount,
   isPlay,
   load,
   unload,
@@ -95,6 +109,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
 
   return (
     <>
+      <AjaxProgress connectionCount={connectionCount} />
       <HudLayer
         updateTag={updateTag}
         mode={c.showFacePP}
@@ -230,24 +245,67 @@ const MainViewer: React.SFC<MainViewerProps> = ({
     </>
   );
 };
-const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => (
-  <>
-    <FullscreenButton />
-    <IFrameWrapper
-      keepAspectRatio
-      // eslint-disable-next-line react/destructuring-assignment
-      standardHeight={props.configuration.standardHeight}
-      // eslint-disable-next-line react/destructuring-assignment
-      standardWidth={props.configuration.standardWidth}
-      id="main-viewer-iframe"
-      // eslint-disable-next-line react/destructuring-assignment
-      origin={props.configuration.iframeOrigin}
-    >
-      <MainViewer
+
+const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = props => {
+  useWindowSize();
+  const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
+    // eslint-disable-next-line react/destructuring-assignment
+    props.configuration.standardWidth,
+    // eslint-disable-next-line react/destructuring-assignment
+    props.configuration.standardHeight
+  );
+  const isVertical = thumbHeight > thumbWidth;
+  const orientation = UrlUtil.extractParam("o");
+  return (
+    <>
+      {IFrameUtil.isInIFrame() ? (
+        <></>
+      ) : (
+        <Box
+          position="absolute"
+          top={isVertical ? 0 : window.innerHeight - thumbHeight}
+          left={isVertical ? window.innerWidth - thumbWidth : 0}
+          width={thumbWidth}
+          height={thumbHeight}
+        >
+          <IFrame
+            id="thumb-slider-iframe"
+            // width={`${window.innerWidth}px`}
+            width="100%"
+            frameBorder={0}
+            height="100%"
+            url={`/thumbs?o=${orientation}`}
+          />
+        </Box>
+      )}
+    </>
+  );
+};
+
+const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => {
+  return (
+    <>
+      <FullscreenButton />
+      <ThumbSliderIFrame
         // eslint-disable-next-line react/jsx-props-no-spreading
         {...props}
       />
-    </IFrameWrapper>
-  </>
-);
+      <IFrameWrapper
+        keepAspectRatio
+        // eslint-disable-next-line react/destructuring-assignment
+        standardHeight={props.configuration.standardHeight}
+        // eslint-disable-next-line react/destructuring-assignment
+        standardWidth={props.configuration.standardWidth}
+        id="main-viewer-iframe"
+        // eslint-disable-next-line react/destructuring-assignment
+        origin={props.configuration.iframeOrigin}
+      >
+        <MainViewer
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+        />
+      </IFrameWrapper>
+    </>
+  );
+};
 export default MainViewerWrapped;

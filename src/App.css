@@ -43,10 +43,6 @@
   cursor: none !important;
 }
 
-.hideCursor .fullScreenButton {
-  display: none;
-}
-
 /* for Fullscreen background issue */
 ::backdrop {
     z-index:0;

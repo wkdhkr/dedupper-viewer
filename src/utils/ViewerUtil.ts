@@ -11,6 +11,24 @@ function isNumber(value: any): value is number {
 }
 
 export default class ViewerUtil {
+  static getRotationInfo = () => {
+    return {
+      isPortraitImage: ViewerUtil.isPortraitImage(),
+      isPortrait: ViewerUtil.isPortrait()
+    };
+  };
+
+  static decodeImage = async (hash: string) => {
+    const imageUrl = UrlUtil.generateImageUrl(hash);
+    const img = new Image();
+    img.src = imageUrl;
+    try {
+      await img.decode();
+    } catch (e) {
+      // ignore
+    }
+  };
+
   static nextUnitNumbers = {
     portraitImage: {
       vertical: [1, 2, 3, 4, 5, 1],
@@ -20,6 +38,19 @@ export default class ViewerUtil {
       vertical: [1, 2, 3, 4, 1],
       horizontal: [1, 2, 3, 4, 1]
     }
+  };
+
+  static isPortraitMainViewer = (
+    standardWidth: number,
+    standardHeight: number
+  ) => {
+    const [mainWidth, mainHeight] = ViewerUtil.calcMainViewerSize(
+      standardWidth,
+      standardHeight
+    );
+
+    const isPortrait = mainHeight > mainWidth;
+    return isPortrait;
   };
 
   static calcMainViewerSize = (
@@ -94,7 +125,7 @@ export default class ViewerUtil {
     return STANDARD_WIDTH;
   };
 
-  static calcTargetLowHeight = (
+  static calcTargetRowHeight = (
     unit: number,
     containerWidth: number = window.innerWidth,
     isFit = false
@@ -121,7 +152,7 @@ export default class ViewerUtil {
     unit: number,
     containerWidth: number = window.innerWidth
   ) => {
-    const height = ViewerUtil.calcTargetLowHeight(unit, containerWidth);
+    const height = ViewerUtil.calcTargetRowHeight(unit, containerWidth);
     // const width = containerWidth / unit;
 
     const allowedHeightRatio = 0.1;

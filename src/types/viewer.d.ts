@@ -1,6 +1,8 @@
 import Viewer from "viewerjs";
 
 export interface ImageData {
+  x?: number;
+  y?: number;
   naturalWidth: number;
   naturalHeight: number;
   aspectRatio: number;

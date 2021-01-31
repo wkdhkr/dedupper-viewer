@@ -25,25 +25,16 @@ import AutoReload from "../components/behavior/AutoReload";
 import IFrameUtil from "../utils/IFrameUtil";
 import IFrameWrapper from "../components/IFrameWrapper";
 import FullscreenButton from "../components/FullscreenButton";
+import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 
 const gs = new GridViewerService(store);
 
 const applyTag = () => {
   gs.applyTagForImagesInScreen();
-  /*
-  // SubViewerHelper.dispatchCustomEventForParent(event.type);
-  IFrameUtil.postMessageForParent({
-    type: "forGrid",
-    payload: {
-      type: "customEvent",
-      payload: {
-        name: EVENT_X_KEY
-      }
-    }
-  });
-  */
 };
-const reload = () => {
+const reload = async () => {
+  await SubViewerHelper.prepareReference();
   IFrameUtil.postMessageForParent({
     type: "superReload",
     payload: null
@@ -149,19 +140,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   return (
     <>
-      {connectionCount > 0 ? (
-        <LinearProgress
-          variant="determinate"
-          value={Math.max(100 - connectionCount * 2, 0)}
-          style={{
-            width: "100%",
-            zIndex: 1000,
-            position: "fixed",
-            top: window.innerHeight - 4,
-            left: 0
-          }}
-        />
-      ) : null}
+      <AjaxProgress connectionCount={connectionCount} />
       <AutoReload
         disabled={!c.autoReload}
         index={index}
@@ -267,7 +246,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           margin={0}
           limitNodeSearch={unit}
           targetRowHeight={containerWidth =>
-            ViewerUtil.calcTargetLowHeight(unit, containerWidth, true)
+            ViewerUtil.calcTargetRowHeight(unit, containerWidth, true)
           }
           // columns={2}
           // direction="column"

@@ -21,10 +21,12 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
     useEffect(() => {
       const w = SubViewerHelper.getWindow();
       if (url && w) {
+        const params = `mode=subviewer&parentHost=${window.location.hostname}`;
+        const path = url.includes("?") ? url + params : `${url}?${params}`;
         const message: IFrameMessage = {
           type: "navigateSubViewer",
           payload: {
-            path: url,
+            path,
             image
           }
         };
@@ -64,6 +66,10 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
     let subViewerUrl = "";
     if (isMainOpen && url) {
       subViewerUrl = `${u.origin}${url}`;
+      const forMainUrl = new URL(subViewerUrl);
+      forMainUrl.searchParams.set("mode", "subviewer");
+      forMainUrl.searchParams.set("parentHost", window.location.hostname);
+      subViewerUrl = forMainUrl.toString();
     } else if (isGridOpen) {
       subViewerUrl = `${u.origin}${UrlUtil.generateImageViewerUrl(
         image ? image.hash : ""

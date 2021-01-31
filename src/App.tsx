@@ -15,7 +15,8 @@ import {
   GridViewerState,
   DedupperImage,
   ConfigurationState,
-  GestureInfo
+  GestureInfo,
+  ThumbSliderState
 } from "./types/unistore";
 import MainViewer from "./pages/MainViewer";
 import GridViewer from "./pages/GridViewer";
@@ -29,6 +30,7 @@ import NavigationButtonBar from "./components/NavigationButtonBar";
 import ConfigurationDialog from "./components/configuration/ConfigurationDialog";
 import SubViewerHelper from "./helpers/viewer/SubViewerHelper";
 import IFrameUtil from "./utils/IFrameUtil";
+import ThumbSlider from "./pages/ThumbSlider";
 
 interface BaseAppProps {
   connectionCount: number;
@@ -55,7 +57,7 @@ interface BaseAppProps {
   toggleSubViewer: (close: boolean | null) => void;
   selected: (
     hash: string | null,
-    index: number,
+    mayIndex?: number | null,
     showSubViewer?: boolean
   ) => void;
   selectedByIndex: (index: number) => void;
@@ -66,6 +68,7 @@ interface BaseAppProps {
   snackbarCustom: SnackbarCustomState;
   gridViewer: GridViewerState;
   mainViewer: MainViewerState;
+  thumbSlider: ThumbSliderState;
   updateConfiguration: (c: ConfigurationState) => void;
   unloadMainViewerImages: () => void;
   loadMainViewerImage: (hash: string) => Promise<void>;
@@ -75,7 +78,7 @@ type AppProps = BaseAppProps;
 
 const mapStateToProps =
   "connectionCount,configuration,channels,channelById,snackbar,snackbarCustom," +
-  "imageByHash,mainViewer,gridViewer";
+  "imageByHash,mainViewer,gridViewer,thumbSlider";
 
 const App = connect<{}, {}, State, AppProps>(
   mapStateToProps,
@@ -123,12 +126,34 @@ const App = connect<{}, {}, State, AppProps>(
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...props.gridViewer}
           />
+          <ThumbSlider
+            connectionCount={props.connectionCount}
+            setGestureInfo={props.setGestureInfo}
+            configuration={props.configuration}
+            path="thumbs/"
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...{
+              ...props.mainViewer,
+              ...props.thumbSlider,
+              selected: props.selected,
+              updateSize: props.updateSize,
+              updateRating: props.updateRating,
+              updateTag: props.updateTag,
+              updateColor: props.updateColor,
+              togglePlay: props.togglePlay,
+              unload: props.unloadMainViewerImages,
+              load: props.loadMainViewerImage
+            }}
+          />
           <MainViewer
             configuration={props.configuration}
+            connectionCount={props.connectionCount}
             path="image/:hash"
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...{
               ...props.mainViewer,
+              selected: props.selected,
+              updateSize: props.updateSize,
               updateRating: props.updateRating,
               updateTag: props.updateTag,
               updateColor: props.updateColor,
@@ -139,10 +164,13 @@ const App = connect<{}, {}, State, AppProps>(
           />
           <MainViewer
             configuration={props.configuration}
+            connectionCount={props.connectionCount}
             path="channel/:channelId"
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...{
               ...props.mainViewer,
+              selected: props.selected,
+              updateSize: props.updateSize,
               updateRating: props.updateRating,
               updateTag: props.updateTag,
               togglePlay: props.togglePlay,

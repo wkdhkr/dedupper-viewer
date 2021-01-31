@@ -1,11 +1,19 @@
 import { DedupperWindow } from "../../types/window";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
+import WindowUtil from "../../utils/WindowUtil";
 
 const currentWindow = (window as any) as DedupperWindow;
 
 currentWindow.subViewerWindow = null;
 currentWindow.parentWindow = null;
 currentWindow.managerWindow = null;
+
+/**
+ * - window -> parentWindow
+ *   - iframe
+ *   - subViewer -> subViewerWindow
+ *     - iframe
+ */
 
 // eslint-disable-next-line no-underscore-dangle
 (window as any).__DEDUPPER_VIEWER_IDENTITY__ = true;
@@ -16,7 +24,30 @@ export default class SubViewerHelper {
   };
 
   static getWindow = (): DedupperWindow | null => {
-    return (window as any).subViewerWindow;
+    const w = (window as any).subViewerWindow;
+    if (w) {
+      return w;
+    }
+
+    return null;
+  };
+
+  static prepareReference = async () => {
+    if (WindowUtil.isInIFrame()) {
+      if (window.parent) {
+        window.parent.postMessage(
+          {
+            type: "prepareSubViewerReference"
+          },
+          "*"
+        );
+      }
+    }
+    return new Promise((resolve: (value: unknown) => void) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 100);
+    });
   };
 
   static isDedupperWindow = (w: Window) =>
@@ -44,7 +75,16 @@ export default class SubViewerHelper {
   };
 
   static isParent = () => {
-    return UrlUtil.extractParam("mode") === "parent";
+    if (UrlUtil.extractParam("mode") === "subviewer") {
+      return false;
+    }
+    if (window.parent) {
+      return false;
+    }
+    if (window.opener) {
+      return false;
+    }
+    return true;
   };
 
   static isChild = (): boolean => {
@@ -54,19 +94,18 @@ export default class SubViewerHelper {
     // return (w as any).__DEDUPPER_VIEWER_SUB_VIEWER__ || false;
   };
 
-  static isManager = () => {
-    /*
-    if (SubViewerHelper.isChild(w) || SubViewerHelper.isParent(w)) {
-      return null;
-    }
-    if (SubViewerHelper.isDedupperWindow(w)) {
-      // may be
-      return w;
-    }
-    return null;
-    */
-    return !SubViewerHelper.isChild() && !SubViewerHelper.isParent();
-  };
+  // static isManager = () => {
+  //   if (SubViewerHelper.isChild(w) || SubViewerHelper.isParent(w)) {
+  //     return null;
+  //   }
+  //   if (SubViewerHelper.isDedupperWindow(w)) {
+  //     // may be
+  //     return w;
+  //   }
+  //   return null;
+  //   */
+  //   return !SubViewerHelper.isChild() && !SubViewerHelper.isParent();
+  // };
 
   static spawnParentWindow = (url: string) => {
     // const parentWindow = window.open(url, "dedupper_parent");
@@ -80,6 +119,7 @@ export default class SubViewerHelper {
   static isSubViewer = (): boolean =>
     UrlUtil.extractParam("mode") === "subviewer" && UrlUtil.isInSingleViewer();
 
+  /*
   static forChild = (fn: (x: DedupperWindow) => void) => {
     if (!SubViewerHelper.isChild()) {
       const w = SubViewerHelper.getWindow();
@@ -88,13 +128,5 @@ export default class SubViewerHelper {
       }
     }
   };
-
-  static dispatchCustomEventForParent = (
-    name: string,
-    detail: Record<string, any> = {}
-  ) => {
-    const w = SubViewerHelper.getParentWindow();
-    const event = new CustomEvent(name, { detail });
-    w?.document.dispatchEvent(event);
-  };
+  */
 }
