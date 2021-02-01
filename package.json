@@ -52,6 +52,7 @@
     "http-proxy-middleware": "^1.0.4",
     "immer": "^6.0.5",
     "lodash": "^4.17.19",
+    "loglevel": "^1.7.1",
     "material-table": "^1.57.2",
     "notistack": "^0.9.11",
     "react": "^16.13.1",

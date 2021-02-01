@@ -1,4 +1,5 @@
 import createStore from "unistore";
+import * as log from "loglevel";
 import { navigate } from "@reach/router";
 // import devtools from "unistore/devtools";
 import axios from "axios";
@@ -11,6 +12,8 @@ import addCustomEventListeners from "./customEventListeners";
 import addMessageEventListeners from "./messageEventListeners";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import ConfigurationHelper from "../helpers/ConfigurationHelper";
+
+log.setDefaultLevel("trace");
 
 const initialState: State = {
   connectionCount: 0,
@@ -79,16 +82,23 @@ const store =
     : devtools(createStore(initialState));
  */
 const store = createStore(initialState);
-
+log.info("initialized", "store");
 addEventListeners(store);
+log.info("initialized", "eventListener");
 addKeyEventListeners(store);
+log.info("initialized", "keyEventListener");
 addCustomEventListeners(store);
+log.info("initialized", "customEventListener");
 addMessageEventListeners(store);
+log.info("initialized", "MessageEventListener");
 
 (window as any).store = store;
 (window as any).axios = axios;
 (window as any).actions = actions(store);
+log.info("initialized", "actions");
 (window as any).navigate = navigate;
+
+log.info("initialState", store.getState());
 
 setAutoFreeze(false); // for cross-window processing
 export default store;

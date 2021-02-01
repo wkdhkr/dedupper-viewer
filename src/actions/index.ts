@@ -1,4 +1,5 @@
 import produce from "immer";
+import * as log from "loglevel";
 import keyBy from "lodash/keyBy";
 import { Store } from "unistore";
 import PlayerService from "../services/Viewer/PlayerService";
@@ -562,6 +563,7 @@ const actions = (store: Store<State>) => ({
     try {
       channels = await dc.fetchChannels();
     } catch (e) {
+      log.error(e);
       actions(store).showSnackbarCustom(state, [
         "Failed to load the channel list.",
         {
@@ -658,6 +660,7 @@ const actions = (store: Store<State>) => ({
         CacheUtil.addForPlay(images);
       }
     } catch (e) {
+      log.error(e);
       actions(store).showSnackbarCustom(store.getState(), [
         "Failed to read the image list.",
         {

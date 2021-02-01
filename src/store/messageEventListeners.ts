@@ -1,6 +1,7 @@
 import { Store } from "unistore";
 import { navigate } from "@reach/router";
 import produce from "immer";
+import * as log from "loglevel";
 import copy from "copy-to-clipboard";
 import { keyBy } from "lodash";
 import { DedupperImage, State } from "../types/unistore";
@@ -19,7 +20,11 @@ export default function(store: Store<State>) {
     (event: any) => {
       const message: IFrameMessage = event.data;
 
-      console.log(message, window.location.href);
+      if (((message as any).source || "").startsWith("react-devtools-")) {
+        return;
+      }
+
+      log.trace(message, window.location.href);
 
       switch (message.type) {
         case "toggleMainViewerPlay":
