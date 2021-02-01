@@ -13,7 +13,8 @@ import {
   DedupperChannel,
   ConfigurationState,
   FacePPRow,
-  GestureInfo
+  GestureInfo,
+  SortKind,
   // FacePPRow
 } from "../types/unistore";
 import DomUtil from "../utils/DomUtil";
@@ -27,6 +28,7 @@ import ColorUtil from "../utils/ColorUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import WindowUtil from "../utils/WindowUtil";
 import { IFrameMessage } from "../types/window";
+import SortHelper from "../helpers/viewer/SortHelper";
 
 // let subWindowHandle: Window | null = null;
 
@@ -36,7 +38,7 @@ const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
   setGestureInfo(state: State, info: GestureInfo) {
     store.setState(
-      produce(store.getState(), draft => {
+      produce(store.getState(), (draft) => {
         if (UrlUtil.isInGridViewer()) {
           draft.gridViewer.gestureInfo = info;
         }
@@ -58,7 +60,7 @@ const actions = (store: Store<State>) => ({
       false
     );
     store.setState(
-      produce(store.getState(), draft => {
+      produce(store.getState(), (draft) => {
         draft.mainViewer.faces = faces;
       })
     );
@@ -71,7 +73,7 @@ const actions = (store: Store<State>) => ({
 
     const trimObj = {
       ...viewer.imageData,
-      [kind]: value
+      [kind]: value,
     };
 
     actions(store).updateTrim(state, hash, JSON.stringify(trimObj));
@@ -81,7 +83,7 @@ const actions = (store: Store<State>) => ({
   async createChannel(state: State, channel: DedupperChannel) {
     const newChannel = await dc.createChannel(channel);
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.channelById[newChannel.id] = newChannel;
         draft.channels = [...draft.channels, newChannel];
       })
@@ -90,15 +92,15 @@ const actions = (store: Store<State>) => ({
   async updateChannel(state: State, channel: DedupperChannel) {
     await dc.updateChannel(channel);
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.channelById[channel.id] = channel;
         draft.channels = [
-          ...draft.channels.map(c => {
+          ...draft.channels.map((c) => {
             if (c.id === channel.id) {
               return channel;
             }
             return c;
-          })
+          }),
         ];
       })
     );
@@ -106,15 +108,53 @@ const actions = (store: Store<State>) => ({
   async deleteChannel(state: State, id: string) {
     await dc.deleteChannel(id);
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         delete draft.channelById[id];
-        draft.channels = [...draft.channels.filter(c => c.id !== id)];
+        draft.channels = [...draft.channels.filter((c) => c.id !== id)];
       })
     );
   },
+  changeSort(state: State, sortKind: SortKind, reverse: boolean) {
+    store.setState(
+      produce(state, (draft) => {
+        if (draft.mainViewer.images.length === 0) {
+          return;
+        }
+        const images = SortHelper.sort(
+          sortKind,
+          draft.sortKind,
+          draft.mainViewer.images
+        );
+        draft.sortKind = sortKind;
+        if (reverse) {
+          images.reverse();
+        }
+        draft.mainViewer.images = images;
+        draft.mainViewer.currentImage = images[0];
+        draft.mainViewer.index = 0;
+        draft.gridViewer.index = 0;
+        draft.gridViewer.selectedImage = images[0];
+      })
+    );
+    const images = store.getState().mainViewer.images;
+    SubViewerHelper.prepareReference().then(() =>
+      IFrameUtil.postMessageForParent({
+        type: "forAll",
+        payload: {
+          type: "loadImages",
+          payload: images,
+        },
+      })
+    );
+    const nextIndex = 0;
+    const nextHash = images[0]?.hash;
+    if (nextHash) {
+      actions(store).selected(store.getState(), nextHash, nextIndex, true);
+    }
+  },
   changeUnit(state: State, unit: number) {
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.gridViewer.unit = unit;
         UrlUtil.changeUnit(unit);
       })
@@ -143,14 +183,14 @@ const actions = (store: Store<State>) => ({
         window.parent.postMessage(
           {
             type: "subViewer",
-            payload: state.gridViewer.selectedImage
+            payload: state.gridViewer.selectedImage,
           },
           "*"
         );
       }
     } else {
       store.setState(
-        produce(state, draft => {
+        produce(state, (draft) => {
           draft.gridViewer.subViewer.isOpen =
             close === null ? !draft.gridViewer.subViewer.isOpen : close;
           draft.mainViewer.subViewer.isOpen =
@@ -161,7 +201,7 @@ const actions = (store: Store<State>) => ({
   },
   async viewed(state: State, hash: string, index: number) {
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.mainViewer.currentImage = draft.imageByHash[hash] || null;
         draft.mainViewer.index = index;
       })
@@ -177,9 +217,9 @@ const actions = (store: Store<State>) => ({
         type: "viewed",
         payload: {
           hash,
-          index
-        }
-      }
+          index,
+        },
+      },
     });
   },
   selectedByIndex(state: State, index: number) {
@@ -206,7 +246,7 @@ const actions = (store: Store<State>) => ({
     }
     const index =
       mayIndex === null
-        ? store.getState().mainViewer.images.findIndex(i => i.hash === hash)
+        ? store.getState().mainViewer.images.findIndex((i) => i.hash === hash)
         : mayIndex;
     if (UrlUtil.isInThumbSlider()) {
       SubViewerHelper.prepareReference().then(() => {
@@ -216,15 +256,15 @@ const actions = (store: Store<State>) => ({
             type: "selected",
             payload: {
               hash,
-              index
-            }
-          }
+              index,
+            },
+          },
         });
       });
       return;
     }
     store.setState(
-      produce(store.getState(), draft => {
+      produce(store.getState(), (draft) => {
         const range = ViewerUtil.detectRange(draft.gridViewer.unit);
         if (
           draft.gridViewer.selectedImage?.hash === draft.imageByHash[hash]?.hash
@@ -247,7 +287,7 @@ const actions = (store: Store<State>) => ({
         const leftTopIndex = index - (index % range);
         const [
           leftTopHash,
-          fixedLeftTopIndex
+          fixedLeftTopIndex,
         ] = ImageArrayUtil.detectDestination(fitImages, leftTopIndex);
 
         if (state.gridViewer.isPlay) {
@@ -290,8 +330,8 @@ const actions = (store: Store<State>) => ({
         IFrameUtil.postMessageForParent({
           type: "forAll",
           payload: {
-            type: "toggleMainViewerPlay"
-          }
+            type: "toggleMainViewerPlay",
+          },
         })
       );
       return state;
@@ -300,7 +340,7 @@ const actions = (store: Store<State>) => ({
     if (vc) {
       vc.style.transform = "none";
     }
-    return produce(state, draft => {
+    return produce(state, (draft) => {
       draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
       const display = draft.mainViewer.isPlay ? "none" : "block";
       const viewer = DomUtil.getViewerSafe();
@@ -321,7 +361,7 @@ const actions = (store: Store<State>) => ({
     });
   },
   toggleGridPlay(state: State) {
-    return produce(state, draft => {
+    return produce(state, (draft) => {
       draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
       const sourceUnit = draft.gridViewer.unit;
       UrlUtil.syncPlay(draft.gridViewer.isPlay);
@@ -344,19 +384,19 @@ const actions = (store: Store<State>) => ({
     });
   },
   finishSnackbar(state: State, kind: SnackbarKind) {
-    return produce(state, draft => {
+    return produce(state, (draft) => {
       draft.snackbar[kind] = false;
     });
   },
   showSnackbarCustom(state: State, snackbarCustom: SnackbarCustomState) {
     store.setState(
-      produce(state, draft => {
-        draft.snackbarCustom = snackbarCustom;
+      produce(state, (draft) => {
+        draft.snackbarCustom = snackbarCustom as any;
       })
     );
   },
   finishSnackbarCustom(state: State) {
-    return produce(state, draft => {
+    return produce(state, (draft) => {
       draft.snackbarCustom = null;
     });
   },
@@ -365,14 +405,14 @@ const actions = (store: Store<State>) => ({
       [hash],
       {
         width,
-        height
+        height,
       },
       store
     );
   },
   updateConfiguration(state: State, configurationState: ConfigurationState) {
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.configuration = { ...draft.configuration, ...configurationState };
         localStorage.setItem(
           "_dedupper_viewer_configuration",
@@ -405,10 +445,10 @@ const actions = (store: Store<State>) => ({
         detail: {
           hash: [hash],
           edit: {
-            trim: finalTrim
-          }
-        }
-      }
+            trim: finalTrim,
+          },
+        },
+      },
     } as IFrameMessage;
     IFrameUtil.postMessageForOther(payload);
   },
@@ -468,7 +508,7 @@ const actions = (store: Store<State>) => ({
     }
     const edit = {
       view_count: image.view_count + 1,
-      view_date: new Date().getTime()
+      view_date: new Date().getTime(),
     };
     // no wait
     StoreUtil.updateField(hash, edit, null, store);
@@ -478,9 +518,9 @@ const actions = (store: Store<State>) => ({
         name: EVENT_UPDATE_IMAGE,
         detail: {
           hash: [hash],
-          edit
-        }
-      }
+          edit,
+        },
+      },
     } as IFrameMessage;
     IFrameUtil.postMessageForOther(payload);
   },
@@ -502,10 +542,10 @@ const actions = (store: Store<State>) => ({
         detail: {
           hash: [hash],
           edit: {
-            rating: rating || 0
-          }
-        }
-      }
+            rating: rating || 0,
+          },
+        },
+      },
     } as IFrameMessage;
     IFrameUtil.postMessageForOther(payload);
   },
@@ -546,16 +586,16 @@ const actions = (store: Store<State>) => ({
         detail: {
           hash: hashList,
           edit: {
-            [name]: value
-          }
-        }
-      }
+            [name]: value,
+          },
+        },
+      },
     } as IFrameMessage;
     IFrameUtil.postMessageForOther(payload);
   },
   async loadChannels(state: State) {
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.channels = [];
       })
     );
@@ -569,12 +609,12 @@ const actions = (store: Store<State>) => ({
         {
           variant: "error",
           autoHideDuration: 15000,
-          anchorOrigin: { horizontal: "right", vertical: "top" }
-        }
+          anchorOrigin: { horizontal: "right", vertical: "top" },
+        },
       ]);
     }
     store.setState(
-      produce(store.getState(), draft => {
+      produce(store.getState(), (draft) => {
         if (channels != null) {
           draft.channels = channels;
           draft.channelById = keyBy<DedupperChannel>(channels, "id");
@@ -585,7 +625,7 @@ const actions = (store: Store<State>) => ({
 
   unloadMainViewerImages(state: State) {
     store.setState(
-      produce(state, draft => {
+      produce(state, (draft) => {
         draft.mainViewer.images = [];
         draft.imageByHash = {};
         draft.mainViewer.currentImage = null;
@@ -634,7 +674,7 @@ const actions = (store: Store<State>) => ({
     try {
       if (!silent) {
         store.setState(
-          produce(store.getState(), draft => {
+          produce(store.getState(), (draft) => {
             draft.mainViewer.isLoading = true;
           })
         );
@@ -643,7 +683,7 @@ const actions = (store: Store<State>) => ({
         const playImages = CacheUtil.getForPlay();
         if (playImages) {
           store.setState(
-            produce(store.getState(), draft => {
+            produce(store.getState(), (draft) => {
               draft.mainViewer.images = playImages;
             })
           );
@@ -666,14 +706,14 @@ const actions = (store: Store<State>) => ({
         {
           variant: "error",
           autoHideDuration: 15000,
-          anchorOrigin: { horizontal: "right", vertical: "top" }
-        }
+          anchorOrigin: { horizontal: "right", vertical: "top" },
+        },
       ]);
       actions(store).unloadMainViewerImages(store.getState());
     } finally {
       if (!silent) {
         store.setState(
-          produce(store.getState(), draft => {
+          produce(store.getState(), (draft) => {
             draft.mainViewer.isLoading = false;
           })
         );
@@ -700,14 +740,14 @@ const actions = (store: Store<State>) => ({
               type: "forAll",
               payload: {
                 type: "loadImages",
-                payload: images
-              }
+                payload: images,
+              },
             })
           );
         }
       })
     );
-  }
+  },
 });
 
 export default actions;

@@ -43,7 +43,7 @@ const GridPhoto = React.memo(
     updateRating,
     direction,
     top,
-    left
+    left,
   }: RenderImageProps & {
     isThumbSlider?: boolean;
     range: number;
@@ -85,7 +85,7 @@ const GridPhoto = React.memo(
         });
       }
       */
-    }, [image, isThumbSlider, currentIndex, range]);
+    }, [image, isThumbSlider, currentIndex, range, index]);
 
     /*
     useEffect(() => {
@@ -117,7 +117,7 @@ const GridPhoto = React.memo(
       boxSizing: "border-box",
       // margin,
       backgroundColor: "black",
-      display: "block"
+      display: "block",
     };
     if (direction === "column") {
       imgStyle.position = "absolute";
@@ -176,7 +176,7 @@ const GridPhoto = React.memo(
           width: di.width,
           height: di.height,
           left: 0,
-          top: 0
+          top: 0,
           // left: (photo.width - width) / 2,
           // top: (photo.height - height) / 2
         };
@@ -213,7 +213,7 @@ const GridPhoto = React.memo(
         style = {
           ...style,
           ...ViewerUtil.getTransforms(imageData),
-          filter: ColorUtil.createFilter(imageData)
+          filter: ColorUtil.createFilter(imageData),
           // ...createPredecodeStyle()
         };
       }
@@ -271,7 +271,7 @@ const GridPhoto = React.memo(
         <Box
           overflow="hidden"
           style={{
-            transform: isSelected ? selectedTransform : "none"
+            transform: isSelected ? selectedTransform : "none",
             // transition:
             //   "transform .035s cubic-bezier(0.0,0.0,0.2,1), opacity linear .35s"
           }}
@@ -287,7 +287,7 @@ const GridPhoto = React.memo(
               style={{
                 marginTop: "8px",
                 opacity: 0.4,
-                transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`
+                transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`,
               }}
               position="absolute"
               zIndex="1355"
@@ -315,7 +315,7 @@ const GridPhoto = React.memo(
               style={{
                 ...imgWithClick,
                 width: photo.width,
-                height: photo.height
+                height: photo.height,
               }}
               onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
@@ -324,6 +324,7 @@ const GridPhoto = React.memo(
             />
           ) : (
             <img
+              alt={image.hash}
               id={`photo-image__${photo.key}`}
               decoding="async"
               src={photo.src}
@@ -356,7 +357,7 @@ const GridPhoto = React.memo(
               onContextMenu={handleContextMenu}
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
-              onLoad={async e => {
+              onLoad={async (e) => {
                 const imageElement = e.target as HTMLImageElement;
                 if (image.width !== imageElement.naturalWidth) {
                   // may be rotated, fix it.
@@ -395,7 +396,7 @@ const GridPhoto = React.memo(
     if (
       Array.from(Array(5))
         .map((x, num: number) => num + 1)
-        .some(num => {
+        .some((num) => {
           const key = `t${num}`;
           if ((p.image as any)[key] !== (n.image as any)[key]) {
             return true;

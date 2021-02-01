@@ -14,7 +14,7 @@ const UnitMenu: React.FunctionComponent<UnitMenuProps> = ({
   anchorEl,
   orientation,
   onClick,
-  onClose
+  onClose,
 }) => {
   return (
     <Menu
@@ -24,8 +24,8 @@ const UnitMenu: React.FunctionComponent<UnitMenuProps> = ({
       open={Boolean(anchorEl)}
       onClose={onClose}
     >
-      {ViewerUtil.detectAllowedUnit(orientation).map(n => (
-        <MenuItem key={n} onClick={e => onClick(e, n)}>
+      {ViewerUtil.detectAllowedUnit(orientation).map((n) => (
+        <MenuItem key={n} onClick={(e) => onClick(e, n)}>
           {`Columns: ${n}`}
         </MenuItem>
       ))}

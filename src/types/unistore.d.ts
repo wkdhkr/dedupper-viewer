@@ -2,6 +2,31 @@ import React from "react";
 import { Dictionary } from "lodash";
 import { OptionsObject } from "notistack";
 
+const SortKindValues = [
+  "file_name",
+  "file_path",
+  "file_size",
+  "rating",
+  "sexy",
+  "porn",
+  "porn_sexy",
+  "neutral",
+  "hentai_sexy",
+  "hentai_porn_sexy",
+  "hentai_porn",
+  "hentai",
+  "drawing",
+  "timestamp",
+  "width",
+  "height",
+  "resolution",
+  "view_count",
+  "view_date",
+  "delete",
+  "random",
+] as const;
+
+export type SortKind = typeof SortKindValues[number];
 export type FacePPGender = "Female" | "Male";
 export type FacePPGlass = "None" | "Dark" | "Normal";
 
@@ -92,7 +117,6 @@ export interface DedupperImage {
   height: number;
   timestamp: number;
   drawing: number;
-  neutral: number;
   hentai: number;
   hentai_porn: number;
   hentai_porn_sexy: number;
@@ -142,6 +166,7 @@ export interface ThumbSliderState {
 }
 
 export interface ConfigurationState {
+  defaultSortKind: SortKind;
   amazonCloudDriveDomain: string;
   dedupperServerProtocol: "http" | "https";
   dedupperServerPort: number;
@@ -165,6 +190,7 @@ export type SnackbarKind = "tagUpdated" | "ratingUpdated" | "layoutUpdated";
 export type SnackbarCustomState = [React.ReactNode, OptionsObject];
 export type SnackbarState = { [_ in SnackbarKind]: boolean };
 export interface State {
+  sortKind: SortKind;
   configuration: ConfigurationState;
   keyStatus: {
     shifted: boolean;

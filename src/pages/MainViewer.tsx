@@ -31,7 +31,7 @@ const reload = async () => {
   await SubViewerHelper.prepareReference();
   IFrameUtil.postMessageForParent({
     type: "superReload",
-    payload: null
+    payload: null,
   });
 };
 
@@ -41,9 +41,9 @@ const applyTag = () => {
     payload: {
       type: "customEvent",
       payload: {
-        name: EVENT_X_KEY
-      }
-    }
+        name: EVENT_X_KEY,
+      },
+    },
   });
 };
 
@@ -87,7 +87,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   updateTag,
   updateRating,
   updateColor,
-  togglePlay
+  togglePlay,
 }) => {
   useEffect(() => {
     if (hash) {
@@ -137,7 +137,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
         <Box
           onWheel={onWheel}
           style={{
-            opacity: 0
+            opacity: 0,
           }}
           onClick={() => togglePlay()}
           top="0"
@@ -246,7 +246,7 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   );
 };
 
-const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = props => {
+const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = (props) => {
   useWindowSize();
   const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
     // eslint-disable-next-line react/destructuring-assignment
@@ -282,7 +282,7 @@ const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = props => {
   );
 };
 
-const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = props => {
+const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
   return (
     <>
       <FullscreenButton />

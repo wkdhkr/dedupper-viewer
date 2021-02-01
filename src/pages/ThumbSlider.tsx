@@ -5,14 +5,14 @@ import Gallery from "react-photo-gallery";
 import {
   DedupperImage,
   ConfigurationState,
-  GestureInfo
+  GestureInfo,
 } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
 import {
   STANDARD_HEIGHT,
-  STANDARD_WIDTH
+  STANDARD_WIDTH,
 } from "../constants/dedupperConstants";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
@@ -47,7 +47,7 @@ const reload = async () => {
   await SubViewerHelper.prepareReference();
   IFrameUtil.postMessageForParent({
     type: "superReload",
-    payload: null
+    payload: null,
   });
 };
 
@@ -93,7 +93,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
   selectedImage = null,
   togglePlay,
   updateTag,
-  updateRating
+  updateRating,
 }) => {
   useWindowSize();
 
@@ -139,7 +139,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
     // setup scroll handler for override default behavior
     window.addEventListener("wheel", handleScroll as any, { passive: false });
     return () => window.removeEventListener("wheel", handleScroll as any, {});
-  }, [index, images, range]);
+  }, [index, images, range, c, selected]);
 
   return (
     <>
@@ -195,7 +195,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
         }}
       />
       <Gallery
-        renderImage={props => (
+        renderImage={(props) => (
           <GridPhoto
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...{
@@ -211,7 +211,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
               unit,
               updateSize,
               updateTag,
-              updateRating
+              updateRating,
             }}
           />
         )}
@@ -228,7 +228,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
           key: hash,
           width: isPortraitImage ? STANDARD_HEIGHT : STANDARD_WIDTH,
           height: isPortraitImage ? STANDARD_WIDTH : STANDARD_HEIGHT,
-          src: UrlUtil.generateImageUrl(hash)
+          src: UrlUtil.generateImageUrl(hash),
         }))}
         onClick={(event, { photo, index: currentIndex }) => {
           if (photo.key) {

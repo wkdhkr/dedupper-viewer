@@ -1,14 +1,6 @@
 import React from "react";
 import { RouteComponentProps } from "@reach/router";
-import {
-  Box,
-  Typography,
-  Link,
-  List,
-  ListItem,
-  ListItemText,
-  Grid
-} from "@material-ui/core";
+import { Box, Typography } from "@material-ui/core";
 
 type StartProps = RouteComponentProps;
 

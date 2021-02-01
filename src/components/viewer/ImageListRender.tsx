@@ -1,5 +1,5 @@
-import React, { PureComponent } from "react";
 import Viewer from "viewerjs";
+import React, { PureComponent } from "react";
 
 import "viewerjs/dist/viewer.min.css";
 import { initImageExpand } from "../../patch/viewer";
@@ -42,6 +42,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         {images.map(({ hash }) => (
           <li key={hash}>
             <img
+              alt={hash}
               data-hash={hash}
               loading="lazy"
               decoding="async"
@@ -66,7 +67,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       images,
       hide,
       togglePlay,
-      options: customOptions
+      options: customOptions,
     } = this.props;
 
     const {
@@ -76,7 +77,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     } = customOptions || { toolbar: {} };
     const toolbarOptions = {
       show: true,
-      size: "large" as Viewer.ToolbarButtonSize
+      size: "large" as Viewer.ToolbarButtonSize,
     };
 
     const options: Viewer.Options & { focus: boolean } = {
@@ -99,7 +100,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
           click: () => {
             this.viewer?.reset();
             setColorReset(colorReset + 1);
-          }
+          },
         },
         /*
         prev: hasMultiImage ? toolbarOptions : false,
@@ -117,16 +118,16 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
           ...toolbarOptions,
           click: () => {
             this.viewer?.rotate(-18);
-          }
+          },
         },
         rotateRight: {
           ...toolbarOptions,
           click: () => {
             this.viewer?.rotate(18);
-          }
+          },
         },
         flipHorizontal: {
-          ...toolbarOptions
+          ...toolbarOptions,
           /*
           click: () => {
             const viewer = DomUtil.getViewer();
@@ -138,7 +139,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
           */
         },
         flipVertical: toolbarOptions,
-        ...(typeof customToolbar === "object" ? customToolbar : {})
+        ...(typeof customToolbar === "object" ? customToolbar : {}),
       },
       // navbar: true,
       navbar: false,
@@ -148,7 +149,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
           hidden(new CustomEvent("viewer-hidden"));
         }
         hide();
-      }
+      },
     };
     if (this.viewer) {
       let isUpdate = false;

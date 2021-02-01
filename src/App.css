@@ -43,13 +43,20 @@
   cursor: none !important;
 }
 
-/* for Fullscreen background issue */
-::backdrop {
-    z-index:0;
-    background-color: white !important;
+#sort-menu {
+  z-index: 1600 !important;
 }
 
-html, *:fullscreen, *:-webkit-full-screen, *:-moz-full-screen {
-    background-color: white !important;
-    z-index:1;
+/* for Fullscreen background issue */
+::backdrop {
+  z-index: 0;
+  background-color: white !important;
+}
+
+html,
+*:fullscreen,
+*:-webkit-full-screen,
+*:-moz-full-screen {
+  background-color: white !important;
+  z-index: 1;
 }

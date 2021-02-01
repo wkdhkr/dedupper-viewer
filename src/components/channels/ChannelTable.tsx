@@ -22,7 +22,8 @@ import {
   ChevronLeft,
   Search,
   ArrowDownward,
-  PlayArrow
+  PlayArrow,
+  Replay,
 } from "@material-ui/icons";
 import { Dictionary } from "lodash";
 import { DedupperChannel } from "../../types/unistore";
@@ -37,12 +38,13 @@ const getOrientationByName = (name: string) => {
 const launchSubViewer = (url: string) => {
   const message: IFrameMessage = {
     type: "mainSubViewer",
-    payload: url
+    payload: url,
   };
   window.postMessage(message, "*");
 };
 
 const iconComponentByTableIconType: Record<keyof Icons, typeof SvgIcon> = {
+  Retry: Replay,
   Add: AddBox,
   Check,
   Clear,
@@ -59,7 +61,7 @@ const iconComponentByTableIconType: Record<keyof Icons, typeof SvgIcon> = {
   Search,
   SortArrow: ArrowDownward,
   ThirdStateCheck: Remove,
-  ViewColumn
+  ViewColumn,
 };
 
 const tableIcons = Object.entries(iconComponentByTableIconType).reduce(
@@ -105,7 +107,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
     setIsShowDeleteDialog,
     setSql,
     setEdit,
-    channels
+    channels,
   }) => {
     return (
       <Container maxWidth="lg">
@@ -115,12 +117,12 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
           columns={[
             {
               title: "Channel Name",
-              field: "name"
-            }
+              field: "name",
+            },
           ]}
           data={
             channels
-              .map(c => ({ ...c }))
+              .map((c) => ({ ...c }))
               .sort((a, b) => (a.name > b.name ? 1 : -1)) as DedupperChannel[]
           }
           options={{
@@ -128,7 +130,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
             actionsColumnIndex: -1,
             showTitle: false,
             headerStyle: { fontWeight: "bold" },
-            paging: false
+            paging: false,
           }}
           onRowClick={(event, rowData) => {
             if (rowData) {
@@ -141,41 +143,41 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
               icon: () => <AddBox />,
               tooltip: "Add Channel",
               isFreeAction: true,
-              onClick: () => setEdit("new")
+              onClick: () => setEdit("new"),
             },
             {
               icon: () => <Slideshow />,
               tooltip: "grid play",
               onClick: (event, rowData) => {
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   setRowInfo({
                     anchorEl: event.currentTarget,
                     orientation: o,
-                    url: `/channel/grid/${r.id}?play=1&o=${o}`
+                    url: `/channel/grid/${r.id}?play=1&o=${o}`,
                   });
                 });
-              }
+              },
             },
             {
               icon: () => <PhotoLibrary />,
               tooltip: "grid show",
               onClick: (event, rowData) => {
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   setRowInfo({
                     anchorEl: event.currentTarget,
                     orientation: o,
-                    url: `/channel/grid/${r.id}?o=${o}`
+                    url: `/channel/grid/${r.id}?o=${o}`,
                   });
                 });
-              }
+              },
             },
             {
               icon: () => <PlayArrow />,
               tooltip: "play",
               onClick: (event, rowData) =>
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?play=1&o=${o}`;
                   if (enableSubViewer) {
@@ -183,13 +185,13 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                   } else {
                     RouterUtil.navigateForIFWrap(url);
                   }
-                })
+                }),
             },
             {
               icon: () => <SkipNext />,
               tooltip: "show",
               onClick: (event, rowData) =>
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?o=${o}`;
                   if (enableSubViewer) {
@@ -197,46 +199,46 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                   } else {
                     RouterUtil.navigateForIFWrap(url);
                   }
-                })
+                }),
             },
             {
               icon: () => <Edit />,
               tooltip: "edit",
               onClick: (event, rowData) => {
-                (Array.isArray(rowData) ? rowData : [rowData]).forEach(r => {
+                (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const { id } = r;
                   setCurrentChannelId(id);
                   setChannelName(channelById[id].name);
                   setSql(channelById[id].sql);
                   setEdit(id);
                 });
-              }
+              },
             },
             {
               icon: () => <FileCopy />,
               tooltip: "copy",
               onClick: (event, rowData) => {
                 const rows = Array.isArray(rowData) ? rowData : [rowData];
-                rows.forEach(r =>
+                rows.forEach((r) =>
                   handleCreate({
                     id: "",
                     name: `${r.name} (copy)`,
-                    sql: r.sql
+                    sql: r.sql,
                   })
                 );
-              }
+              },
             },
             {
               icon: () => <Delete />,
               tooltip: "delete",
               onClick: (event, rowData) => {
                 const rows = Array.isArray(rowData) ? rowData : [rowData];
-                rows.forEach(r => {
+                rows.forEach((r) => {
                   setCurrentChannelId(r.id);
                   setIsShowDeleteDialog(true);
                 });
-              }
-            }
+              },
+            },
           ]}
         />
       </Container>

@@ -16,7 +16,8 @@ import {
   DedupperImage,
   ConfigurationState,
   GestureInfo,
-  ThumbSliderState
+  ThumbSliderState,
+  SortKind,
 } from "./types/unistore";
 import MainViewer from "./pages/MainViewer";
 import GridViewer from "./pages/GridViewer";
@@ -51,6 +52,7 @@ interface BaseAppProps {
   updateChannel: (c: DedupperChannel) => Promise<void>;
   createChannel: (c: DedupperChannel) => Promise<void>;
   changeUnit: (x: number) => void;
+  changeSort: (x: SortKind, reverse: boolean) => void;
   togglePlay: Function;
   toggleGridPlay: Function;
   loadChannels: Function;
@@ -77,7 +79,7 @@ interface BaseAppProps {
 type AppProps = BaseAppProps;
 
 const mapStateToProps =
-  "connectionCount,configuration,channels,channelById,snackbar,snackbarCustom," +
+  "sortKind,connectionCount,configuration,channels,channelById,snackbar,snackbarCustom," +
   "imageByHash,mainViewer,gridViewer,thumbSlider";
 
 const App = connect<{}, {}, State, AppProps>(
@@ -142,7 +144,7 @@ const App = connect<{}, {}, State, AppProps>(
               updateColor: props.updateColor,
               togglePlay: props.togglePlay,
               unload: props.unloadMainViewerImages,
-              load: props.loadMainViewerImage
+              load: props.loadMainViewerImage,
             }}
           />
           <MainViewer
@@ -159,7 +161,7 @@ const App = connect<{}, {}, State, AppProps>(
               updateColor: props.updateColor,
               togglePlay: () => {},
               unload: props.unloadMainViewerImages,
-              load: props.loadMainViewerImage
+              load: props.loadMainViewerImage,
             }}
           />
           <MainViewer
@@ -176,7 +178,7 @@ const App = connect<{}, {}, State, AppProps>(
               togglePlay: props.togglePlay,
               updateColor: props.updateColor,
               unload: props.unloadMainViewerImages,
-              load: props.loadMainViewerImages
+              load: props.loadMainViewerImages,
             }}
           />
           <Home path="/">
@@ -207,6 +209,7 @@ const App = connect<{}, {}, State, AppProps>(
               }
             }}
             changeUnit={props.changeUnit}
+            changeSort={props.changeSort}
             updateTag={props.updateTag}
             selectedByIndex={props.selectedByIndex}
             gridViewer={props.gridViewer}
@@ -218,11 +221,11 @@ const App = connect<{}, {}, State, AppProps>(
             UrlUtil.isInGridViewer()
               ? {
                   horizontal: "left",
-                  vertical: "bottom"
+                  vertical: "bottom",
                 }
               : {
                   horizontal: "right",
-                  vertical: "top"
+                  vertical: "top",
                 }
           }
           stateCustom={props.snackbarCustom}

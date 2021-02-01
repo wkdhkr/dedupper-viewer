@@ -7,7 +7,7 @@ import {
   GetApp,
   AssignmentReturned,
   CameraAlt,
-  Cloud
+  Cloud,
 } from "@material-ui/icons";
 import Table from "@material-ui/core/Table";
 import orderBy from "lodash/orderBy";
@@ -17,19 +17,18 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 // import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+import axios from "axios";
 import Paper from "@material-ui/core/Paper";
-import Axios from "axios";
 import { DedupperImage, ConfigurationState } from "../../types/unistore";
-import IFrameUtil from "../../utils/IFrameUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 const useStyles = makeStyles({
   noMaxWidth: {
-    maxWidth: "none"
+    maxWidth: "none",
   },
   table: {
-    maxWidth: 640
-  }
+    maxWidth: 640,
+  },
 });
 
 interface DataTableProps {
@@ -43,7 +42,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
   image,
   index,
   imageCount,
-  configuration: c
+  configuration: c,
 }) => {
   const classes = useStyles();
   if (image === null) {
@@ -61,7 +60,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
     {
       name: "index",
       value: `${index + 1}/${imageCount}`,
-      skip: index === imageCount - 1
+      skip: index === imageCount - 1,
     },
     { name: "date", value: new Date(image.timestamp).toLocaleDateString() },
     { name: "size", value: filesize(image.size) },
@@ -72,7 +71,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
         image.to_path
           .split(".")
           .pop()
-          ?.toLowerCase() || "N/A"
+          ?.toLowerCase() || "N/A",
     },
     ...orderBy(
       [
@@ -80,15 +79,15 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
         { name: "porn", value: image.porn },
         { name: "hentai", value: image.hentai },
         { name: "sexy", value: image.sexy },
-        { name: "drawing", value: image.drawing }
+        { name: "drawing", value: image.drawing },
       ],
       ["value"],
       ["desc"]
     ),
     { name: "porn_sexy", value: image.porn_sexy },
     { name: "hentai_porn", value: image.hentai_porn },
-    { name: "hentai_porn_sexy", value: image.hentai_porn_sexy }
-  ].filter(r => !(r as any).skip);
+    { name: "hentai_porn_sexy", value: image.hentai_porn_sexy },
+  ].filter((r) => !(r as any).skip);
 
   const flickrUrl = image ? UrlUtil.getFlickrUrl(image.to_path) : null;
   const acdUrl = image?.acd_id
@@ -103,10 +102,10 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
             <Tooltip arrow title="download" placement="top-end">
               <IconButton
                 onClick={async () => {
-                  const { data } = await Axios.get(
+                  const { data } = await axios.get(
                     UrlUtil.generateImageUrl(image.hash),
                     {
-                      responseType: "arraybuffer"
+                      responseType: "arraybuffer",
                     }
                   );
                   const href = Buffer.from(data, "binary").toString("base64");
@@ -203,7 +202,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
         </TableHead>
       */}
           <TableBody>
-            {rows.map(row => (
+            {rows.map((row) => (
               <TableRow key={row.name}>
                 <TableCell component="th" scope="row">
                   {row.name}

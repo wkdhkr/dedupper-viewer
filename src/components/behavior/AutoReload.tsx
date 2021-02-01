@@ -16,7 +16,7 @@ const AutoReload: React.FunctionComponent<AutoReloadProps> = ({
   imageCount,
   range,
   load,
-  index
+  index,
 }) => {
   useEffect(() => {
     if (!disabled && range > 0) {
@@ -27,7 +27,7 @@ const AutoReload: React.FunctionComponent<AutoReloadProps> = ({
         setTimeout(() => load());
       }
     }
-  }, [isPlay, index, range, imageCount, disabled]);
+  }, [isPlay, index, range, imageCount, disabled, load]);
   return <></>;
 };
 

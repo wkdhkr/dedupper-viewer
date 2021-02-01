@@ -6,14 +6,14 @@ import Gallery from "react-photo-gallery";
 import {
   DedupperImage,
   ConfigurationState,
-  GestureInfo
+  GestureInfo,
 } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "./GridViewer.css";
 import GridPhoto from "../components/viewer/GridPhoto";
 import {
   STANDARD_HEIGHT,
-  STANDARD_WIDTH
+  STANDARD_WIDTH,
 } from "../constants/dedupperConstants";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
@@ -37,7 +37,7 @@ const reload = async () => {
   await SubViewerHelper.prepareReference();
   IFrameUtil.postMessageForParent({
     type: "superReload",
-    payload: null
+    payload: null,
   });
 };
 type GridViewerProps = RouteComponentProps & {
@@ -88,7 +88,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   unload,
   channelId,
   updateTag,
-  updateRating
+  updateRating,
 }) => {
   const range = ViewerUtil.detectRange(unit);
   // console.log(unit, range);
@@ -114,7 +114,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         togglePlay();
       }
     };
-  }, [channelId, togglePlay, load, unload]);
+  }, [channelId, togglePlay, load, unload, isPlay]);
 
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
@@ -136,7 +136,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     // setup scroll handler for override default behavior
     window.addEventListener("wheel", handleScroll as any, { passive: false });
     return () => window.removeEventListener("wheel", handleScroll as any, {});
-  }, [index]);
+  }, [index, c.open, fitImages, range, selected]);
 
   return (
     <>
@@ -223,7 +223,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       > */}
       {fitImages.length ? (
         <Gallery
-          renderImage={props => (
+          renderImage={(props) => (
             <GridPhoto
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...{
@@ -239,13 +239,13 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                 unit,
                 updateSize,
                 updateTag,
-                updateRating
+                updateRating,
               }}
             />
           )}
           margin={0}
           limitNodeSearch={unit}
-          targetRowHeight={containerWidth =>
+          targetRowHeight={(containerWidth) =>
             ViewerUtil.calcTargetRowHeight(unit, containerWidth, true)
           }
           // columns={2}
@@ -254,7 +254,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
             key: hash,
             width: isPortraitImage ? STANDARD_HEIGHT : STANDARD_WIDTH,
             height: isPortraitImage ? STANDARD_WIDTH : STANDARD_HEIGHT,
-            src: UrlUtil.generateImageUrl(hash)
+            src: UrlUtil.generateImageUrl(hash),
           }))}
           onClick={(event, { photo, index: currentIndex }) => {
             if (photo.key) {
@@ -291,7 +291,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   );
 };
 
-const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = props => (
+const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => (
   <>
     <FullscreenButton />
     <IFrameWrapper

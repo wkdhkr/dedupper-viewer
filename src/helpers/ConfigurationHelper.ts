@@ -7,6 +7,7 @@ const defaultDomain = `${window.location.hostname.replace(
 
 export default class ConfigurationHelper {
   static getInitialState = (): ConfigurationState => ({
+    defaultSortKind: "random",
     amazonCloudDriveDomain: "www.amazon.com",
     dedupperServerProtocol: "http",
     dedupperServerPort: 8080,
@@ -23,6 +24,6 @@ export default class ConfigurationHelper {
     open: false,
     autoReload: true,
     gridViewerPlayInterval: 2,
-    mainViewerPlayInterval: 2
+    mainViewerPlayInterval: 2,
   });
 }

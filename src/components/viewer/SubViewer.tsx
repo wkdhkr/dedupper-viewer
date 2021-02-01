@@ -27,8 +27,8 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
           type: "navigateSubViewer",
           payload: {
             path,
-            image
-          }
+            image,
+          },
         };
         IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
       } else if (image && w) {
@@ -38,12 +38,12 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
             path: `${UrlUtil.generateImageViewerUrl(
               image.hash
             )}?mode=subviewer&parentHost=${window.location.hostname}`,
-            image
-          }
+            image,
+          },
         };
         IFrameUtil.postMessageById(message, "main-viewer-iframe", origin, w);
       }
-    }, [image, url]);
+    }, [image, url, origin]);
 
     if (!isGridOpen && !isMainOpen) {
       return <></>;
@@ -79,7 +79,7 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
     return (
       <NewWindow
         copyStyles={false}
-        onOpen={w => {
+        onOpen={(w) => {
           // eslint-disable-next-line no-underscore-dangle, no-param-reassign
           // (w as any).__DEDUPPER_VIEWER_SUB_VIEWER__ = true;
           SubViewerHelper.setWindow(w);
@@ -88,7 +88,7 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
           width,
           height,
           location: "no",
-          toolbar: "no"
+          toolbar: "no",
           // dependent: "yes"
         }}
         // center="screen"

@@ -12,14 +12,24 @@ import {
   FullscreenExit,
   NavigateNext,
   NavigateBefore,
-  Delete
+  Delete,
+  Sort,
 } from "@material-ui/icons";
-import { Box, IconButton, Paper, Slide, Tooltip } from "@material-ui/core";
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Paper,
+  Slide,
+  Tooltip,
+} from "@material-ui/core";
 import { RouteComponentProps } from "@reach/router";
 import {
   GridViewerState,
   ConfigurationState,
-  MainViewerState
+  MainViewerState,
+  SortKind,
 } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
@@ -35,6 +45,7 @@ type NavigationButtonBarProps = {
   configuration: ConfigurationState;
   updateConfiguration: (c: ConfigurationState) => void;
   changeUnit: (x: number) => void;
+  changeSort: (x: SortKind, reverse: boolean) => void;
   selectedByIndex: (index: number) => void;
   updateTag: (
     hash: string,
@@ -48,7 +59,7 @@ type NavigationButtonBarProps = {
 
 function useForceUpdate() {
   const [, setValue] = useState(0); // integer state
-  return () => setValue(value => value + 1); // update the state to force render
+  return () => setValue((value) => value + 1); // update the state to force render
 }
 
 const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = ({
@@ -57,11 +68,27 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   configuration,
   updateConfiguration,
   changeUnit,
+  changeSort,
   selectedByIndex,
   updateTag,
   loadChannels,
-  togglePlay
+  togglePlay,
 }) => {
+  const [sortAnchorEl, setSortAnchorEl] = React.useState<null | Element>(null);
+  const closeSortMenu = () => setSortAnchorEl(null);
+  const handleSortMenu = (
+    e: React.MouseEvent,
+    sortKind: SortKind,
+    reverse = false
+  ) => {
+    if (e.button !== 0) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    setSortAnchorEl(null);
+    changeSort(sortKind, reverse);
+  };
+
   const forceUpdate = useForceUpdate();
   const [isHover, setIsHover] = useState(false);
   const { isPlay: isGridViewerPlay } = gridViewer;
@@ -91,6 +118,8 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isShowHome = !isSubViewer && !isInStart;
   const isShowChannels = !isSubViewer && !isInChannels && !isInMainViewer;
   const isShowConfig = true;
+  const isShowSort = isInGridViewer || isInMainViewer;
+
   /*
   const isNativeFullscreen =
     !document.fullscreenElement &&
@@ -102,7 +131,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
 
   const buttonStyle = {
     cursor: isHover ? "pointer" : "default",
-    fontSize: "2em"
+    fontSize: "2em",
   };
   if (!isInIFrame && !isInChannels && !isInStart) {
     return null;
@@ -153,7 +182,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
       m={0}
       style={{
         opacity: isHover ? 0.8 : 0,
-        transform: "translate(-50%, -0%)"
+        transform: "translate(-50%, -0%)",
         // transition: "0.3s"
       }}
       id="navigation-button-bar-container"
@@ -175,7 +204,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                     setIsHover(false);
                     updateConfiguration({
                       ...configuration,
-                      open: true
+                      open: true,
                     });
                   }}
                 >
@@ -253,9 +282,9 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                         payload: {
                           type: "customEvent",
                           payload: {
-                            name: EVENT_X_KEY
-                          }
-                        }
+                            name: EVENT_X_KEY,
+                          },
+                        },
                       });
                     } else {
                       const event = new CustomEvent(EVENT_X_KEY);
@@ -266,12 +295,67 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                   <Delete
                     style={{
                       color: colors.red.A400,
-                      ...buttonStyle
+                      ...buttonStyle,
                     }}
                   />
                 </IconButton>
               </Tooltip>
             ) : null}
+            {isShowSort ? (
+              <Tooltip title="sort">
+                <IconButton
+                  onClick={(event: React.MouseEvent) => {
+                    setSortAnchorEl(event.currentTarget);
+                  }}
+                >
+                  <Sort
+                    color="secondary"
+                    style={{
+                      ...buttonStyle,
+                    }}
+                  />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+            <Menu
+              id="sort-menu"
+              anchorEl={sortAnchorEl}
+              keepMounted
+              open={Boolean(sortAnchorEl)}
+              onClose={closeSortMenu}
+            >
+              {([
+                "file_name",
+                "file_path",
+                "file_size",
+                "rating",
+                "sexy",
+                "porn",
+                "porn_sexy",
+                "neutral",
+                "hentai_sexy",
+                "hentai_porn_sexy",
+                "hentai_porn",
+                "hentai",
+                "drawing",
+                "timestamp",
+                "width",
+                "height",
+                "resolution",
+                "view_count",
+                "view_date",
+                "delete",
+                "random",
+              ] as SortKind[]).map((k) => (
+                <MenuItem
+                  key={k}
+                  onClick={(e) => handleSortMenu(e, k)}
+                  onContextMenu={(e) => handleSortMenu(e, k, true)}
+                >
+                  {k}
+                </MenuItem>
+              ))}
+            </Menu>
             {isShowReload ? (
               <Tooltip title="reload">
                 <IconButton
@@ -287,7 +371,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                       await SubViewerHelper.prepareReference();
                       IFrameUtil.postMessageForParent({
                         type: "superReload",
-                        payload: null
+                        payload: null,
                       });
                     }
                   }}
@@ -295,7 +379,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                   <Cached
                     color="secondary"
                     style={{
-                      ...buttonStyle
+                      ...buttonStyle,
                     }}
                   />
                 </IconButton>
@@ -317,7 +401,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                     <FullscreenExit
                       color="secondary"
                       style={{
-                        ...buttonStyle
+                        ...buttonStyle,
                       }}
                     />
                   ) : (
