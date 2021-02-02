@@ -75,7 +75,7 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
     keepAspectRatio,
     url,
     children,
-    origin
+    origin,
   }) => {
     let [w, h] = useCurrentWitdhHeight();
     if (IFrameUtil.isInIFrame()) {
@@ -116,7 +116,15 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
       </Box>
     );
   },
-  () => {
+  (p, n) => {
+    if (
+      p.forceTop !== n.forceTop ||
+      p.forceLeft !== n.forceLeft ||
+      p.forceWidth !== n.forceWidth ||
+      p.forceHeight !== n.forceHeight
+    ) {
+      return false;
+    }
     if (IFrameUtil.isInIFrame()) {
       return false;
     }

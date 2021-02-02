@@ -52,6 +52,7 @@ const initialState: State = {
     images: [],
   },
   gridViewer: {
+    showMainViewer: false,
     subViewer: {
       isOpen: false,
     },

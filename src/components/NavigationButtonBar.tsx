@@ -38,6 +38,7 @@ import DomUtil from "../utils/DomUtil";
 import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameUtil from "../utils/IFrameUtil";
 import RouterUtil from "../utils/RouterUtil";
+import Close from "@material-ui/icons/Close";
 
 type NavigationButtonBarProps = {
   gridViewer: GridViewerState;
@@ -95,6 +96,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const { isPlay: isMainViewerPlay } = mainViewer;
 
   const isInIFrame = IFrameUtil.isInIFrame();
+  const isInline = UrlUtil.isInline();
 
   const isInThumbSlider = UrlUtil.isInThumbSlider();
   const isInGridViewer = UrlUtil.isInGridViewer();
@@ -115,10 +117,11 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isShowStop = isPlay && (isInGridViewer || isInMainViewer);
   const isShowPlay = !isPlay && (isInGridViewer || isInMainViewer);
   const isShowPrevNext = !isPlay && (isInGridViewer || isInMainViewer);
-  const isShowHome = !isSubViewer && !isInStart;
+  const isShowHome = !isInline && !isSubViewer && !isInStart;
   const isShowChannels = !isSubViewer && !isInChannels && !isInMainViewer;
-  const isShowConfig = true;
+  const isShowConfig = !isInline;
   const isShowSort = isInGridViewer || isInMainViewer;
+  const isShowClose = isInline;
 
   /*
   const isNativeFullscreen =
@@ -227,6 +230,20 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                   onClick={() => RouterUtil.navigateForParent("/start")}
                 >
                   <Home color="primary" style={buttonStyle} />
+                </IconButton>
+              </Tooltip>
+            ) : null}
+            {isShowClose ? (
+              <Tooltip title="close">
+                <IconButton
+                  onClick={() =>
+                    IFrameUtil.postMessageForParent({
+                      type: "showMainViewer",
+                      payload: false,
+                    })
+                  }
+                >
+                  <Close color="primary" style={buttonStyle} />
                 </IconButton>
               </Tooltip>
             ) : null}

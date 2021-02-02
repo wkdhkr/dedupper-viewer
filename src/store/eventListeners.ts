@@ -279,7 +279,11 @@ export default function(store: Store<State>) {
   let pointerX = -1;
   let pointerY = -1;
 
+  let pointerStartDate = new Date();
+  let pointerEndDate = new Date();
+
   addListener(document, EVENT_POINTER_DOWN, function(event: PointerEvent) {
+    pointerStartDate = new Date();
     pointerX = event.clientX;
     pointerY = event.clientY;
     if (UrlUtil.isInSingleViewer() || UrlUtil.isInMainViewer()) {
@@ -322,6 +326,7 @@ export default function(store: Store<State>) {
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {
+    pointerEndDate = new Date();
     let viewer: MainViewer | null = null;
     let hash: string | null = null;
     try {
@@ -344,6 +349,14 @@ export default function(store: Store<State>) {
             const trim = JSON.stringify(viewer.imageData);
             actions(store).updateTrim(store.getState(), hash, trim);
           }
+        } else if (event.type === "click") {
+          // TODO: drag lock mode
+          let rating = store.getState().mainViewer.currentImage?.rating || 0;
+          rating += 1;
+          if (rating > 5) {
+            rating = 0;
+          }
+          actions(store).updateRating(store.getState(), hash, rating, false);
         }
       }
       if (
@@ -439,7 +452,7 @@ export default function(store: Store<State>) {
           const hash = store.getState().thumbSlider.selectedImage?.hash;
           if (hash) {
             const el = document.getElementById(`photo-container__${hash}`);
-            WindowUtil.scrollTo(el);
+            WindowUtil.scrollToNative(el);
           }
         }
       }, 200)

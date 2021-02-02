@@ -81,6 +81,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     };
 
     const options: Viewer.Options & { focus: boolean } = {
+      toggleOnDblclick: false,
       container: "#viewerContainer",
       focus: false,
       title: false,

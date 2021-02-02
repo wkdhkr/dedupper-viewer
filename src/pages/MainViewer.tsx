@@ -47,7 +47,8 @@ const applyTag = () => {
   });
 };
 
-type MainViewerProps = MainViewerState & {
+export type MainViewerProps = MainViewerState & {
+  isInline?: boolean;
   selected: (
     hash: string | null,
     index: number,
@@ -71,7 +72,8 @@ const Transition: any = React.forwardRef(function Transition(props: any, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const MainViewer: React.SFC<MainViewerProps> = ({
+export const MainViewer: React.SFC<MainViewerProps> = ({
+  isInline = false,
   configuration: c,
   connectionCount,
   isPlay,
@@ -90,13 +92,15 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   togglePlay,
 }) => {
   useEffect(() => {
-    if (hash) {
-      load(hash);
-    } else if (channelId) {
-      load(channelId);
+    if (!UrlUtil.isInline()) {
+      if (hash) {
+        load(hash);
+      } else if (channelId) {
+        load(channelId);
+      }
     }
     return () => {};
-  }, [load, hash, channelId]);
+  }, [isInline, load, hash, channelId]);
 
   const [colorReset, setColorReset] = useState<number>(0);
   const onWheel = (event: React.WheelEvent<HTMLElement>) => {
@@ -246,7 +250,11 @@ const MainViewer: React.SFC<MainViewerProps> = ({
   );
 };
 
-const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = (props) => {
+type ThumbSliderIFrameProps = MainViewerProps & { zIndex?: number | string };
+
+export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> = (
+  props
+) => {
   useWindowSize();
   const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
     // eslint-disable-next-line react/destructuring-assignment
@@ -256,12 +264,23 @@ const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = (props) => {
   );
   const isVertical = thumbHeight > thumbWidth;
   const orientation = UrlUtil.extractParam("o");
+  const origin = props.configuration.iframeOrigin;
+  const url =
+    window.location.protocol +
+    "//" +
+    window.location.hostname +
+    ":" +
+    window.location.port +
+    `/thumbs?o=${orientation}&inline=${props.isInline ? "1" : "0"}`;
+  const iframeUrl = new URL(url);
+  iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
   return (
     <>
       {IFrameUtil.isInIFrame() ? (
         <></>
       ) : (
         <Box
+          zIndex={props.zIndex ? props.zIndex : "auto"}
           position="absolute"
           top={isVertical ? 0 : window.innerHeight - thumbHeight}
           left={isVertical ? window.innerWidth - thumbWidth : 0}
@@ -274,7 +293,7 @@ const ThumbSliderIFrame: React.FunctionComponent<MainViewerProps> = (props) => {
             width="100%"
             frameBorder={0}
             height="100%"
-            url={`/thumbs?o=${orientation}`}
+            url={iframeUrl.toString()}
           />
         </Box>
       )}

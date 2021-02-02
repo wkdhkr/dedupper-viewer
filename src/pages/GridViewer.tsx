@@ -7,6 +7,7 @@ import {
   DedupperImage,
   ConfigurationState,
   GestureInfo,
+  MainViewerState,
 } from "../types/unistore";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import "./GridViewer.css";
@@ -27,6 +28,7 @@ import IFrameWrapper from "../components/IFrameWrapper";
 import FullscreenButton from "../components/FullscreenButton";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
+import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
 
 const gs = new GridViewerService(store);
 
@@ -41,6 +43,8 @@ const reload = async () => {
   });
 };
 type GridViewerProps = RouteComponentProps & {
+  showMainViewer: boolean;
+  mainViewer: MainViewerState;
   gestureInfo: GestureInfo;
   setGestureInfo: (x: GestureInfo) => void;
   connectionCount: number;
@@ -52,6 +56,7 @@ type GridViewerProps = RouteComponentProps & {
     next?: boolean
   ) => void;
   updateSize: (hash: string, w: number, h: number) => void;
+  updateColor: (hash: string, kind: string, value: number) => void;
   updateRating: (hash: string, x: number | null) => void;
   unit: number;
   channelId?: string;
@@ -71,6 +76,7 @@ type GridViewerProps = RouteComponentProps & {
 };
 
 const GridViewer: React.FunctionComponent<GridViewerProps> = ({
+  showMainViewer,
   gestureInfo,
   setGestureInfo,
   connectionCount,
@@ -118,7 +124,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {
-      if (!c.open) {
+      if (!c.open && !showMainViewer) {
         event.preventDefault();
         const leftTopIndex = index - (index % range);
         let nextIndex = index;
@@ -136,7 +142,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     // setup scroll handler for override default behavior
     window.addEventListener("wheel", handleScroll as any, { passive: false });
     return () => window.removeEventListener("wheel", handleScroll as any, {});
-  }, [index, c.open, fitImages, range, selected]);
+  }, [index, c.open, fitImages, range, selected, showMainViewer]);
 
   return (
     <>
@@ -155,64 +161,72 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         range={range}
         imageCount={fitImages.length}
       />
-      <PlayHotKey togglePlay={togglePlay} />
-      <RatingAndTagHotkey
-        updateTag={updateTag}
-        updateRating={updateRating}
-        image={selectedImage}
-      />
-      <Hotkeys
-        keyName="g"
-        onKeyUp={() => {
-          // grid unit change
-          changeUnit(ViewerUtil.detectNextUnit(unit));
-        }}
-      />
-      <Hotkeys
-        keyName="r"
-        onKeyUp={() => {
-          reload();
-          // reloading
-          /*
+      {showMainViewer ? (
+        <></>
+      ) : (
+        <>
+          <PlayHotKey togglePlay={togglePlay} />
+          <RatingAndTagHotkey
+            updateTag={updateTag}
+            updateRating={updateRating}
+            image={selectedImage}
+          />
+          <Hotkeys
+            keyName="g"
+            onKeyUp={() => {
+              // grid unit change
+              changeUnit(ViewerUtil.detectNextUnit(unit));
+            }}
+          />
+          <Hotkeys
+            keyName="r"
+            onKeyUp={() => {
+              reload();
+              // reloading
+              /*
           unload();
           if (channelId) {
             load(channelId);
           }
           */
-        }}
-      />
-      <Hotkeys keyName="p" onKeyUp={() => togglePlay()} />
-      <Hotkeys keyName="x" onKeyUp={() => applyTag()} />
-      <Hotkeys
-        // keyName="left,right,up,down"
-        allowRepeat
-        keyName="left,right,up,down"
-        onKeyDown={(keyName: string, event: KeyboardEvent) => {
-          event.preventDefault();
-        }}
-        onKeyUp={(keyName: string) => {
-          if (fitImages.length) {
-            let nextIndex = -1;
-            // const leftTopIndex = index - (index % range);
-            if (keyName === "left") {
-              nextIndex = index - 1;
-            }
-            if (keyName === "right") {
-              nextIndex = index + 1;
-            }
-            if (keyName === "up") {
-              // nextIndex = leftTopIndex - range;
-              nextIndex = index - unit;
-            }
-            if (keyName === "down") {
-              // nextIndex = leftTopIndex + range;
-              nextIndex = index + unit;
-            }
+            }}
+          />
+          <Hotkeys keyName="p" onKeyUp={() => togglePlay()} />
+          <Hotkeys keyName="x" onKeyUp={() => applyTag()} />
+          <Hotkeys
+            // keyName="left,right,up,down"
+            allowRepeat
+            keyName="left,right,up,down"
+            onKeyDown={(keyName: string, event: KeyboardEvent) => {
+              event.preventDefault();
+            }}
+            onKeyUp={(keyName: string) => {
+              if (fitImages.length) {
+                let nextIndex = -1;
+                // const leftTopIndex = index - (index % range);
+                if (keyName === "left") {
+                  nextIndex = index - 1;
+                }
+                if (keyName === "right") {
+                  nextIndex = index + 1;
+                }
+                if (keyName === "up") {
+                  // nextIndex = leftTopIndex - range;
+                  nextIndex = index - unit;
+                }
+                if (keyName === "down") {
+                  // nextIndex = leftTopIndex + range;
+                  nextIndex = index + unit;
+                }
 
-            selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
-          }
-        }}
-      />
+                selected(
+                  ...ImageArrayUtil.detectDestination(fitImages, nextIndex)
+                );
+              }
+            }}
+          />
+        </>
+      )}
       {/* <PerfectScrollbar>
       <Box
         id="grid-viewer-container"
@@ -258,6 +272,21 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           }))}
           onClick={(event, { photo, index: currentIndex }) => {
             if (photo.key) {
+              if (
+                event.button === 0 &&
+                index === currentIndex &&
+                !c.enableSubViewer
+              ) {
+                if (
+                  selectedImage &&
+                  selectedImage.hash === images[index]?.hash
+                ) {
+                  IFrameUtil.postMessageForParent({
+                    type: "showMainViewer",
+                    payload: true,
+                  });
+                }
+              }
               /*
               if (photo.key === selectedImage?.hash) {
                 // let skip = false;
@@ -278,6 +307,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               }
               */
               selected(photo.key, currentIndex, true);
+
               // setTimeout(() => toggleSubViewer());
             }
           }}
@@ -291,19 +321,68 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   );
 };
 
-const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => (
-  <>
-    <FullscreenButton />
-    <IFrameWrapper
-      id="grid-viewer-iframe"
-      // eslint-disable-next-line react/destructuring-assignment
-      origin={props.configuration.iframeOrigin}
-    >
-      <GridViewer
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...props}
-      />
-    </IFrameWrapper>
-  </>
-);
+const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
+  const mainViewerProps: MainViewerProps = {
+    ...props.mainViewer,
+    ...props,
+  };
+
+  const mainViewerForceTop = props.showMainViewer ? 0 : -9999;
+
+  const isInIFrame = IFrameUtil.isInIFrame();
+
+  return (
+    <>
+      <FullscreenButton />
+      <IFrameWrapper
+        id="grid-viewer-iframe"
+        // eslint-disable-next-line react/destructuring-assignment
+        origin={props.configuration.iframeOrigin}
+      >
+        <GridViewer
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+        />
+      </IFrameWrapper>
+      {isInIFrame ? (
+        <></>
+      ) : (
+        <>
+          <ThumbSliderIFrame
+            zIndex={mainViewerForceTop || "auto"}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...{ ...mainViewerProps, isInline: true }}
+          />
+          <IFrameWrapper
+            forceTop={mainViewerForceTop}
+            keepAspectRatio
+            // eslint-disable-next-line react/destructuring-assignment
+            standardHeight={props.configuration.standardHeight}
+            // eslint-disable-next-line react/destructuring-assignment
+            standardWidth={props.configuration.standardWidth}
+            id="main-viewer-iframe"
+            url={window.location.href.replace("grid/", "") + "&inline=1"}
+            // eslint-disable-next-line react/destructuring-assignment
+            origin={props.configuration.iframeOrigin}
+          >
+            {props.configuration.enableSubViewer ? (
+              <></>
+            ) : (
+              <MainViewer
+                path="channel/:channelId"
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...{
+                  ...mainViewerProps,
+                  isInline: true,
+                  unload: props.unload,
+                  load: props.load,
+                }}
+              />
+            )}
+          </IFrameWrapper>
+        </>
+      )}
+    </>
+  );
+};
 export default GridViewerWrapped;

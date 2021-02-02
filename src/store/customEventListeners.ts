@@ -13,7 +13,10 @@ import StoreUtil from "../utils/StoreUtil";
 export default function(store: Store<State>) {
   const gs = new GridViewerService(store);
   document.addEventListener(EVENT_X_KEY, () => {
-    if (UrlUtil.isInGridViewer() || UrlUtil.isInThumbSlider()) {
+    if (
+      UrlUtil.isInGridViewer() ||
+      (UrlUtil.isInThumbSlider() && !UrlUtil.isInline())
+    ) {
       if (store.getState().mainViewer.images.length) {
         gs.applyTagForImagesInScreen();
       }

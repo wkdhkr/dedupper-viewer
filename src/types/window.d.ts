@@ -11,6 +11,7 @@ export interface DedupperWindow extends Window {
 }
 
 export type IFrameMessageType =
+  | "showMainViewer"
   | "thumbSliderViewed"
   | "customEvent"
   | "toggleMainViewerPlay"

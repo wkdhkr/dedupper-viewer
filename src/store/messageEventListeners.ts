@@ -27,6 +27,13 @@ export default function(store: Store<State>) {
       log.trace(message, window.location.href);
 
       switch (message.type) {
+        case "showMainViewer":
+          store.setState(
+            produce(store.getState(), (draft) => {
+              draft.gridViewer.showMainViewer = message.payload;
+            })
+          );
+          break;
         case "toggleMainViewerPlay":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
             store.setState(
@@ -38,6 +45,7 @@ export default function(store: Store<State>) {
           break;
         case "selected":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
+            PerformanceUtil.decodeImage(message.payload.hash);
             const state = store.getState();
             const index = state.mainViewer.images
               .map((x) => x.hash)
@@ -46,9 +54,48 @@ export default function(store: Store<State>) {
               DomUtil.getViewer().view(index);
             }
           }
+          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
+            store.setState(
+              produce(store.getState(), (draft) => {
+                const image = draft.imageByHash[message.payload.hash];
+                const { hash, index } = message.payload as {
+                  hash: string;
+                  index: number;
+                };
+                if (image) {
+                  draft.gridViewer.selectedImage =
+                    draft.imageByHash[hash] || null;
+                  draft.gridViewer.index = index;
+                }
+              })
+            );
+          }
+          // TODO: scroll
           break;
         case "loadImages":
-          if (UrlUtil.isInThumbSlider() && IFrameUtil.isInIFrame()) {
+          if (
+            UrlUtil.isInMainViewer() &&
+            UrlUtil.isInline() &&
+            IFrameUtil.isInIFrame()
+          ) {
+            store.setState(
+              produce(store.getState(), (draft) => {
+                draft.mainViewer.images = message.payload;
+                draft.imageByHash = keyBy<DedupperImage>(
+                  message.payload,
+                  "hash"
+                );
+                draft.mainViewer.index = 0;
+              })
+            );
+          }
+          if (
+            (store.getState().configuration.enableSubViewer ||
+              (UrlUtil.isInline() &&
+                !store.getState().configuration.enableSubViewer)) &&
+            UrlUtil.isInThumbSlider() &&
+            IFrameUtil.isInIFrame()
+          ) {
             store.setState(
               produce(store.getState(), (draft) => {
                 draft.mainViewer.images = message.payload;
@@ -68,6 +115,38 @@ export default function(store: Store<State>) {
           break;
         }
         case "viewed":
+          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
+            store.setState(
+              produce(store.getState(), (draft) => {
+                const image = draft.imageByHash[message.payload.hash];
+                const { hash, index } = message.payload as {
+                  hash: string;
+                  index: number;
+                };
+                if (image) {
+                  draft.gridViewer.selectedImage =
+                    draft.imageByHash[hash] || null;
+                  draft.gridViewer.index = index;
+                }
+              })
+            );
+            // TODO: gridViewer scroll
+            /*
+            setTimeout(() => {
+              const leftTopHash = ThumbSliderUtil.getLeftTopHash(
+                message.payload.hash,
+                store.getState().mainViewer.images,
+                store.getState().configuration
+              );
+              if (leftTopHash) {
+                const el = document.getElementById(
+                  `photo-container__${leftTopHash}`
+                );
+                WindowUtil.scrollToNative(el);
+              }
+            });
+            */
+          }
           if (UrlUtil.isInThumbSlider()) {
             store.setState(
               produce(store.getState(), (draft) => {
@@ -180,22 +259,19 @@ export default function(store: Store<State>) {
           break;
         }
         case "forMainViewer": {
-          if (UrlUtil.isInMainViewer()) {
+          IFrameUtil.postMessageById(
+            message.payload,
+            "main-viewer-iframe",
+            "*"
+          );
+          const w = SubViewerHelper.getWindow();
+          if (w) {
             IFrameUtil.postMessageById(
               message.payload,
               "main-viewer-iframe",
-              "*"
+              "*",
+              w
             );
-          } else {
-            const w = SubViewerHelper.getWindow();
-            if (w) {
-              IFrameUtil.postMessageById(
-                message.payload,
-                "main-viewer-iframe",
-                "*",
-                w
-              );
-            }
           }
 
           break;

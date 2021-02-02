@@ -16,6 +16,7 @@ import GridViewerService from "../../services/Viewer/GridViewerService";
 import ColorUtil from "../../utils/ColorUtil";
 import useWindowSize from "../../hooks/windowSize";
 import PerformanceUtil from "../../utils/PerformanceUtil";
+import UrlUtil from "../../utils/dedupper/UrlUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -130,13 +131,12 @@ const GridPhoto = React.memo(
       }
     };
 
-    /*
     const createPredecodeStyle = () => {
       const styles: React.CSSProperties = {};
       const leftTopIndex = currentIndex - (currentIndex % range);
       const isNextPageIndex =
         leftTopIndex + range + unit <= index &&
-        index < leftTopIndex + range * 2;
+        index < leftTopIndex + range * 2.5;
       if (isNextPageIndex) {
         styles.position = "fixed";
         styles.top = window.innerHeight + 1;
@@ -149,7 +149,6 @@ const GridPhoto = React.memo(
       }
       return styles;
     };
-    */
 
     const createStyle = () => {
       let style: React.CSSProperties = imgStyle;
@@ -214,7 +213,7 @@ const GridPhoto = React.memo(
           ...style,
           ...ViewerUtil.getTransforms(imageData),
           filter: ColorUtil.createFilter(imageData),
-          // ...createPredecodeStyle()
+          ...createPredecodeStyle(),
         };
       }
       return style;
@@ -264,6 +263,11 @@ const GridPhoto = React.memo(
         currentHover = null;
       }
     };
+
+    const imagePerformanceProps: { loading?: "lazy" } = {};
+    if (UrlUtil.isInline() && !isNeighbour) {
+      imagePerformanceProps.loading = "lazy";
+    }
 
     const sizeFactor = 1.25;
     return (
@@ -324,6 +328,7 @@ const GridPhoto = React.memo(
             />
           ) : (
             <img
+              {...imagePerformanceProps}
               alt={image.hash}
               id={`photo-image__${photo.key}`}
               decoding="async"

@@ -23,6 +23,14 @@ export default class IFrameUtil {
         type: "forSubViewer",
         payload,
       });
+      IFrameUtil.postMessageForParent({
+        type: "forThumbSlider",
+        payload,
+      });
+      IFrameUtil.postMessageForParent({
+        type: "forMainViewer",
+        payload,
+      });
     } else {
       IFrameUtil.postMessageForParent({
         type: "forGrid",
@@ -38,6 +46,12 @@ export default class IFrameUtil {
         type: "forMainViewer",
         payload,
       });
+      if (UrlUtil.isInline()) {
+        IFrameUtil.postMessageForParent({
+          type: "forGrid",
+          payload,
+        });
+      }
     }
   };
 

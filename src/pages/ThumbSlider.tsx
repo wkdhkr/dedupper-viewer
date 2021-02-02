@@ -141,6 +141,10 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
     return () => window.removeEventListener("wheel", handleScroll as any, {});
   }, [index, images, range, c, selected]);
 
+  if (UrlUtil.isInline() && c.enableSubViewer) {
+    return null;
+  }
+
   return (
     <>
       <AjaxProgress connectionCount={connectionCount} />

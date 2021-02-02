@@ -79,6 +79,11 @@ export default class UrlUtil {
     return UrlUtil.isInGridViewer() === false && UrlUtil.isInChannel();
   };
 
+  static isInline = () => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get("inline") === "1";
+  };
+
   static isInStart = () => {
     return window.location.pathname.split("/").includes("start");
   };
@@ -102,7 +107,7 @@ export default class UrlUtil {
       window.parent.postMessage(
         {
           type: "navigateParent",
-          payload: url.pathname + url.search
+          payload: url.pathname + url.search,
         },
         "*"
       );
@@ -142,7 +147,7 @@ export default class UrlUtil {
     if (UrlUtil.isInChannel()) {
       const matches = window.location.pathname
         .split("/")
-        .filter(d =>
+        .filter((d) =>
           d.match(
             /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i
           )

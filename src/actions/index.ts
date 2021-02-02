@@ -37,6 +37,13 @@ const dc = new DedupperClient();
 const ps = new PlayerService();
 const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
+  setShowMainViewer(state: State, isShow = true) {
+    store.setState(
+      produce(store.getState(), (draft) => {
+        draft.gridViewer.showMainViewer = isShow;
+      })
+    );
+  },
   setGestureInfo(state: State, info: GestureInfo) {
     store.setState(
       produce(store.getState(), (draft) => {
@@ -212,14 +219,11 @@ const actions = (store: Store<State>) => ({
       actions(store).updateViewStat(store.getState(), hash);
     }
     await SubViewerHelper.prepareReference();
-    IFrameUtil.postMessageForParent({
-      type: "forAll",
+    IFrameUtil.postMessageForOther({
+      type: "viewed",
       payload: {
-        type: "viewed",
-        payload: {
-          hash,
-          index,
-        },
+        hash,
+        index,
       },
     });
   },
@@ -249,19 +253,16 @@ const actions = (store: Store<State>) => ({
       mayIndex === null
         ? store.getState().mainViewer.images.findIndex((i) => i.hash === hash)
         : mayIndex;
-    if (UrlUtil.isInThumbSlider()) {
-      SubViewerHelper.prepareReference().then(() => {
-        IFrameUtil.postMessageForParent({
-          type: "forAll",
-          payload: {
-            type: "selected",
-            payload: {
-              hash,
-              index,
-            },
-          },
-        });
+    SubViewerHelper.prepareReference().then(() => {
+      IFrameUtil.postMessageForOther({
+        type: "selected",
+        payload: {
+          hash,
+          index,
+        },
       });
+    });
+    if (UrlUtil.isInThumbSlider()) {
       store.setState(
         produce(store.getState(), (draft) => {
           draft.thumbSlider.selectedImage = draft.imageByHash[hash] || null;
@@ -274,7 +275,7 @@ const actions = (store: Store<State>) => ({
         state.configuration
       );
       const el = document.getElementById(`photo-container__${leftTopHash}`);
-      WindowUtil.scrollTo(el);
+      WindowUtil.scrollToNative(el);
       return;
     }
     store.setState(

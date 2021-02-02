@@ -151,6 +151,7 @@ export interface GestureInfo {
 }
 
 export interface GridViewerState {
+  showMainViewer: boolean;
   gestureInfo: GestureInfo;
   selectedImage: DedupperImage | null;
   subViewer: SubViewerState;

@@ -112,10 +112,12 @@ const App = connect<{}, {}, State, AppProps>(
         <Router>
           <Redirect noThrow from="/" to="start/" />
           <GridViewer
+            mainViewer={props.mainViewer}
             connectionCount={props.connectionCount}
             configuration={props.configuration}
             path="channel/grid/:channelId"
             setGestureInfo={props.setGestureInfo}
+            updateColor={props.updateColor}
             updateRating={props.updateRating}
             updateSize={props.updateSize}
             togglePlay={props.toggleGridPlay}
