@@ -55,20 +55,20 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
 
     this.state = {
       isShow: true,
-      index: 0
+      index: 0,
     };
   }
 
   show = (index = 0) => {
     this.setState({
       isShow: true,
-      index
+      index,
     });
   };
 
   hide = () => {
     this.setState({
-      isShow: false
+      isShow: false,
     });
   };
 
@@ -83,7 +83,7 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
       images,
       togglePlay,
       channelId,
-      options
+      options,
     } = this.props;
     const { isShow, index } = this.state;
     const { Fragment } = React;
@@ -106,7 +106,7 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
         ) : (
           <div />
         )}
-        {deepMap(children, child => {
+        {deepMap(children, (child) => {
           if (child === null) {
             return <div />;
           }
@@ -114,7 +114,7 @@ class RViewer extends PureComponent<RViewerProps, RViewerState> {
             const props = {
               onClick: () => {
                 this.show(child.props.index);
-              }
+              },
             };
 
             return cloneElement(child.props.children as any, props);
@@ -136,7 +136,7 @@ const MultiImageViewer: React.FunctionComponent<MultiImageViewerProps> = ({
   isPlay,
   options,
   channelId,
-  togglePlay
+  togglePlay,
 }) => (
   <RViewer
     channelId={channelId}

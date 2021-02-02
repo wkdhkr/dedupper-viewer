@@ -24,7 +24,7 @@ const FullscreenButton: React.FunctionComponent<FullscreenButtonProps> = () => {
       style={{
         transition: "0.2s",
         opacity: !isHover ? 0 : 0.7,
-        transform: "translate(-50%, -0%)"
+        transform: "translate(-50%, -0%)",
       }}
       onMouseOver={() => setIsHover(true)}
       onMouseOut={() => setIsHover(false)}

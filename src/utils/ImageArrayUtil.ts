@@ -14,7 +14,7 @@ export default class ImageArrayUtil {
     if (hash === null) {
       return null;
     }
-    return images.findIndex(i => i.hash === hash);
+    return images.findIndex((i) => i.hash === hash);
   };
 
   static toArray(t: any | any[]) {

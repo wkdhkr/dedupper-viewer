@@ -1,9 +1,9 @@
 img {
-    image-orientation: from-image;
+  image-orientation: from-image;
 }
 
 .viewer-transition {
-  transition:all 0.001s;
+  transition: all 0.001s;
 }
 .viewer-footer {
   text-align: right;

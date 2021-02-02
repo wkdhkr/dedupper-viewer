@@ -110,6 +110,7 @@ export default class ThumbSliderUtil {
     );
 
     if (useCache && leftTopHashesCache[cacheKey]) {
+      // for rendering performance issue
       const isSynced = Boolean(leftTopHashesSyncMap[cacheKey]);
       if (!isSynced) {
         const prev = leftTopHashesCache[cacheKey];

@@ -198,8 +198,8 @@ export default function(store: Store<State>) {
             {
               variant: "info",
               autoHideDuration: 3000,
-              anchorOrigin: { horizontal: "right", vertical: "top" }
-            }
+              anchorOrigin: { horizontal: "right", vertical: "top" },
+            },
           ]);
         }
         // preload, for performance
@@ -224,8 +224,8 @@ export default function(store: Store<State>) {
         {
           variant: "info",
           autoHideDuration: 3000,
-          anchorOrigin: { horizontal: "right", vertical: "top" }
-        }
+          anchorOrigin: { horizontal: "right", vertical: "top" },
+        },
       ]);
       // console.log("ready", event);
     }
@@ -292,9 +292,9 @@ export default function(store: Store<State>) {
               payload: {
                 type: "customEvent",
                 payload: {
-                  name: EVENT_X_KEY
-                }
-              }
+                  name: EVENT_X_KEY,
+                },
+              },
             });
           });
         } else if (UrlUtil.isInMainViewer()) {
@@ -304,9 +304,9 @@ export default function(store: Store<State>) {
               payload: {
                 type: "customEvent",
                 payload: {
-                  name: EVENT_X_KEY
-                }
-              }
+                  name: EVENT_X_KEY,
+                },
+              },
             });
           });
         } else {
@@ -336,8 +336,8 @@ export default function(store: Store<State>) {
           IFrameUtil.postMessageForParent({
             type: "customEvent",
             payload: {
-              name: EVENT_X_KEY
-            }
+              name: EVENT_X_KEY,
+            },
           });
         } else if (pointerX !== event.clientX || pointerY !== event.clientY) {
           if (!isEqual(viewer.imageData, viewer.initialImageData)) {
@@ -359,8 +359,8 @@ export default function(store: Store<State>) {
         "viewer-rotate-left",
         "viewer-rotate-right",
         "viewer-flip-horizontal",
-        "viewer-flip-vertical"
-      ].forEach(name => {
+        "viewer-flip-vertical",
+      ].forEach((name) => {
         if (
           event
             .composedPath()

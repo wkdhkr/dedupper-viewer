@@ -15,7 +15,7 @@ export function useQueryString(
   const currentValue = UrlUtil.extractParam(key);
   const [, setValue] = useState(currentValue || initialValue);
   const onSetValue = useCallback(
-    newValue => {
+    (newValue) => {
       setValue(newValue);
       const sp = new URLSearchParams();
       if (newValue) {

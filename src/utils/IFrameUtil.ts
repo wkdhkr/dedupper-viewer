@@ -21,22 +21,22 @@ export default class IFrameUtil {
     if (UrlUtil.isInGridViewer()) {
       IFrameUtil.postMessageForParent({
         type: "forSubViewer",
-        payload
+        payload,
       });
     } else {
       IFrameUtil.postMessageForParent({
         type: "forGrid",
-        payload
+        payload,
       });
       IFrameUtil.postMessageForParent({
         type: "forThumbSlider",
-        payload
+        payload,
       });
     }
     if (UrlUtil.isInThumbSlider()) {
       IFrameUtil.postMessageForParent({
         type: "forMainViewer",
-        payload
+        payload,
       });
     }
   };

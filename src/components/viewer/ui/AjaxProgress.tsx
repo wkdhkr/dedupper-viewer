@@ -6,7 +6,7 @@ type AjaxProgressProps = {
 };
 
 const AjaxProgress: React.FunctionComponent<AjaxProgressProps> = ({
-  connectionCount
+  connectionCount,
 }: AjaxProgressProps) => {
   if (connectionCount < 1) {
     return <></>;
@@ -20,7 +20,7 @@ const AjaxProgress: React.FunctionComponent<AjaxProgressProps> = ({
         zIndex: 1000,
         position: "fixed",
         top: window.innerHeight - 4,
-        left: 0
+        left: 0,
       }}
     />
   );

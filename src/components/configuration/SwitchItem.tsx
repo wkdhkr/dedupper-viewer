@@ -15,7 +15,7 @@ export default function SwitchItem({
   onChange,
   label,
   name,
-  value
+  value,
 }: SwitchItemProps) {
   return (
     <FormControlLabel

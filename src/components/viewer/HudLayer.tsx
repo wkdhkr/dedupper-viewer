@@ -13,7 +13,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  DialogTitle
+  DialogTitle,
 } from "@material-ui/core";
 import { blue, pink, green } from "@material-ui/core/colors";
 import { FacePPRow, DedupperImage } from "../../types/unistore";
@@ -83,14 +83,14 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
   mode,
   faces,
   image,
-  disabled
+  disabled,
 }) => {
   const [hover, setHover] = useState<boolean>(false);
   const [hoverFace, setHoverFace] = useState<string | null>(null);
   const [selectedFace, setSelectedFace] = useState<FacePPRow | null>(null);
 
   const hoverFaceFixed = faces
-    .map(face => face.face_token)
+    .map((face) => face.face_token)
     .includes(hoverFace || "")
     ? hoverFace
     : null;
@@ -114,13 +114,13 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
     width: imageData ? imageData.width : 0,
     marginTop: imageData ? imageData.top || 0 : 0,
     marginLeft: imageData ? imageData.left || 0 : 0,
-    ...(imageData ? ViewerUtil.getTransforms(imageData) : {})
+    ...(imageData ? ViewerUtil.getTransforms(imageData) : {}),
   };
 
   if (!imageData) {
     return null;
   }
-  if (faces.some(face => face.hash !== image?.hash)) {
+  if (faces.some((face) => face.hash !== image?.hash)) {
     return null;
   }
 
@@ -132,7 +132,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
     <>
       <Dialog
         style={{
-          zIndex: 1360
+          zIndex: 1360,
         }}
         fullWidth
         onBackdropClick={() => setSelectedFace(null)}
@@ -147,7 +147,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
               <TableBody>
                 {selectedFace
                   ? Object.keys(selectedFace)
-                      .map(name => {
+                      .map((name) => {
                         if (name === "landmark" || name === "hash") {
                           return null;
                         }
@@ -184,7 +184,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
         zIndex={1354}
         position="absolute"
       >
-        {faces.map(face => {
+        {faces.map((face) => {
           if (face.hash !== image?.hash) {
             return null;
           }
@@ -211,11 +211,11 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
             top,
             width,
             height,
-            transform: `rotate(${face.headpose_roll_angle}deg)`
+            transform: `rotate(${face.headpose_roll_angle}deg)`,
           };
           return (
             <div key={face.face_token}>
-              {Array.from(new Set(face.landmark.split(";"))).map(landmark => {
+              {Array.from(new Set(face.landmark.split(";"))).map((landmark) => {
                 const [x, y] = landmark.split(",");
 
                 return (
@@ -229,7 +229,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                       height: height * 0.01 || 1,
                       position: "absolute",
                       top: parseInt(y, 10) * ratio || 0,
-                      left: parseInt(x, 10) * ratio || 0
+                      left: parseInt(x, 10) * ratio || 0,
                     }}
                   />
                 );
@@ -250,7 +250,7 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
                     position: "absolute",
                     fontSize: height * 0.07,
                     bottom: 0,
-                    margin: "2px"
+                    margin: "2px",
                   }}
                 >
                   Age: {face.age} {getEmotionEmoji(face)}

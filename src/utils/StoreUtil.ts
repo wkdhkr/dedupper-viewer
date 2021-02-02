@@ -12,7 +12,7 @@ export default class StoreUtil {
     edit: Partial<DedupperImage>,
     store: Store<State>
   ) {
-    const newState = produce(store.getState(), draft => {
+    const newState = produce(store.getState(), (draft) => {
       draft.mainViewer.images = StoreUtil.editImageInImages(
         hashList,
         edit,
@@ -22,7 +22,7 @@ export default class StoreUtil {
         if (hashList.includes(draft.mainViewer.currentImage.hash)) {
           draft.mainViewer.currentImage = {
             ...draft.mainViewer.currentImage,
-            ...edit
+            ...edit,
           };
         }
       }
@@ -30,15 +30,15 @@ export default class StoreUtil {
         if (hashList.includes(draft.gridViewer.selectedImage.hash)) {
           draft.gridViewer.selectedImage = {
             ...draft.gridViewer.selectedImage,
-            ...edit
+            ...edit,
           };
         }
       }
-      hashList.forEach(h => {
+      hashList.forEach((h) => {
         if (draft.imageByHash[h]) {
           draft.imageByHash[h] = {
             ...draft.imageByHash[h],
-            ...edit
+            ...edit,
           };
         }
       });
@@ -58,9 +58,9 @@ export default class StoreUtil {
     StoreUtil.updateFieldInState(hashList, edit, store);
     // await dc.update(hash, edit, table);
     // no wait
-    hashList.forEach(async h => {
+    hashList.forEach(async (h) => {
       store.setState(
-        produce(store.getState(), draft => {
+        produce(store.getState(), (draft) => {
           draft.connectionCount += 1;
         })
       );
@@ -68,7 +68,7 @@ export default class StoreUtil {
         await dc.update(h, edit, table);
       } finally {
         store.setState(
-          produce(store.getState(), draft => {
+          produce(store.getState(), (draft) => {
             draft.connectionCount -= 1;
           })
         );
@@ -76,7 +76,7 @@ export default class StoreUtil {
     });
     if (!silent && snackbarName) {
       store.setState(
-        produce(store.getState(), draft => {
+        produce(store.getState(), (draft) => {
           draft.snackbar[snackbarName] = true;
         })
       );
@@ -89,15 +89,15 @@ export default class StoreUtil {
     images: DedupperImage[]
   ) {
     return [
-      ...images.map(image => {
+      ...images.map((image) => {
         if (hashList.includes(image.hash)) {
           return {
             ...image,
-            ...edit
+            ...edit,
           };
         }
         return image;
-      })
+      }),
     ];
   }
 }

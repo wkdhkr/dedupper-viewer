@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 function useWindowSize() {
   const [windowSize, setWindowSize] = useState({
     width: -1,
-    height: -1
+    height: -1,
   });
 
   useEffect(() => {
@@ -13,7 +13,7 @@ function useWindowSize() {
       // Set window width/height to state
       setWindowSize({
         width: window.innerWidth,
-        height: window.innerHeight
+        height: window.innerHeight,
       });
     }
 

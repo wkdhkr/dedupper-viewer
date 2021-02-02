@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   DialogContentText,
-  Dialog
+  Dialog,
 } from "@material-ui/core";
 
 type ConfirmDialogProps = {
@@ -21,7 +21,7 @@ const ConfirmDialog: React.FunctionComponent<ConfirmDialogProps> = ({
   title,
   handleClose,
   handleOk,
-  open
+  open,
 }) => {
   return (
     <Dialog

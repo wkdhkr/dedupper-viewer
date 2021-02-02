@@ -37,7 +37,7 @@ export default class SubViewerHelper {
       if (window.parent) {
         window.parent.postMessage(
           {
-            type: "prepareSubViewerReference"
+            type: "prepareSubViewerReference",
           },
           "*"
         );

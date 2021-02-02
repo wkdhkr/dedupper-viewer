@@ -20,7 +20,7 @@ export default class WindowUtil {
       scrollIntoView(el, {
         // behavior: "smooth",
         scrollMode: ifNeeded ? "if-needed" : "always",
-        block: "start"
+        block: "start",
       });
       window.scrollBy(0, 1);
     }

@@ -18,7 +18,7 @@ const RatingAndTagHotkey: React.FunctionComponent<RatingAndTagHotkeyProps> = ({
   next = true,
   image,
   updateRating,
-  updateTag
+  updateTag,
 }) => {
   return (
     <Hotkeys

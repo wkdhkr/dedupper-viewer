@@ -7,7 +7,7 @@ export default function(store: Store<State>) {
     const shifted = event.shiftKey;
     const controlled = event.ctrlKey;
     store.setState(
-      produce(store.getState(), draft => {
+      produce(store.getState(), (draft) => {
         draft.keyStatus.shifted = shifted;
         draft.keyStatus.controlled = controlled;
       })

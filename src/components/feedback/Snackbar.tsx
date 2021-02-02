@@ -3,7 +3,7 @@ import { useSnackbar, OptionsObject, SnackbarOrigin } from "notistack";
 import {
   SnackbarState,
   SnackbarKind,
-  SnackbarCustomState
+  SnackbarCustomState,
 } from "../../types/unistore";
 
 type SnackbarProps = {
@@ -19,7 +19,7 @@ const Snackbar: React.FunctionComponent<SnackbarProps> = ({
   state,
   close,
   stateCustom,
-  closeCustom
+  closeCustom,
 }) => {
   const snackbarConfigLookup: {
     [_ in SnackbarKind]: [React.ReactNode, OptionsObject | undefined];
@@ -29,25 +29,25 @@ const Snackbar: React.FunctionComponent<SnackbarProps> = ({
       {
         variant: "success",
         autoHideDuration: 3000,
-        anchorOrigin
-      }
+        anchorOrigin,
+      },
     ],
     ratingUpdated: [
       "The rating has been updated.",
       {
         variant: "success",
         autoHideDuration: 3000,
-        anchorOrigin
-      }
+        anchorOrigin,
+      },
     ],
     layoutUpdated: [
       "The layout has been updated.",
       {
         variant: "success",
         autoHideDuration: 3000,
-        anchorOrigin
-      }
-    ]
+        anchorOrigin,
+      },
+    ],
   };
 
   const { enqueueSnackbar } = useSnackbar();

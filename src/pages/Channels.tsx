@@ -12,7 +12,7 @@ import {
   IconButton,
   TextField,
   Grid,
-  Box
+  Box,
 } from "@material-ui/core";
 import { Dictionary } from "lodash";
 import { DedupperChannel } from "../types/unistore";
@@ -24,9 +24,9 @@ import ChannelTable from "../components/channels/ChannelTable";
 import RouterUtil from "../utils/RouterUtil";
 // import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
-    flexGrow: 1
+    flexGrow: 1,
     /*
     "& .MuiTextField-root": {
       margin: theme.spacing(1),
@@ -35,15 +35,15 @@ const useStyles = makeStyles(theme => ({
     */
   },
   menuButton: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   appBar: {
-    position: "relative"
+    position: "relative",
   },
   title: {
     marginLeft: theme.spacing(2),
-    flex: 1
-  }
+    flex: 1,
+  },
 }));
 
 type ChannelsProps = {
@@ -63,7 +63,7 @@ const Channels: React.FunctionComponent<ChannelsProps> = ({
   changeUnit,
   handleCreate,
   handleUpdate,
-  handleDelete
+  handleDelete,
 }) => {
   const classes = useStyles();
   // const [isShowDialog, setIsShowDialog] = useState(false);
@@ -156,13 +156,13 @@ The channel will be permanently removed."
                   handleUpdate({
                     id: edit,
                     name: channelName,
-                    sql
+                    sql,
                   });
                 } else {
                   handleCreate({
                     id: "",
                     name: channelName,
-                    sql
+                    sql,
                   });
                 }
                 handleClose();
@@ -181,7 +181,7 @@ The channel will be permanently removed."
                     <TextField
                       autoFocus
                       label="Channel Name"
-                      onChange={event => setChannelName(event.target.value)}
+                      onChange={(event) => setChannelName(event.target.value)}
                       fullWidth
                       value={channelName}
                     />
@@ -190,14 +190,14 @@ The channel will be permanently removed."
                     <TextField
                       label="SQL"
                       multiline
-                      onChange={event => setSql(event.target.value)}
+                      onChange={(event) => setSql(event.target.value)}
                       fullWidth
                       inputProps={{
                         style: {
                           fontSize: 25,
                           lineHeight: "120%",
-                          fontFamily: "Monospace"
-                        }
+                          fontFamily: "Monospace",
+                        },
                       }}
                       value={sql}
                     />

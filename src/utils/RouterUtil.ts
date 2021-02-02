@@ -16,7 +16,7 @@ export default class RouterUtil {
     w.postMessage(
       {
         type: "navigate",
-        payload: url
+        payload: url,
       },
       "*"
     );

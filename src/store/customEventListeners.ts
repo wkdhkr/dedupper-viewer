@@ -6,7 +6,7 @@ import actions from "../actions";
 import {
   EVENT_X_KEY,
   EVENT_R_KEY,
-  EVENT_UPDATE_IMAGE
+  EVENT_UPDATE_IMAGE,
 } from "../constants/dedupperConstants";
 import StoreUtil from "../utils/StoreUtil";
 

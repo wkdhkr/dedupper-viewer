@@ -12,7 +12,7 @@ type ColorTunerProps = {
 const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
   onUpdate,
   reset: srcReset,
-  image
+  image,
 }) => {
   const [isHover, setIsHover] = useState<boolean>(false);
   if (!image) {
@@ -30,7 +30,7 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
       style={{
-        opacity: isHover ? 0.8 : 0
+        opacity: isHover ? 0.8 : 0,
       }}
     >
       <Paper>

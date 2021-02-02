@@ -32,14 +32,14 @@ const getColor = (name: string, isHover = false) => {
 const getLabelRating = (name: string) =>
   withStyles({
     iconFilled: {
-      color: getColor(name)
+      color: getColor(name),
     },
     iconHover: {
-      color: getColor(name, true)
-    }
+      color: getColor(name, true),
+    },
   })(Rating);
 
-const labelRatingList = ["t1", "t2", "t3", "t4", "t5"].map(name =>
+const labelRatingList = ["t1", "t2", "t3", "t4", "t5"].map((name) =>
   getLabelRating(name)
 );
 
@@ -70,7 +70,7 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
             />
           </Box>
           <Box className="viewer-rating-container">
-            {["t1", "t2", "t3", "t4", "t5"].map(name => {
+            {["t1", "t2", "t3", "t4", "t5"].map((name) => {
               const LabelRating =
                 labelRatingList[parseInt(name.replace("t", ""), 10) - 1];
               return (

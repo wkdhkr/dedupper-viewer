@@ -15,7 +15,7 @@ import {
   Table,
   TableBody,
   TableRow,
-  TableCell
+  TableCell,
 } from "@material-ui/core";
 import SlideUp from "../../transitions/SlideUp";
 import { ConfigurationState } from "../../types/unistore";
@@ -31,7 +31,7 @@ type ConfigurationDialogProps = {
 
 const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = ({
   configuration: c,
-  updateFn
+  updateFn,
 }) => {
   const [draftConfig, setDraftConfig] = useState<ConfigurationState>(c);
   const [reset, setReset] = useState<number>(0);
@@ -40,7 +40,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
     setDraftConfig(c); // reset
     updateFn({
       ...c,
-      open: false
+      open: false,
     });
   };
 
@@ -53,57 +53,57 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
       ...c,
       ...draftConfig,
       ...modConfig,
-      open: false
+      open: false,
     });
   };
 
   const keyboardShortcuts = [
     {
       name: "Rating 1(common)",
-      value: "1,c"
+      value: "1,c",
     },
     {
       name: "Rating 2(accept)",
-      value: "2,a"
+      value: "2,a",
     },
     {
       name: "Rating 3(wonder)",
-      value: "3,w"
+      value: "3,w",
     },
     {
       name: "Rating 4(fantastic)",
-      value: "4,f"
+      value: "4,f",
     },
     {
       name: "Rating 5(special)",
-      value: "5,s"
+      value: "5,s",
     },
     {
       name: "tag 1(deny)",
-      value: "space,d"
+      value: "space,d",
     },
     {
       name: "Change grid count",
-      value: "g"
+      value: "g",
     },
     {
       name: "Reload",
-      value: "r"
+      value: "r",
     },
     {
       name: "Toggle play",
-      value: "p"
+      value: "p",
     },
     {
       name: "Apply tag(block)",
-      value: "x"
-    }
+      value: "x",
+    },
   ];
 
   return (
     <Dialog
       style={{
-        zIndex: 1360
+        zIndex: 1360,
       }}
       fullWidth
       onBackdropClick={handleClose}
@@ -124,10 +124,10 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                   <h3>Port</h3>
                   <TextField
                     value={draftConfig.dedupperServerPort || ""}
-                    onChange={e => {
+                    onChange={(e) => {
                       setDraftConfig({
                         ...draftConfig,
-                        dedupperServerPort: parseInt(e.target.value, 10) || 0
+                        dedupperServerPort: parseInt(e.target.value, 10) || 0,
                       });
                     }}
                     label="port (restart required)"
@@ -141,7 +141,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       setDraftConfig({
                         ...draftConfig,
                         dedupperServerProtocol: (event.target as HTMLInputElement)
-                          .value as any
+                          .value as any,
                       });
                     }}
                   >
@@ -170,7 +170,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, size) =>
                         setDraftConfig({
                           ...draftConfig,
-                          standardWidth: size
+                          standardWidth: size,
                         })
                       }
                     />
@@ -184,18 +184,18 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, size) =>
                         setDraftConfig({
                           ...draftConfig,
-                          standardHeight: size
+                          standardHeight: size,
                         })
                       }
                     />
                     <h3>Amazon Cloud Drive</h3>
                     <TextField
                       value={draftConfig.amazonCloudDriveDomain}
-                      onChange={e => {
+                      onChange={(e) => {
                         setDraftConfig({
                           ...draftConfig,
                           amazonCloudDriveDomain:
-                            e.target.value || "www.amazon.com"
+                            e.target.value || "www.amazon.com",
                         });
                       }}
                       label="Domain"
@@ -211,7 +211,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                         setDraftConfig({
                           ...draftConfig,
                           showFacePP: (event.target as HTMLInputElement)
-                            .value as any
+                            .value as any,
                         });
                       }}
                     >
@@ -238,7 +238,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, value) =>
                         setDraftConfig({
                           ...draftConfig,
-                          selectNextAfterEditInMainViewer: value
+                          selectNextAfterEditInMainViewer: value,
                         })
                       }
                       name="selectNextAfterEditInMainViewer"
@@ -249,7 +249,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, value) =>
                         setDraftConfig({
                           ...draftConfig,
-                          selectNextAfterEditInGridViewer: value
+                          selectNextAfterEditInGridViewer: value,
                         })
                       }
                       key={reset}
@@ -262,7 +262,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, value) =>
                         setDraftConfig({
                           ...draftConfig,
-                          enableSubViewer: value
+                          enableSubViewer: value,
                         })
                       }
                       name="enableSubViewer"
@@ -274,7 +274,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, value) =>
                         setDraftConfig({
                           ...draftConfig,
-                          autoReload: value
+                          autoReload: value,
                         })
                       }
                       name="autoReload"
@@ -285,7 +285,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, value) =>
                         setDraftConfig({
                           ...draftConfig,
-                          recordPlayStatistics: value
+                          recordPlayStatistics: value,
                         })
                       }
                       name="recordPlayStatistics"
@@ -302,7 +302,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, sec) =>
                         setDraftConfig({
                           ...draftConfig,
-                          mainViewerPlayInterval: sec
+                          mainViewerPlayInterval: sec,
                         })
                       }
                     />
@@ -316,7 +316,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, sec) => {
                         setDraftConfig({
                           ...draftConfig,
-                          gridViewerPlayInterval: sec
+                          gridViewerPlayInterval: sec,
                         });
                       }}
                     />
@@ -330,7 +330,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                       onChange={(e, p) =>
                         setDraftConfig({
                           ...draftConfig,
-                          flipRandomInPlay: p
+                          flipRandomInPlay: p,
                         })
                       }
                     />
@@ -340,10 +340,10 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                     <h2>Global Viewer</h2>
                     <TextField
                       value={draftConfig.iframeOrigin}
-                      onChange={e => {
+                      onChange={(e) => {
                         setDraftConfig({
                           ...draftConfig,
-                          iframeOrigin: e.target.value
+                          iframeOrigin: e.target.value,
                         });
                       }}
                       label="Inline frame origin"
@@ -354,7 +354,7 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                 <TableContainer component={Paper}>
                   <Table>
                     <TableBody>
-                      {keyboardShortcuts.map(row => (
+                      {keyboardShortcuts.map((row) => (
                         <TableRow key={row.name}>
                           <TableCell component="th" scope="row">
                             {row.name}

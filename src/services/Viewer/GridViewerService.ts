@@ -26,7 +26,7 @@ export default class GridViewerService {
       this.store.getState().configuration
     );
     const startIndex = state.mainViewer.images.findIndex(
-      i => i.hash === startHash
+      (i) => i.hash === startHash
     );
 
     const nextStartHash = ThumbSliderUtil.getNextLeftTopHash(
@@ -36,7 +36,7 @@ export default class GridViewerService {
     );
 
     const nextStartIndex = state.mainViewer.images.findIndex(
-      i => i.hash === nextStartHash
+      (i) => i.hash === nextStartHash
     );
 
     const hashList: string[] = [];
@@ -77,9 +77,9 @@ export default class GridViewerService {
       const leftTopIndex = index - (index % range);
       const hashList = fitImages
         .slice(leftTopIndex, leftTopIndex + range)
-        .filter(i => i.rating < 1)
-        .filter(i => (i.t1 || 0) < 1)
-        .map(i => i.hash);
+        .filter((i) => i.rating < 1)
+        .filter((i) => (i.t1 || 0) < 1)
+        .map((i) => i.hash);
 
       actions(this.store).selected(
         state,

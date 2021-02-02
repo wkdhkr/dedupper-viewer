@@ -53,7 +53,7 @@ function forEach(data: any, callback: any) {
         }
       }
     } else if (isObject(data)) {
-      Object.keys(data).forEach(key => {
+      Object.keys(data).forEach((key) => {
         callback.call(data, data[key], key, data);
       });
     }
@@ -136,7 +136,7 @@ export function initImage(this: any, done: any) {
   this.imageInitializing = {
     abort: () => {
       sizingImage.onload = null;
-    }
+    },
   };
   // eslint-disable-next-line func-names
   sizingImage = getImageNaturalSizes(
@@ -170,7 +170,7 @@ export function initImage(this: any, done: any) {
         ratio: width / naturalWidth,
         aspectRatio,
         naturalWidth,
-        naturalHeight
+        naturalHeight,
       };
 
       // ignore 1 pixel offset
@@ -220,7 +220,7 @@ export function initImageExpand(this: any, done: any) {
   this.imageInitializing = {
     abort: function abort() {
       sizingImage.onload = null;
-    }
+    },
   };
   // eslint-disable-next-line func-names
   sizingImage = getImageNaturalSizes(
@@ -229,7 +229,9 @@ export function initImageExpand(this: any, done: any) {
     (naturalWidth: number, naturalHeight: number) => {
       const state = store.getState();
       const hash = UrlUtil.extractHashParam(image.src);
-      const dedupperImage = state.mainViewer.images.find(i => i.hash === hash);
+      const dedupperImage = state.mainViewer.images.find(
+        (i) => i.hash === hash
+      );
       const aspectRatio = naturalWidth / naturalHeight;
       let width = viewerWidth;
       let height = viewerHeight;
@@ -255,7 +257,7 @@ export function initImageExpand(this: any, done: any) {
         naturalWidth,
         naturalHeight,
         aspectRatio,
-        ratio: width / naturalWidth
+        ratio: width / naturalWidth,
       };
       const initialImageData = { ...imageData };
 

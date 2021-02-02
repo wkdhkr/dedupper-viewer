@@ -23,7 +23,7 @@ const SliderItem: React.FunctionComponent<SliderItemProps> = ({
   max,
   title,
   onChange,
-  value
+  value,
 }) => {
   return (
     <>
