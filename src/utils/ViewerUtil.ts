@@ -1,6 +1,6 @@
 import {
   STANDARD_HEIGHT,
-  STANDARD_WIDTH
+  STANDARD_WIDTH,
 } from "../constants/dedupperConstants";
 import { ImageData } from "../types/viewer";
 import UrlUtil from "./dedupper/UrlUtil";
@@ -14,7 +14,7 @@ export default class ViewerUtil {
   static getRotationInfo = () => {
     return {
       isPortraitImage: ViewerUtil.isPortraitImage(),
-      isPortrait: ViewerUtil.isPortrait()
+      isPortrait: ViewerUtil.isPortrait(),
     };
   };
 
@@ -32,12 +32,12 @@ export default class ViewerUtil {
   static nextUnitNumbers = {
     portraitImage: {
       vertical: [1, 2, 3, 4, 5, 1],
-      horizontal: [3, 3, 3, 6, 6, 6, 7, 3]
+      horizontal: [3, 3, 3, 6, 6, 6, 7, 3],
     },
     landscapeImage: {
       vertical: [1, 2, 3, 4, 1],
-      horizontal: [1, 2, 3, 4, 1]
-    }
+      horizontal: [1, 2, 3, 4, 1],
+    },
   };
 
   static isPortraitMainViewer = (
@@ -217,7 +217,7 @@ export default class ViewerUtil {
     return {
       // WebkitTransform: transform,
       // msTransform: transform,
-      transform
+      transform,
     };
   };
 
@@ -233,9 +233,11 @@ export default class ViewerUtil {
           ratio: imageData.ratio * windowRatio,
           width: imageData.width * windowRatio,
           height: imageData.height * windowRatio,
+          x: imageData.left * windowRatio,
+          y: imageData.top * windowRatio,
           left: imageData.left * windowRatio,
-          top: imageData.top * windowRatio
-        }
+          top: imageData.top * windowRatio,
+        },
       };
     }
     return imageData;
@@ -244,17 +246,23 @@ export default class ViewerUtil {
   static restoreImageData = (imageData: ImageData) => {
     const windowRatio = ViewerUtil.getWindowRatio();
     if (ViewerUtil.isNonStandardScreen()) {
-      return {
+      const newImageData = {
         ...imageData,
         ...{
           ratio: imageData.ratio / windowRatio,
           width: imageData.width / windowRatio,
           height: imageData.height / windowRatio,
           left: imageData.left / windowRatio,
-          top: imageData.top / windowRatio
-        }
+          top: imageData.top / windowRatio,
+        },
       };
+      delete newImageData.x;
+      delete newImageData.y;
+      return newImageData;
     }
-    return imageData;
+    const newImageData = { ...imageData };
+    delete newImageData.x;
+    delete newImageData.y;
+    return newImageData;
   };
 }

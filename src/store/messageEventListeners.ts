@@ -30,7 +30,7 @@ export default function(store: Store<State>) {
         case "toggleMainViewerPlay":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
             store.setState(
-              produce(store.getState(), draft => {
+              produce(store.getState(), (draft) => {
                 draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
               })
             );
@@ -40,7 +40,7 @@ export default function(store: Store<State>) {
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
             const state = store.getState();
             const index = state.mainViewer.images
-              .map(x => x.hash)
+              .map((x) => x.hash)
               .indexOf(message.payload.hash);
             if (index !== -1) {
               DomUtil.getViewer().view(index);
@@ -50,7 +50,7 @@ export default function(store: Store<State>) {
         case "loadImages":
           if (UrlUtil.isInThumbSlider() && IFrameUtil.isInIFrame()) {
             store.setState(
-              produce(store.getState(), draft => {
+              produce(store.getState(), (draft) => {
                 draft.mainViewer.images = message.payload;
                 draft.imageByHash = keyBy<DedupperImage>(
                   message.payload,
@@ -73,7 +73,7 @@ export default function(store: Store<State>) {
         case "viewed":
           if (UrlUtil.isInThumbSlider()) {
             store.setState(
-              produce(store.getState(), draft => {
+              produce(store.getState(), (draft) => {
                 const image = draft.imageByHash[message.payload.hash];
                 const { hash, index } = message.payload as {
                   hash: string;
@@ -107,8 +107,8 @@ export default function(store: Store<State>) {
                   message.payload.hash,
                   store.getState().mainViewer.images,
                   store.getState().configuration
-                )
-              }
+                ),
+              },
             });
           }
           break;
@@ -144,11 +144,11 @@ export default function(store: Store<State>) {
             "forGrid",
             "forMainViewer",
             "forSubViewer",
-            "forThumbSlider"
-          ] as const).forEach(type => {
+            "forThumbSlider",
+          ] as const).forEach((type) => {
             const newMessage: IFrameMessage = {
               ...message,
-              type
+              type,
             };
             const w = window.parent?.opener || window.parent || window;
             w.postMessage(newMessage, "*");
@@ -205,7 +205,7 @@ export default function(store: Store<State>) {
         }
         case "customEvent": {
           const e = new CustomEvent(message.payload.name, {
-            detail: message.payload.detail
+            detail: message.payload.detail,
           });
           document.dispatchEvent(e);
           break;
@@ -220,9 +220,9 @@ export default function(store: Store<State>) {
             ),
             SubViewerHelper.getWindow()?.document.getElementById(
               "thumb-slider-iframe"
-            )
+            ),
           ]
-            .map(el => {
+            .map((el) => {
               if (el) {
                 const iframeEl = (el as any) as HTMLIFrameElement;
                 const p = iframeEl.parentElement;
@@ -250,7 +250,7 @@ export default function(store: Store<State>) {
           break;
         case "mainSubViewer":
           store.setState(
-            produce(store.getState(), draft => {
+            produce(store.getState(), (draft) => {
               draft.mainViewer.subViewer.isOpen = true;
               draft.mainViewer.subViewer.url = message.payload;
               draft.gridViewer.subViewer.isOpen = false;
@@ -263,7 +263,7 @@ export default function(store: Store<State>) {
         case "subViewer":
           if (UrlUtil.isInGridViewer()) {
             store.setState(
-              produce(store.getState(), draft => {
+              produce(store.getState(), (draft) => {
                 draft.gridViewer.subViewer.isOpen = true;
                 draft.mainViewer.subViewer.isOpen = false;
                 draft.mainViewer.subViewer.url = null;
@@ -277,7 +277,7 @@ export default function(store: Store<State>) {
           break;
         case "navigateSubViewer":
           store.setState(
-            produce(store.getState(), draft => {
+            produce(store.getState(), (draft) => {
               if (message.payload.image) {
                 draft.imageByHash[message.payload.image.hash] =
                   message.payload.image;
@@ -289,7 +289,7 @@ export default function(store: Store<State>) {
             window.parent.postMessage(
               {
                 type: "navigateParent",
-                payload: message.payload.path
+                payload: message.payload.path,
               },
               "*"
             );
@@ -301,7 +301,7 @@ export default function(store: Store<State>) {
             window.parent.postMessage(
               {
                 type: "navigateParent",
-                payload: message.payload
+                payload: message.payload,
               },
               "*"
             );
@@ -314,7 +314,7 @@ export default function(store: Store<State>) {
           IFrameUtil.postMessageById(
             {
               type: "navigate",
-              payload: message.payload.path
+              payload: message.payload.path,
             },
             message.payload.id,
             message.payload.origin

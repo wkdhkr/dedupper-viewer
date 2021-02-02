@@ -2,7 +2,8 @@ import { ConfigurationState, DedupperImage } from "../types/unistore";
 import ImageArrayUtil from "./ImageArrayUtil";
 import ViewerUtil from "./ViewerUtil";
 
-const leftTopHashesCache: { [x: string]: string[] } = {};
+let leftTopHashesCache: { [x: string]: string[] } = {};
+let leftTopHashesSyncMap: { [x: string]: boolean } = {};
 
 const generateCacheKey = (s: string) =>
   // eslint-disable-next-line no-bitwise
@@ -72,7 +73,7 @@ export default class ThumbSliderUtil {
     const direction = reverse ? -1 : +1;
     const hashes = ThumbSliderUtil.detectLeftTopHashes(c, images);
     let currentIndex =
-      images.findIndex(i => i.hash === hash) + direction + offset;
+      images.findIndex((i) => i.hash === hash) + direction + offset;
     if (currentIndex === -1) {
       currentIndex = images.length - 1;
     }
@@ -88,9 +89,14 @@ export default class ThumbSliderUtil {
     return hashes[0] || null;
   };
 
+  static flushLeftTopHashCache = () => {
+    leftTopHashesCache = {};
+  };
+
   static detectLeftTopHashes = (
     c: ConfigurationState,
-    images: DedupperImage[]
+    images: DedupperImage[],
+    useCache = true
   ) => {
     const [firstImage] = images;
     if (!firstImage) {
@@ -99,12 +105,23 @@ export default class ThumbSliderUtil {
 
     const cacheKey = generateCacheKey(
       `${window.innerHeight}${window.innerWidth}${images
-        .map(i => i.hash)
+        .map((i) => i.hash)
         .join("")}`
     );
 
-    if (leftTopHashesCache[cacheKey]) {
-      return leftTopHashesCache[cacheKey];
+    if (useCache && leftTopHashesCache[cacheKey]) {
+      const isSynced = Boolean(leftTopHashesSyncMap[cacheKey]);
+      if (!isSynced) {
+        const prev = leftTopHashesCache[cacheKey];
+        setTimeout(() => {
+          const current = ThumbSliderUtil.detectLeftTopHashes(c, images, false);
+          if (prev.join("") === current.join("")) {
+            leftTopHashesSyncMap[cacheKey] = true;
+          }
+        }, 3000);
+      } else {
+        return leftTopHashesCache[cacheKey];
+      }
     }
 
     const { hash: firstHash } = firstImage;
@@ -346,13 +363,13 @@ export default class ThumbSliderUtil {
           currentTopDistance += el.offsetHeight;
         }
       }
-      return [images.map(i => i.hash).indexOf(currentHash), currentHash];
+      return [images.map((i) => i.hash).indexOf(currentHash), currentHash];
     }
 
     // legacy logic, calculate with image "offsetLeft" only.
 
     if (el.offsetLeft < 2 && reverse) {
-      return [images.map(i => i.hash).indexOf(currentHash), currentHash];
+      return [images.map((i) => i.hash).indexOf(currentHash), currentHash];
     }
 
     while (currentLeftOffset > 1) {
@@ -369,6 +386,6 @@ export default class ThumbSliderUtil {
       currentHash = el.id.replace("photo-container__", "");
       currentLeftOffset = el.offsetLeft;
     }
-    return [images.map(i => i.hash).indexOf(currentHash), currentHash];
+    return [images.map((i) => i.hash).indexOf(currentHash), currentHash];
   };
 }

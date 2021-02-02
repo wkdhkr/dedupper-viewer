@@ -224,7 +224,7 @@ const GridPhoto = React.memo(
     const isNeighbour =
       currentIndex - range - range < index &&
       index < currentIndex + range + range;
-    const isBigArea = photo.height > 120 && photo.width > 160;
+    const isBigArea = photo.height > 120 && photo.width > 156;
     const isShowRatingAndTag = isNeighbour && !isPlay && isBigArea;
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;

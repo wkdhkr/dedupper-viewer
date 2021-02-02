@@ -29,6 +29,7 @@ import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import WindowUtil from "../utils/WindowUtil";
 import { IFrameMessage } from "../types/window";
 import SortHelper from "../helpers/viewer/SortHelper";
+import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 
 // let subWindowHandle: Window | null = null;
 
@@ -261,6 +262,19 @@ const actions = (store: Store<State>) => ({
           },
         });
       });
+      store.setState(
+        produce(store.getState(), (draft) => {
+          draft.thumbSlider.selectedImage = draft.imageByHash[hash] || null;
+          draft.thumbSlider.index = index;
+        })
+      );
+      const leftTopHash = ThumbSliderUtil.getLeftTopHash(
+        hash,
+        state.mainViewer.images,
+        state.configuration
+      );
+      const el = document.getElementById(`photo-container__${leftTopHash}`);
+      WindowUtil.scrollTo(el);
       return;
     }
     store.setState(

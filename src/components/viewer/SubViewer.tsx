@@ -22,7 +22,9 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
       const w = SubViewerHelper.getWindow();
       if (url && w) {
         const params = `mode=subviewer&parentHost=${window.location.hostname}`;
-        const path = url.includes("?") ? url + params : `${url}?${params}`;
+        const path = url.includes("?")
+          ? url + "&" + params
+          : `${url}?${params}`;
         const message: IFrameMessage = {
           type: "navigateSubViewer",
           payload: {
