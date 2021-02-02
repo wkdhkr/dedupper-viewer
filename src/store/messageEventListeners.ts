@@ -64,10 +64,7 @@ export default function(store: Store<State>) {
           }
           break;
         case "thumbSliderViewed": {
-          const hash = store.getState().mainViewer.images[
-            message.payload.nextLeftIndex
-          ]?.hash;
-          PerformanceUtil.decodeImage(hash);
+          PerformanceUtil.decodeImage(message.payload.hash);
           break;
         }
         case "viewed":

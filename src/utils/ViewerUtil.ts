@@ -240,7 +240,11 @@ export default class ViewerUtil {
         },
       };
     }
-    return imageData;
+    return {
+      ...imageData,
+      x: imageData.left,
+      y: imageData.top,
+    };
   };
 
   static restoreImageData = (imageData: ImageData) => {
