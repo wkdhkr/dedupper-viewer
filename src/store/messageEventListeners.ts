@@ -46,7 +46,7 @@ export default function(store: Store<State>) {
               draft.gridViewer.showMainViewer = message.payload;
             })
           );
-          if (message.payload === false) {
+          if (message.payload === false && !IFrameUtil.isInIFrame()) {
             IFrameUtil.postMessageById(
               {
                 type: "gridScrollTo",

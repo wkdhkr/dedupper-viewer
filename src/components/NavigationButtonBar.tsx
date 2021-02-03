@@ -238,8 +238,11 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                 <IconButton
                   onClick={() =>
                     IFrameUtil.postMessageForParent({
-                      type: "showMainViewer",
-                      payload: false,
+                      type: "forAll",
+                      payload: {
+                        type: "showMainViewer",
+                        payload: false,
+                      },
                     })
                   }
                 >
