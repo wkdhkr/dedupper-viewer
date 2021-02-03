@@ -282,7 +282,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
                   selectedImage.hash === images[index]?.hash
                 ) {
                   IFrameUtil.postMessageForParent({
-                    type: "forAll",
+                    type: "forAllWithParent",
                     payload: {
                       type: "showMainViewer",
                       payload: true,

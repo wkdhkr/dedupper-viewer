@@ -19,6 +19,7 @@ export type IFrameMessageType =
   | "selected"
   | "viewed"
   | "copy"
+  | "forAllWithParent"
   | "forAll"
   | "forGrid"
   | "forThumbSlider"

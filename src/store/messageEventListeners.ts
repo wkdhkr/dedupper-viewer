@@ -236,6 +236,8 @@ export default function(store: Store<State>) {
           }
           break;
         }
+        case "forAllWithParent":
+          window.postMessage(message.payload, "*");
         case "forAll": {
           ([
             "forGrid",
