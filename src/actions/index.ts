@@ -305,7 +305,7 @@ const actions = (store: Store<State>) => ({
           fixedLeftTopIndex,
         ] = ImageArrayUtil.detectDestination(fitImages, leftTopIndex);
 
-        if (state.gridViewer.isPlay) {
+        if (state.gridViewer.isPlay && !state.gridViewer.showMainViewer) {
           for (
             let i = fixedLeftTopIndex;
             i < fixedLeftTopIndex + range;
@@ -331,7 +331,7 @@ const actions = (store: Store<State>) => ({
         */
         if (leftTopHash) {
           const el = document.getElementById(`photo-container__${leftTopHash}`);
-          WindowUtil.scrollTo(el);
+          WindowUtil.scrollToNative(el);
         }
       })
     );

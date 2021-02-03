@@ -13,6 +13,7 @@ import DomUtil from "../utils/DomUtil";
 import WindowUtil from "../utils/WindowUtil";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import PerformanceUtil from "../utils/PerformanceUtil";
+import GridViewerUtil from "../utils/GridViewerUtil";
 
 export default function(store: Store<State>) {
   window.addEventListener(
@@ -27,12 +28,34 @@ export default function(store: Store<State>) {
       log.trace(message, window.location.href);
 
       switch (message.type) {
+        case "gridScrollTo": {
+          const hash =
+            message.payload || store.getState().gridViewer.selectedImage?.hash;
+          if (hash) {
+            GridViewerUtil.scrollToLeftTopHash(
+              hash,
+              store.getState().mainViewer.images,
+              store.getState().configuration
+            );
+          }
+          break;
+        }
         case "showMainViewer":
           store.setState(
             produce(store.getState(), (draft) => {
               draft.gridViewer.showMainViewer = message.payload;
             })
           );
+          if (message.payload === false) {
+            IFrameUtil.postMessageById(
+              {
+                type: "gridScrollTo",
+                payload: null,
+              },
+              "grid-viewer-iframe",
+              "*"
+            );
+          }
           break;
         case "toggleMainViewerPlay":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
@@ -70,7 +93,13 @@ export default function(store: Store<State>) {
               })
             );
           }
-          // TODO: scroll
+          /*
+          GridViewerUtil.scrollToLeftTopHash(
+            message.payload.hash,
+            store.getState().mainViewer.images,
+            store.getState().configuration
+          );
+          */
           break;
         case "loadImages":
           if (
@@ -115,37 +144,29 @@ export default function(store: Store<State>) {
           break;
         }
         case "viewed":
-          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
-            store.setState(
-              produce(store.getState(), (draft) => {
-                const image = draft.imageByHash[message.payload.hash];
-                const { hash, index } = message.payload as {
-                  hash: string;
-                  index: number;
-                };
-                if (image) {
-                  draft.gridViewer.selectedImage =
-                    draft.imageByHash[hash] || null;
-                  draft.gridViewer.index = index;
-                }
-              })
-            );
-            // TODO: gridViewer scroll
-            /*
-            setTimeout(() => {
-              const leftTopHash = ThumbSliderUtil.getLeftTopHash(
-                message.payload.hash,
-                store.getState().mainViewer.images,
-                store.getState().configuration
+          {
+            const state = store.getState();
+
+            if (
+              UrlUtil.isInGridViewer() &&
+              IFrameUtil.isInIFrame() &&
+              state.gridViewer.showMainViewer
+            ) {
+              store.setState(
+                produce(store.getState(), (draft) => {
+                  const image = draft.imageByHash[message.payload.hash];
+                  const { hash, index } = message.payload as {
+                    hash: string;
+                    index: number;
+                  };
+                  if (image) {
+                    draft.gridViewer.selectedImage =
+                      draft.imageByHash[hash] || null;
+                    draft.gridViewer.index = index;
+                  }
+                })
               );
-              if (leftTopHash) {
-                const el = document.getElementById(
-                  `photo-container__${leftTopHash}`
-                );
-                WindowUtil.scrollToNative(el);
-              }
-            });
-            */
+            }
           }
           if (UrlUtil.isInThumbSlider()) {
             store.setState(

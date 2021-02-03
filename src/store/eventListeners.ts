@@ -349,7 +349,7 @@ export default function(store: Store<State>) {
             const trim = JSON.stringify(viewer.imageData);
             actions(store).updateTrim(store.getState(), hash, trim);
           }
-        } else if (event.type === "click") {
+        } else if (event.button === 0) {
           // TODO: drag lock mode
           let rating = store.getState().mainViewer.currentImage?.rating || 0;
           rating += 1;
