@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import React, { useEffect } from "react";
 import { LinearProgress } from "@material-ui/core";
 import Hotkeys from "react-hot-keys";
@@ -243,6 +244,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               {...{
                 ...props,
                 gestureInfo,
+                isThumbSlider: false,
                 setGestureInfo,
                 // image: props.photo.key ? imageByHash[props.photo.key] : null,
                 image: fitImages[props.index],
@@ -339,7 +341,6 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
       <FullscreenButton />
       <IFrameWrapper
         id="grid-viewer-iframe"
-        // eslint-disable-next-line react/destructuring-assignment
         origin={props.configuration.iframeOrigin}
       >
         <GridViewer
@@ -359,13 +360,10 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
           <IFrameWrapper
             forceTop={mainViewerForceTop}
             keepAspectRatio
-            // eslint-disable-next-line react/destructuring-assignment
             standardHeight={props.configuration.standardHeight}
-            // eslint-disable-next-line react/destructuring-assignment
             standardWidth={props.configuration.standardWidth}
             id="main-viewer-iframe"
-            url={window.location.href.replace("grid/", "") + "&inline=1"}
-            // eslint-disable-next-line react/destructuring-assignment
+            url={`${window.location.href.replace("grid/", "")}&inline=1`}
             origin={props.configuration.iframeOrigin}
           >
             {props.configuration.enableSubViewer ? (

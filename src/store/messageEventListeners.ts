@@ -26,8 +26,14 @@ export default function(store: Store<State>) {
       }
 
       log.trace(message, window.location.href);
-
       switch (message.type) {
+        case "configuration":
+          store.setState(
+            produce(store.getState(), (draft) => {
+              draft.configuration = message.payload;
+            })
+          );
+          break;
         case "gridScrollTo": {
           const hash =
             message.payload || store.getState().gridViewer.selectedImage?.hash;
@@ -238,6 +244,7 @@ export default function(store: Store<State>) {
         }
         case "forAllWithParent":
           window.postMessage(message.payload, "*");
+        // eslint-disable-next-line no-fallthrough
         case "forAll": {
           ([
             "forGrid",

@@ -138,13 +138,13 @@ const actions = (store: Store<State>) => ({
           images.reverse();
         }
         draft.mainViewer.images = images;
-        draft.mainViewer.currentImage = images[0];
+        [draft.mainViewer.currentImage] = images;
         draft.mainViewer.index = 0;
         draft.gridViewer.index = 0;
-        draft.gridViewer.selectedImage = images[0];
+        [draft.gridViewer.selectedImage] = images;
       })
     );
-    const images = store.getState().mainViewer.images;
+    const { images } = store.getState().mainViewer;
     SubViewerHelper.prepareReference().then(() =>
       IFrameUtil.postMessageForParent({
         type: "forAll",
@@ -434,6 +434,13 @@ const actions = (store: Store<State>) => ({
           JSON.stringify(draft.configuration)
         );
       })
+    );
+    const payload = {
+      type: "configuration",
+      payload: store.getState().configuration,
+    } as IFrameMessage;
+    SubViewerHelper.prepareReference().then(() =>
+      IFrameUtil.postMessageForOther(payload)
     );
   },
   async updateTrim(state: State, hash: string, trim: string) {

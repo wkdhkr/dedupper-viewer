@@ -204,6 +204,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...{
               ...props,
+              isThumbSlider: true,
               gestureInfo,
               setGestureInfo,
               // image: props.photo.key ? imageByHash[props.photo.key] : null,

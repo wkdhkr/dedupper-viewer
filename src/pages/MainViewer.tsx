@@ -1,3 +1,4 @@
+/* eslint-disable react/destructuring-assignment */
 import React, { useEffect, useState } from "react";
 import IFrame from "react-iframe";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
@@ -62,7 +63,12 @@ export type MainViewerProps = MainViewerState & {
   hash?: string;
   updateSize: (hash: string, w: number, h: number) => void;
   updateColor: (hash: string, kind: string, value: number) => void;
-  updateTag: (hash: string | string[], x: number | null, name: string) => void;
+  updateTag: (
+    hash: string | string[],
+    x: number | null,
+    name: string,
+    next?: boolean
+  ) => void;
   updateRating: (hash: string, x: number | null) => void;
   togglePlay: Function;
 } & RouteComponentProps;
@@ -111,6 +117,30 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
     }
   };
 
+  const onWheelInRatingAndTag = (event: React.WheelEvent<HTMLElement>) => {
+    if (event.deltaY > 0) {
+      DomUtil.getViewerSafe()?.next(true);
+    } else {
+      DomUtil.getViewerSafe()?.prev(true);
+    }
+  };
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (currentImage) {
+      updateTag(currentImage.hash, currentImage.t1 ? null : 1, "t1", true);
+    }
+  };
+
+  const ratingAndTag = (
+    <RatingAndTag
+      currentImage={currentImage}
+      onTagChange={updateTag}
+      onRatingChange={updateRating}
+    />
+  );
+
   return (
     <>
       <AjaxProgress connectionCount={connectionCount} />
@@ -155,47 +185,50 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
       )}
       <Box className="viewer-main-container">
         {!isPlay && (
-          <Box
-            onWheel={(event: React.WheelEvent<HTMLElement>) => {
-              if (event.deltaY > 0) {
-                DomUtil.getViewerSafe()?.next(true);
-              } else {
-                DomUtil.getViewerSafe()?.prev(true);
-              }
-            }}
-            style={{ opacity: 0.4 }}
-            position="fixed"
-            zIndex="1355"
-            m={2}
-          >
-            <RatingAndTag
-              currentImage={currentImage}
-              onTagChange={updateTag}
-              onRatingChange={updateRating}
-            />
-          </Box>
-        )}
-        {!isPlay && (
-          <Box
-            position="fixed"
-            zIndex="1355"
-            m={2}
-            width={200}
-            right={0}
-            bottom={40}
-          >
-            <ColorTuner
-              reset={colorReset}
-              image={currentImage}
-              onUpdate={(k, v) => {
-                if (hash) {
-                  updateColor(hash, k, v);
-                } else if (currentImage) {
-                  updateColor(currentImage.hash, k, v);
-                }
-              }}
-            />
-          </Box>
+          <>
+            <Box
+              onContextMenu={handleContextMenu}
+              onWheel={onWheelInRatingAndTag}
+              style={{ opacity: 0.4 }}
+              position="fixed"
+              zIndex="1355"
+              m={2}
+              right={0}
+              bottom={40}
+            >
+              {ratingAndTag}
+            </Box>
+            <Box
+              onContextMenu={handleContextMenu}
+              onWheel={onWheelInRatingAndTag}
+              style={{ opacity: 0.4 }}
+              position="fixed"
+              zIndex="1355"
+              m={2}
+            >
+              {ratingAndTag}
+            </Box>
+            <Box
+              position="fixed"
+              zIndex="1355"
+              m={2}
+              width={200}
+              right={0}
+              bottom={40 + 104}
+            >
+              <ColorTuner
+                reset={colorReset}
+                image={currentImage}
+                onUpdate={(k, v) => {
+                  if (hash) {
+                    updateColor(hash, k, v);
+                  } else if (currentImage) {
+                    updateColor(currentImage.hash, k, v);
+                  }
+                }}
+              />
+            </Box>
+          </>
         )}
         <Box
           id="viewer-data-table"
@@ -257,21 +290,15 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
 ) => {
   useWindowSize();
   const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
-    // eslint-disable-next-line react/destructuring-assignment
     props.configuration.standardWidth,
-    // eslint-disable-next-line react/destructuring-assignment
     props.configuration.standardHeight
   );
   const isVertical = thumbHeight > thumbWidth;
   const orientation = UrlUtil.extractParam("o");
   const origin = props.configuration.iframeOrigin;
-  const url =
-    window.location.protocol +
-    "//" +
-    window.location.hostname +
-    ":" +
-    window.location.port +
-    `/thumbs?o=${orientation}&inline=${props.isInline ? "1" : "0"}`;
+  const url = `${window.location.protocol}//${window.location.hostname}:${
+    window.location.port
+  }/thumbs?o=${orientation}&inline=${props.isInline ? "1" : "0"}`;
   const iframeUrl = new URL(url);
   iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
   return (
@@ -311,12 +338,9 @@ const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
       />
       <IFrameWrapper
         keepAspectRatio
-        // eslint-disable-next-line react/destructuring-assignment
         standardHeight={props.configuration.standardHeight}
-        // eslint-disable-next-line react/destructuring-assignment
         standardWidth={props.configuration.standardWidth}
         id="main-viewer-iframe"
-        // eslint-disable-next-line react/destructuring-assignment
         origin={props.configuration.iframeOrigin}
       >
         <MainViewer

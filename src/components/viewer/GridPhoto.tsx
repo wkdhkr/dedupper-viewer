@@ -25,9 +25,30 @@ const gs = new GridViewerService(store);
 let currentHover: string | null = null;
 
 const imgWithClick = { cursor: "pointer" };
+
+type GridPhotoProps = RenderImageProps & {
+  isThumbSlider: boolean;
+  range: number;
+  isPlay: boolean;
+  unit: number;
+  image: DedupperImage;
+  currentIndex: number;
+  selectedImage: DedupperImage | null;
+  gestureInfo: GestureInfo;
+  setGestureInfo: (x: GestureInfo) => void;
+  updateSize: (hash: string, w: number, h: number) => void;
+  updateTag: (
+    hash: string,
+    x: number | null,
+    name: string,
+    next?: boolean
+  ) => void;
+  updateRating: (hash: string, x: number | null, next?: boolean) => void;
+};
+
 const GridPhoto = React.memo(
   ({
-    isThumbSlider,
+    isThumbSlider = false,
     gestureInfo,
     setGestureInfo,
     range,
@@ -45,25 +66,7 @@ const GridPhoto = React.memo(
     direction,
     top,
     left,
-  }: RenderImageProps & {
-    isThumbSlider?: boolean;
-    range: number;
-    isPlay: boolean;
-    unit: number;
-    image: DedupperImage;
-    currentIndex: number;
-    selectedImage: DedupperImage | null;
-    gestureInfo: GestureInfo;
-    setGestureInfo: (x: GestureInfo) => void;
-    updateSize: (hash: string, w: number, h: number) => void;
-    updateTag: (
-      hash: string,
-      x: number | null,
-      name: string,
-      next?: boolean
-    ) => void;
-    updateRating: (hash: string, x: number | null, next?: boolean) => void;
-  }) => {
+  }: GridPhotoProps) => {
     // const isNeighbour = Math.abs(currentIndex - index) < range;
 
     useWindowSize();
