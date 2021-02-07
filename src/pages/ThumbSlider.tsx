@@ -29,7 +29,9 @@ import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 const gs = new GridViewerService(store);
 
 const applyTag = () => {
-  gs.applyTagForImagesInScreen();
+  if (!UrlUtil.isInRecommend()) {
+    gs.applyTagForImagesInScreen();
+  }
   /*
   // SubViewerHelper.dispatchCustomEventForParent(event.type);
   IFrameUtil.postMessageForParent({

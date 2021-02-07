@@ -243,7 +243,9 @@ const GridPhoto = React.memo(
 
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
       if (event.button === 1) {
-        gs.applyTagForImagesInScreen();
+        if (!UrlUtil.isInRecommend()) {
+          gs.applyTagForImagesInScreen();
+        }
         event.preventDefault();
       } else {
         if (event.button !== 0) {
