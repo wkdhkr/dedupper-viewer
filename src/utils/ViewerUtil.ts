@@ -11,6 +11,35 @@ function isNumber(value: any): value is number {
 }
 
 export default class ViewerUtil {
+  static getViewerName = () => {
+    const isInGrid = UrlUtil.isInGridViewer();
+    const isInMain = UrlUtil.isInMainViewer();
+    const isInSingleViewer = UrlUtil.isInSingleViewer();
+    const isInThumbSlider = UrlUtil.isInThumbSlider();
+    const isInline = UrlUtil.isInline();
+
+    if (isInGrid) {
+      return "grid";
+    }
+
+    if (isInMain) {
+      if (isInSingleViewer) {
+        return "main_single";
+      }
+      if (isInline) {
+        return "main_channel_inline";
+      }
+      return "main_channel";
+    }
+    if (isInThumbSlider) {
+      if (isInline) {
+        return "thumb_inline";
+      }
+      return "thumb";
+    }
+    return null;
+  };
+
   static getRotationInfo = () => {
     return {
       isPortraitImage: ViewerUtil.isPortraitImage(),

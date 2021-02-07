@@ -2,6 +2,7 @@ import axios from "axios";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import { DedupperChannel } from "../../types/unistore";
 import AxiosUtil from "../../utils/AxiosUtil";
+import AuthUtil from "../../utils/dedupper/AuthUtil";
 
 // init your manager.
 const http = axios.create();
@@ -45,13 +46,23 @@ export default class DedupperClient {
     return data;
   };
 
-  query = async (sql: string, ff = true) => {
+  query = async (sql: string, ff = true, post = false) => {
     const u = UrlUtil.setupApiUrlObj("rpc/sqlite/all");
-    u.searchParams.append("q", sql);
-    if (ff) {
-      u.searchParams.append("ff", "1");
+    if (!post) {
+      u.searchParams.append("q", sql);
+      if (ff) {
+        u.searchParams.append("ff", "1");
+      }
+      const { data } = await axios.get(u.href);
+      return data;
     }
-    const { data } = await axios.get(u.href);
+
+    const { data } = await axios.post(u.href, {
+      auth: AuthUtil.getAuthToken(),
+      q: sql,
+      type: "TYPE_IMAGE",
+      ff: ff ? "1" : "",
+    });
     return data;
   };
 }

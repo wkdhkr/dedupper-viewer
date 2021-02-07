@@ -17,6 +17,7 @@ import ColorUtil from "../../utils/ColorUtil";
 import useWindowSize from "../../hooks/windowSize";
 import PerformanceUtil from "../../utils/PerformanceUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
+import MouseEventUtil from "../../utils/MouseEventUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -245,17 +246,24 @@ const GridPhoto = React.memo(
         gs.applyTagForImagesInScreen();
         event.preventDefault();
       } else {
+        if (event.button !== 0) {
+          return;
+        }
         setGestureInfo({ image, x: event.clientX, y: event.clientY });
       }
     };
     const handleWheel = () => {
       currentHover = null;
     };
-    const onMouseEnter = (event: any) => {
+    const onMouseEnter = (event: React.MouseEvent) => {
+      const moveEvent = MouseEventUtil.getMoveEvent();
       if (!isPlay) {
         currentHover = photo.key || null;
         setTimeout(() => {
-          if (currentHover === photo.key) {
+          if (
+            currentHover === photo.key &&
+            moveEvent !== MouseEventUtil.getMoveEvent()
+          ) {
             handleClick(event);
           }
         }, 500);
@@ -338,6 +346,9 @@ const GridPhoto = React.memo(
               src={photo.src}
               style={createStyle()}
               onMouseUp={(e: React.MouseEvent) => {
+                if (e.button !== 0) {
+                  return;
+                }
                 const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;
                 const moveX = e.clientX - prevX;
                 const moveY = e.clientY - prevY;
@@ -355,6 +366,7 @@ const GridPhoto = React.memo(
                   if (gestureImage?.rating === rating) {
                     rating = 0;
                   }
+                  e.preventDefault();
                   updateRating(hash, rating, false);
                 }
                 setGestureInfo({ x: -1, y: -1, image: null });

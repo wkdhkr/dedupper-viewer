@@ -157,6 +157,19 @@ export default class UrlUtil {
     return null;
   };
 
+  static isInListThumbSlider = () =>
+    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "list";
+
+  static isInPHashThumbSlider = () =>
+    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "phash";
+
+  static isInTimeThumbSlider = () =>
+    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "time";
+
+  static isInRecommend = () => UrlUtil.isInTimeThumbSlider();
+
+  static isInRecommended = () => UrlUtil.extractParam("recommended") === "1";
+
   static extractParam = (name: string, url?: string) =>
     new URL(url || window.location.href).searchParams.get(name);
 

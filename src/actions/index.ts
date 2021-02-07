@@ -1,3 +1,4 @@
+import { Duration, DateTime } from "luxon";
 import produce from "immer";
 import * as log from "loglevel";
 import keyBy from "lodash/keyBy";
@@ -30,6 +31,7 @@ import WindowUtil from "../utils/WindowUtil";
 import { IFrameMessage } from "../types/window";
 import SortHelper from "../helpers/viewer/SortHelper";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
+import SqliteUtil from "../utils/dedupper/SqliteUtil";
 
 // let subWindowHandle: Window | null = null;
 
@@ -188,12 +190,12 @@ const actions = (store: Store<State>) => ({
   toggleSubViewer(state: State, close: boolean | null = null) {
     if (IFrameUtil.isInIFrame() && state.gridViewer.selectedImage) {
       if (state.configuration.enableSubViewer) {
-        window.parent.postMessage(
+        IFrameUtil.postMessage(
           {
             type: "subViewer",
             payload: state.gridViewer.selectedImage,
           },
-          "*"
+          window.parent
         );
       }
     } else {
@@ -222,7 +224,7 @@ const actions = (store: Store<State>) => ({
     IFrameUtil.postMessageForOther({
       type: "viewed",
       payload: {
-        hash,
+        ...(store.getState().mainViewer.currentImage || {}),
         index,
       },
     });
@@ -253,15 +255,33 @@ const actions = (store: Store<State>) => ({
       mayIndex === null
         ? store.getState().mainViewer.images.findIndex((i) => i.hash === hash)
         : mayIndex;
+    const isInRecommend = UrlUtil.isInRecommend();
+    const type = isInRecommend ? "selectedRecommend" : "selected";
     SubViewerHelper.prepareReference().then(() => {
       IFrameUtil.postMessageForOther({
-        type: "selected",
+        type,
         payload: {
           hash,
           index,
         },
       });
     });
+    if (isInRecommend && state.imageByHash[hash]) {
+      let baseParamString = `recommended=1&mode=subviewer&parentHost=${window.location.hostname}`;
+      const orientation = UrlUtil.extractParam("o");
+      if (orientation) {
+        baseParamString = `o=${orientation}&${baseParamString}`;
+      }
+      SubViewerHelper.prepareReference().then(() => {
+        IFrameUtil.postMessageForOther({
+          type: "navigateSubViewer",
+          payload: {
+            path: `${UrlUtil.generateImageViewerUrl(hash)}?${baseParamString}`,
+            image: state.imageByHash[hash],
+          },
+        });
+      });
+    }
     if (UrlUtil.isInThumbSlider()) {
       store.setState(
         produce(store.getState(), (draft) => {
@@ -335,7 +355,7 @@ const actions = (store: Store<State>) => ({
         }
       })
     );
-    if (!state.gridViewer.isPlay && showSubViewer) {
+    if (UrlUtil.isInGridViewer() && !state.gridViewer.isPlay && showSubViewer) {
       actions(store).toggleSubViewer(store.getState());
     }
   },
@@ -472,6 +492,7 @@ const actions = (store: Store<State>) => ({
         },
       },
     } as IFrameMessage;
+    await SubViewerHelper.prepareReference();
     IFrameUtil.postMessageForOther(payload);
   },
   selectNext(state: State) {
@@ -517,7 +538,7 @@ const actions = (store: Store<State>) => ({
       }
     }
   },
-  updateViewStat(state: State, hash: string) {
+  async updateViewStat(state: State, hash: string) {
     if (UrlUtil.isInThumbSlider()) {
       return;
     }
@@ -544,11 +565,27 @@ const actions = (store: Store<State>) => ({
         },
       },
     } as IFrameMessage;
+    await SubViewerHelper.prepareReference();
     IFrameUtil.postMessageForOther(payload);
   },
-  updateRating(state: State, hash: string, rating: number | null, next = true) {
+  async updateRating(
+    state: State,
+    hash: string,
+    rating: number | null,
+    next = true
+  ) {
     if (next && rating) {
-      actions(store).selectNext(store.getState());
+      if (UrlUtil.isInSingleViewer()) {
+        if (!UrlUtil.isInRecommended()) {
+          await SubViewerHelper.prepareReference();
+          IFrameUtil.postMessageForOther({
+            type: "navigateImage",
+            payload: false,
+          });
+        }
+      } else {
+        actions(store).selectNext(store.getState());
+      }
     }
     // no wait
     StoreUtil.updateField(
@@ -569,9 +606,10 @@ const actions = (store: Store<State>) => ({
         },
       },
     } as IFrameMessage;
+    await SubViewerHelper.prepareReference();
     IFrameUtil.postMessageForOther(payload);
   },
-  updateTag(
+  async updateTag(
     state: State,
     hashOrHashList: string | string[],
     value: number | null,
@@ -592,7 +630,17 @@ const actions = (store: Store<State>) => ({
         }
       }
       */
-      actions(store).selectNext(store.getState());
+      if (UrlUtil.isInSingleViewer()) {
+        if (!UrlUtil.isInRecommended()) {
+          await SubViewerHelper.prepareReference();
+          IFrameUtil.postMessageForOther({
+            type: "navigateImage",
+            payload: false,
+          });
+        }
+      } else {
+        actions(store).selectNext(store.getState());
+      }
     }
     StoreUtil.updateField(
       hashList,
@@ -613,6 +661,7 @@ const actions = (store: Store<State>) => ({
         },
       },
     } as IFrameMessage;
+    await SubViewerHelper.prepareReference();
     IFrameUtil.postMessageForOther(payload);
   },
   async loadChannels(state: State) {
@@ -654,6 +703,143 @@ const actions = (store: Store<State>) => ({
         draft.gridViewer.selectedImage = null;
         // draft.mainViewer.isPlay = false;
         // draft.gridViewer.isPlay = false;
+      })
+    );
+  },
+
+  async loadTimeImages(state: State, image: DedupperImage) {
+    const { timestamp, rating } = image;
+    let images: DedupperImage[] = [];
+    const isPortrait = UrlUtil.extractParam("o") === "portrait";
+    const ratioCondition = isPortrait ? "< 0.7" : ">= 0.7";
+    const duration = Duration.fromObject({ week: 1 });
+    const start = DateTime.fromMillis(timestamp)
+      .minus(duration)
+      .toMillis();
+    const end = DateTime.fromMillis(timestamp)
+      .plus(duration)
+      .toMillis();
+    /*
+    const sql = [
+      "select hash.hash from hash",
+      "inner join process_state",
+      "on hash.hash = process_state.hash",
+      "left outer join tag ON process_state.hash = tag.hash",
+      "where",
+      `and hash.state >= 200`,
+      `and hash.ratio ${ratioCondition}`,
+      "and tag.t1 is NULL",
+      rating > 0 ? "and hash.rating > 0" : "",
+      "and process_state.missing <= -1",
+      `order by abs(hash.timestamp - ${timestamp}) limit 20`,
+    ].join("\n");
+    */
+    /*
+    const sql = [
+      "select hash.hash from hash",
+      "left outer join tag ON hash.hash = tag.hash",
+      "inner join process_state",
+      "on hash.hash = process_state.hash",
+      "where",
+      `hash.state >= 200`,
+      `and hash.ratio ${ratioCondition}`,
+      `and hash.timestamp > ${start}`,
+      `and hash.timestamp < ${end}`,
+      "and tag.t1 is NULL",
+      "and process_state.missing <= -1",
+      rating > 0 ? "and hash.rating > 0" : "",
+      `order by abs(hash.timestamp - ${timestamp}) limit 100`,
+    ].join("\n");
+    */
+    const useProcessState = true;
+    const sql = [
+      "select * from (select hash.hash,hash.timestamp from hash",
+      useProcessState
+        ? "inner join process_state on hash.hash = process_state.hash"
+        : "",
+      rating > 0 ? "" : "left outer join tag ON hash.hash = tag.hash",
+      "where",
+      `hash.state >= 200`,
+      `and hash.ratio ${ratioCondition}`,
+      `and hash.timestamp >= ${start}`,
+      `and hash.timestamp < ${image.timestamp}`,
+      rating > 0 ? "" : "and tag.t1 is NULL",
+      rating > 0 ? "and process_state.rating > 0" : "",
+      "and process_state.missing <= -1",
+      `order by hash.timestamp limit 25)`,
+      "union all",
+      "select * from (select hash.hash, hash.timestamp from hash",
+      useProcessState
+        ? "inner join process_state on hash.hash = process_state.hash"
+        : "",
+      rating > 0 ? "" : "left outer join tag ON hash.hash = tag.hash",
+      "where",
+      `hash.state >= 200`,
+      `and hash.ratio ${ratioCondition}`,
+      `and hash.timestamp >= ${image.timestamp}`,
+      `and hash.timestamp < ${end}`,
+      rating > 0 ? "" : "and tag.t1 is NULL",
+      rating > 0 ? "and process_state.rating > 0" : "",
+      "and process_state.missing <= -1",
+      `order by hash.timestamp desc limit 25)`,
+    ].join("\n");
+    /*
+    const sql = [
+      `select hash from hash`,
+      "where",
+      `hash.ratio ${ratioCondition}`,
+      `order by abs(timestamp - ${timestamp}) limit 100`,
+    ].join("\n");
+    */
+    const cacheKey = timestamp + (rating ? "r" : "n");
+    const sourceImages: DedupperImage[] =
+      state.imagesCache[cacheKey] || (await dc.query(sql));
+    images = sourceImages
+      /*
+      .filter((i) => {
+        if (i.t1) {
+          return false;
+        }
+        return true;
+      })
+    */
+      .filter((i) => {
+        if (i.hash === image.hash) {
+          return false;
+        }
+        return true;
+      })
+      .slice(0, 20);
+    store.setState(
+      produce(store.getState(), (draft: State) => {
+        if (images != null) {
+          draft.mainViewer.images = images;
+          if (images.length) {
+            [draft.gridViewer.selectedImage] = images;
+            draft.gridViewer.index = 0;
+          }
+          draft.imageByHash = keyBy<DedupperImage>(images, "hash");
+          draft.imagesCache[cacheKey] = sourceImages;
+        }
+      })
+    );
+  },
+
+  async loadPHashImages(state: State, pHash: string) {
+    let images: DedupperImage[] = [];
+    const pHashCondition = SqliteUtil.buildPHashCondition(pHash);
+    const sql = `select hash from hash where ${pHashCondition}`;
+    images = await dc.query(sql, true, true);
+    store.setState(
+      produce(store.getState(), (draft: State) => {
+        if (images != null) {
+          draft.mainViewer.images = images;
+          if (images.length) {
+            [draft.gridViewer.selectedImage] = images;
+            draft.gridViewer.index = 0;
+          }
+          draft.imageByHash = keyBy<DedupperImage>(images, "hash");
+        }
       })
     );
   },

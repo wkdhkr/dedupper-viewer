@@ -25,6 +25,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 import { RouteComponentProps } from "@reach/router";
+import Close from "@material-ui/icons/Close";
 import {
   GridViewerState,
   ConfigurationState,
@@ -38,7 +39,6 @@ import DomUtil from "../utils/DomUtil";
 import { EVENT_X_KEY } from "../constants/dedupperConstants";
 import IFrameUtil from "../utils/IFrameUtil";
 import RouterUtil from "../utils/RouterUtil";
-import Close from "@material-ui/icons/Close";
 
 type NavigationButtonBarProps = {
   gridViewer: GridViewerState;
@@ -105,6 +105,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isInStart = UrlUtil.isInStart();
   const isInChannels = UrlUtil.isInChannels();
   const isInMainViewer = UrlUtil.isInMainViewer();
+  const isInRecommended = UrlUtil.isInRecommended();
   const isPlay =
     (isInMainViewer && isMainViewerPlay) ||
     (isInGridViewer && isGridViewerPlay);
@@ -113,7 +114,8 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isShowGrid = isInGridViewer;
   const isShowReload =
     isInGridViewer || isInMainViewer || isSubViewer || isInChannels;
-  const isShowT1All = isInGridViewer || isSubViewer || isInMainViewer;
+  const isShowT1All =
+    (isInGridViewer || isSubViewer || isInMainViewer) && !isInRecommended;
   const isShowStop = isPlay && (isInGridViewer || isInMainViewer);
   const isShowPlay = !isPlay && (isInGridViewer || isInMainViewer);
   const isShowPrevNext = !isPlay && (isInGridViewer || isInMainViewer);
@@ -293,12 +295,22 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
               </Tooltip>
             ) : null}
             {isShowT1All ? (
-              <Tooltip title="apply tags to the displayed images.">
+              <Tooltip title="apply delete tag to the displayed images">
                 <IconButton
                   onClick={() => {
-                    if (isSubViewer) {
+                    if (isSubViewer && UrlUtil.isInSingleViewer()) {
                       IFrameUtil.postMessageForParent({
                         type: "forGrid",
+                        payload: {
+                          type: "customEvent",
+                          payload: {
+                            name: EVENT_X_KEY,
+                          },
+                        },
+                      });
+                    } else if (UrlUtil.isInMainViewer()) {
+                      IFrameUtil.postMessageForParent({
+                        type: "forThumbSlider",
                         payload: {
                           type: "customEvent",
                           payload: {

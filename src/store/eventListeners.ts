@@ -2,6 +2,7 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable no-underscore-dangle */
 import { Store } from "unistore";
+import * as log from "loglevel";
 import debounce from "lodash/debounce";
 // import Viewer from "viewerjs";
 import isEqual from "lodash/isEqual";
@@ -16,6 +17,7 @@ import ColorUtil from "../utils/ColorUtil";
 import WindowUtil from "../utils/WindowUtil";
 import PerformanceUtil from "../utils/PerformanceUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
+import { IFrameMessageType } from "../types/window";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -237,7 +239,8 @@ export default function(store: Store<State>) {
       const image = state.imageByHash[hash];
       if (image) {
         const value = image.t1 ? null : 1;
-        actions(store).updateTag(state, hash, value, "t1");
+        const next = state.configuration.selectNextAfterEditInMainViewer;
+        actions(store).updateTag(state, hash, value, "t1", next);
       }
     };
   });
@@ -268,7 +271,7 @@ export default function(store: Store<State>) {
           const trim = JSON.stringify(viewer.imageData);
           actions(store).updateTrim(store.getState(), hash, trim);
         } else {
-          console.log("hash not found.");
+          log.error("hash not found.", hash);
         }
       } catch (e) {
         // ignored
@@ -287,36 +290,35 @@ export default function(store: Store<State>) {
     pointerX = event.clientX;
     pointerY = event.clientY;
     if (UrlUtil.isInSingleViewer() || UrlUtil.isInMainViewer()) {
+      const dispatchEventX = (type: IFrameMessageType) => {
+        if (!UrlUtil.isInRecommended()) {
+          IFrameUtil.postMessageForParent({
+            type,
+            payload: {
+              type: "customEvent",
+              payload: {
+                name: EVENT_X_KEY,
+              },
+            },
+          });
+        }
+      };
       if (event.button === 1) {
         event.preventDefault();
-        if (UrlUtil.isInSubViewer()) {
-          SubViewerHelper.prepareReference().then(() => {
-            IFrameUtil.postMessageForParent({
-              type: "forGrid",
-              payload: {
-                type: "customEvent",
-                payload: {
-                  name: EVENT_X_KEY,
-                },
-              },
-            });
-          });
+        if (UrlUtil.isInSubViewer() && UrlUtil.isInSingleViewer()) {
+          SubViewerHelper.prepareReference().then(() =>
+            dispatchEventX("forGrid")
+          );
         } else if (UrlUtil.isInMainViewer()) {
-          SubViewerHelper.prepareReference().then(() => {
-            IFrameUtil.postMessageForParent({
-              type: "forThumbSlider",
-              payload: {
-                type: "customEvent",
-                payload: {
-                  name: EVENT_X_KEY,
-                },
-              },
-            });
-          });
+          SubViewerHelper.prepareReference().then(() =>
+            dispatchEventX("forThumbSlider")
+          );
         } else {
           try {
             const hash = DomUtil.getCurrentHash();
-            actions(store).updateTag(store.getState(), hash, 1, "t1");
+            const next = store.getState().configuration
+              .selectNextAfterEditInMainViewer;
+            actions(store).updateTag(store.getState(), hash, 1, "t1", next);
           } catch (e) {
             // ignore
           }
@@ -388,7 +390,7 @@ export default function(store: Store<State>) {
         }
       });
     } else {
-      console.log("hash not found.");
+      log.error("hash not found.", hash);
     }
   });
 

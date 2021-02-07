@@ -16,6 +16,7 @@ import ConfigurationHelper from "../helpers/ConfigurationHelper";
 log.setDefaultLevel("trace");
 
 const initialState: State = {
+  imagesCache: {},
   sortKind: ConfigurationHelper.getInitialState().defaultSortKind,
   connectionCount: 0,
   configuration: {

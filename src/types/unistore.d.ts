@@ -27,6 +27,7 @@ const SortKindValues = [
 ] as const;
 
 export type SortKind = typeof SortKindValues[number];
+export type ThumbSliderMode = "list" | "phash" | "time";
 export type FacePPGender = "Female" | "Male";
 export type FacePPGlass = "None" | "Dark" | "Normal";
 
@@ -128,6 +129,7 @@ export interface DedupperImage {
   rating: number;
   hash: string;
   trim: string;
+  p_hash?: string;
 }
 export interface MainViewerState {
   faces: FacePPRow[];
@@ -197,6 +199,7 @@ export interface State {
     shifted: boolean;
     controlled: boolean;
   };
+  imagesCache: { [x: string]: DedupperImage[] };
   channels: DedupperChannel[];
   connectionCount: number;
   snackbar: SnackbarState;

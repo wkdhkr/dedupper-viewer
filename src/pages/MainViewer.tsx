@@ -9,7 +9,11 @@ import "./MainViewer.css";
 
 import ReactHotkeys from "react-hot-keys";
 import { MultiImageViewer } from "../components/viewer";
-import { MainViewerState, ConfigurationState } from "../types/unistore";
+import {
+  MainViewerState,
+  ConfigurationState,
+  ThumbSliderMode,
+} from "../types/unistore";
 import DataTable from "../components/viewer/DataTable";
 import RatingAndTag from "../components/viewer/ui/RatingAndTag";
 import RatingAndTagHotkey from "../components/viewer/ui/RatingAndTagHotkey";
@@ -37,15 +41,18 @@ const reload = async () => {
 };
 
 const applyTag = () => {
-  IFrameUtil.postMessageForParent({
-    type: "forGrid",
-    payload: {
-      type: "customEvent",
+  const type = UrlUtil.isInSingleViewer() ? "forGrid" : "forThumbSlider";
+  if (!UrlUtil.isInRecommended()) {
+    IFrameUtil.postMessageForParent({
+      type,
       payload: {
-        name: EVENT_X_KEY,
+        type: "customEvent",
+        payload: {
+          name: EVENT_X_KEY,
+        },
       },
-    },
-  });
+    });
+  }
 };
 
 export type MainViewerProps = MainViewerState & {
@@ -109,32 +116,39 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
   }, [isInline, load, hash, channelId]);
 
   const [colorReset, setColorReset] = useState<number>(0);
-  const onWheel = (event: React.WheelEvent<HTMLElement>) => {
-    if (event.deltaY > 0) {
+  const onWheel = async (event: React.WheelEvent<HTMLElement>) => {
+    if (UrlUtil.isInSingleViewer()) {
+      let isPrev = true;
+      if (event.deltaY > 0) {
+        isPrev = false;
+      }
+      await SubViewerHelper.prepareReference();
+      IFrameUtil.postMessageForOther({
+        type: "navigateImage",
+        payload: isPrev,
+      });
+    } else if (event.deltaY > 0) {
       DomUtil.getViewerSafe()?.next(true);
     } else {
       DomUtil.getViewerSafe()?.prev(true);
     }
   };
 
-  const onWheelInRatingAndTag = (event: React.WheelEvent<HTMLElement>) => {
-    if (event.deltaY > 0) {
-      DomUtil.getViewerSafe()?.next(true);
-    } else {
-      DomUtil.getViewerSafe()?.prev(true);
-    }
-  };
+  const onWheelInRatingAndTag = (event: React.WheelEvent<HTMLElement>) =>
+    onWheel(event);
 
   const handleContextMenu = (event: React.MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();
     if (currentImage) {
-      updateTag(currentImage.hash, currentImage.t1 ? null : 1, "t1", true);
+      const next = c.selectNextAfterEditInMainViewer;
+      updateTag(currentImage.hash, currentImage.t1 ? null : 1, "t1", next);
     }
   };
 
   const ratingAndTag = (
     <RatingAndTag
+      next={c.selectNextAfterEditInMainViewer}
       currentImage={currentImage}
       onTagChange={updateTag}
       onRatingChange={updateRating}
@@ -209,6 +223,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
               {ratingAndTag}
             </Box>
             <Box
+              onContextMenu={handleContextMenu}
               position="fixed"
               zIndex="1355"
               m={2}
@@ -231,6 +246,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
           </>
         )}
         <Box
+          onContextMenu={handleContextMenu}
           id="viewer-data-table"
           style={{ opacity: "0.0" }}
           position="fixed"
@@ -283,11 +299,15 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
   );
 };
 
-type ThumbSliderIFrameProps = MainViewerProps & { zIndex?: number | string };
+type ThumbSliderIFrameProps = MainViewerProps & {
+  mode?: ThumbSliderMode;
+  zIndex?: number | string;
+};
 
 export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> = (
   props
 ) => {
+  const mode = props.mode || "list";
   useWindowSize();
   const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
     props.configuration.standardWidth,
@@ -298,7 +318,7 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
   const origin = props.configuration.iframeOrigin;
   const url = `${window.location.protocol}//${window.location.hostname}:${
     window.location.port
-  }/thumbs?o=${orientation}&inline=${props.isInline ? "1" : "0"}`;
+  }/thumbs?o=${orientation}&mode=${mode}&inline=${props.isInline ? "1" : "0"}`;
   const iframeUrl = new URL(url);
   iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
   return (
@@ -329,13 +349,22 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
 };
 
 const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
+  const isInSingleViewer = UrlUtil.isInSingleViewer();
   return (
     <>
       <FullscreenButton />
-      <ThumbSliderIFrame
-        // eslint-disable-next-line react/jsx-props-no-spreading
-        {...props}
-      />
+      {!isInSingleViewer ? (
+        <ThumbSliderIFrame
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+        />
+      ) : (
+        <ThumbSliderIFrame
+          // eslint-disable-next-line react/jsx-props-no-spreading
+          {...props}
+          mode="time"
+        />
+      )}
       <IFrameWrapper
         keepAspectRatio
         standardHeight={props.configuration.standardHeight}

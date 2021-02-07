@@ -1,4 +1,5 @@
-export interface DedupperWindow extends Window {
+type WindowAndGlobalThis = Window & typeof globalThis;
+export interface DedupperWindow extends WindowAndGlobalThis {
   __DEDUPPER_VIEWER_IDENTITY__: true;
   __DEDUPPER_VIEWER_SUB_VIEWER__?: true;
   store: Store<State>;
@@ -11,12 +12,14 @@ export interface DedupperWindow extends Window {
 }
 
 export type IFrameMessageType =
+  | "navigateImage"
   | "configuration"
   | "gridScrollTo"
   | "showMainViewer"
   | "thumbSliderViewed"
   | "customEvent"
   | "toggleMainViewerPlay"
+  | "selectedRecommend"
   | "selected"
   | "viewed"
   | "copy"
@@ -34,6 +37,7 @@ export type IFrameMessageType =
   | "navigateIF"
   | "subViewer"
   | "prepareSubViewerReference"
+  | "subViewerReferencePrepared"
   | "mainSubViewer"
   | "reload"
   | "loadImages"
@@ -42,4 +46,5 @@ export type IFrameMessageType =
 export type IFrameMessage = {
   type: IFrameMessageType;
   payload: any;
+  fromUrl?: string;
 };

@@ -19,8 +19,9 @@ import {
   ThumbSliderState,
   SortKind,
 } from "./types/unistore";
-import MainViewer from "./pages/MainViewer";
 import GridViewer from "./pages/GridViewer";
+// eslint-disable-next-line import/no-named-as-default
+import MainViewer from "./pages/MainViewer";
 import Home from "./pages/Home";
 import Snackbar from "./components/feedback/Snackbar";
 import Channels from "./pages/Channels";

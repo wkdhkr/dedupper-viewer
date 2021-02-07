@@ -1,3 +1,4 @@
+import * as log from "loglevel";
 import { IFrameMessage } from "../types/window";
 import UrlUtil from "./dedupper/UrlUtil";
 import WindowUtil from "./WindowUtil";
@@ -55,10 +56,22 @@ export default class IFrameUtil {
     }
   };
 
+  static postMessage = (
+    message: IFrameMessage,
+    w: Window | null = null,
+    origin = "*"
+  ) => {
+    log.trace(message.type, window.location.href);
+    (w || window).postMessage(
+      { ...message, fromUrl: window.location.href },
+      origin
+    );
+  };
+
   static postMessageForParent = (message: IFrameMessage) => {
     const w = window.parent?.opener || window.parent;
     if (w) {
-      w.postMessage(message, "*");
+      IFrameUtil.postMessage(message, w);
     }
   };
 
@@ -70,7 +83,7 @@ export default class IFrameUtil {
   ) => {
     const w = IFrameUtil.getIFrameWindowById(id, parent);
     if (w) {
-      w.postMessage(message, origin);
+      IFrameUtil.postMessage(message, w, origin);
     }
   };
 }

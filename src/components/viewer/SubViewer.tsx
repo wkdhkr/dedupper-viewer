@@ -20,10 +20,15 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
   ({ origin, url, isGridOpen, isMainOpen, toggle, image }) => {
     useEffect(() => {
       const w = SubViewerHelper.getWindow();
+      let baseParamString = `mode=subviewer&parentHost=${window.location.hostname}`;
+      const orientation = UrlUtil.extractParam("o");
+      if (orientation) {
+        baseParamString = `o=${orientation}&${baseParamString}`;
+      }
       if (url && w) {
-        const params = `mode=subviewer&parentHost=${window.location.hostname}`;
+        const params = baseParamString;
         const path = url.includes("?")
-          ? url + "&" + params
+          ? `${url}&${params}`
           : `${url}?${params}`;
         const message: IFrameMessage = {
           type: "navigateSubViewer",
@@ -39,7 +44,7 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
           payload: {
             path: `${UrlUtil.generateImageViewerUrl(
               image.hash
-            )}?mode=subviewer&parentHost=${window.location.hostname}`,
+            )}?${baseParamString}`,
             image,
           },
         };
@@ -66,16 +71,22 @@ const SubViewer: React.FunctionComponent<SubViewerProps> = React.memo(
     const u = new URL(window.location.origin);
     u.hostname = UrlUtil.extractParam("parentHost") || u.hostname;
     let subViewerUrl = "";
+    const orientation = UrlUtil.extractParam("o");
     if (isMainOpen && url) {
       subViewerUrl = `${u.origin}${url}`;
       const forMainUrl = new URL(subViewerUrl);
       forMainUrl.searchParams.set("mode", "subviewer");
       forMainUrl.searchParams.set("parentHost", window.location.hostname);
+      if (orientation) {
+        forMainUrl.searchParams.set("o", orientation);
+      }
       subViewerUrl = forMainUrl.toString();
     } else if (isGridOpen) {
       subViewerUrl = `${u.origin}${UrlUtil.generateImageViewerUrl(
         image ? image.hash : ""
-      )}?mode=subviewer&parentHost=${window.location.hostname}`;
+      )}?mode=subviewer&o=${orientation || ""}&parentHost=${
+        window.location.hostname
+      }`;
     }
 
     return (

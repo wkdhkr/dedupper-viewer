@@ -135,7 +135,11 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           nextIndex = leftTopIndex - range;
         }
         if (fitImages.length) {
-          selected(...ImageArrayUtil.detectDestination(fitImages, nextIndex));
+          const args = [
+            ...ImageArrayUtil.detectDestination(fitImages, nextIndex),
+            true,
+          ] as const;
+          selected(...args);
         }
       }
     };
@@ -197,7 +201,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           <Hotkeys
             // keyName="left,right,up,down"
             allowRepeat
-            keyName="left,right,up,down"
+            keyName="left,right,up,down,j,k,l,h"
             onKeyDown={(keyName: string, event: KeyboardEvent) => {
               event.preventDefault();
             }}
@@ -205,24 +209,26 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               if (fitImages.length) {
                 let nextIndex = -1;
                 // const leftTopIndex = index - (index % range);
-                if (keyName === "left") {
+                if (keyName === "left" || keyName === "h") {
                   nextIndex = index - 1;
                 }
-                if (keyName === "right") {
+                if (keyName === "right" || keyName === "l") {
                   nextIndex = index + 1;
                 }
-                if (keyName === "up") {
+                if (keyName === "up" || keyName === "k") {
                   // nextIndex = leftTopIndex - range;
                   nextIndex = index - unit;
                 }
-                if (keyName === "down") {
+                if (keyName === "down" || keyName === "j") {
                   // nextIndex = leftTopIndex + range;
                   nextIndex = index + unit;
                 }
 
-                selected(
-                  ...ImageArrayUtil.detectDestination(fitImages, nextIndex)
-                );
+                const args = [
+                  ...ImageArrayUtil.detectDestination(fitImages, nextIndex),
+                  true,
+                ] as const;
+                selected(...args);
               }
             }}
           />
@@ -348,7 +354,7 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
           {...props}
         />
       </IFrameWrapper>
-      {isInIFrame ? (
+      {isInIFrame || props.configuration.enableSubViewer ? (
         <></>
       ) : (
         <>

@@ -18,6 +18,8 @@ currentWindow.managerWindow = null;
 // eslint-disable-next-line no-underscore-dangle
 (window as any).__DEDUPPER_VIEWER_IDENTITY__ = true;
 
+const referenceWaitings: Function[] = [];
+
 export default class SubViewerHelper {
   static setWindow = (w: Window | null) => {
     (window as any).subViewerWindow = w;
@@ -32,6 +34,13 @@ export default class SubViewerHelper {
     return null;
   };
 
+  static finishReferenceWaiting = () => {
+    referenceWaitings.forEach((f) => f());
+    while (referenceWaitings.length > 0) {
+      referenceWaitings.pop();
+    }
+  };
+
   static prepareReference = async () => {
     if (WindowUtil.isInIFrame()) {
       if (window.parent) {
@@ -44,9 +53,13 @@ export default class SubViewerHelper {
       }
     }
     return new Promise((resolve: (value: unknown) => void) => {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         resolve(true);
       }, 100);
+      referenceWaitings.push(() => {
+        clearInterval(timer);
+        resolve(true);
+      });
     });
   };
 
@@ -117,7 +130,7 @@ export default class SubViewerHelper {
   };
 
   static isSubViewer = (): boolean =>
-    UrlUtil.extractParam("mode") === "subviewer" && UrlUtil.isInSingleViewer();
+    UrlUtil.extractParam("mode") === "subviewer";
 
   /*
   static forChild = (fn: (x: DedupperWindow) => void) => {

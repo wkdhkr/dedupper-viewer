@@ -3,7 +3,7 @@ import { navigate } from "@reach/router";
 import produce from "immer";
 import * as log from "loglevel";
 import copy from "copy-to-clipboard";
-import { keyBy } from "lodash";
+import { debounce, keyBy } from "lodash";
 import { DedupperImage, State } from "../types/unistore";
 import { IFrameMessage } from "../types/window";
 import IFrameUtil from "../utils/IFrameUtil";
@@ -14,23 +14,32 @@ import WindowUtil from "../utils/WindowUtil";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import PerformanceUtil from "../utils/PerformanceUtil";
 import GridViewerUtil from "../utils/GridViewerUtil";
+import ImageArrayUtil from "../utils/ImageArrayUtil";
+import actions from "../actions";
+import DedupperClient from "../services/dedupper/DedupperClient";
 
 export default function(store: Store<State>) {
+  const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 500);
   window.addEventListener(
     "message",
-    (event: any) => {
+    async (event: any) => {
       const message: IFrameMessage = event.data;
 
       if (((message as any).source || "").startsWith("react-devtools-")) {
         return;
       }
 
-      log.trace(message, window.location.href);
+      if (!message?.type.startsWith("for")) {
+        log.trace(message, window.location.href);
+      }
       switch (message.type) {
         case "configuration":
           store.setState(
             produce(store.getState(), (draft) => {
-              draft.configuration = message.payload;
+              draft.configuration = {
+                ...message.payload,
+                open: draft.configuration.open,
+              };
             })
           );
           break;
@@ -72,6 +81,19 @@ export default function(store: Store<State>) {
             );
           }
           break;
+        case "navigateImage":
+          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
+            const isPrev = message.payload;
+            const { gridViewer } = store.getState();
+            actions(store).selectedByIndex(
+              store.getState(),
+              gridViewer.index + (isPrev ? -1 : 1)
+            );
+          }
+          break;
+        case "selectedRecommend": {
+          break;
+        }
         case "selected":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
             PerformanceUtil.decodeImage(message.payload.hash);
@@ -87,14 +109,20 @@ export default function(store: Store<State>) {
             store.setState(
               produce(store.getState(), (draft) => {
                 const image = draft.imageByHash[message.payload.hash];
-                const { hash, index } = message.payload as {
+                const { hash } = message.payload as {
                   hash: string;
                   index: number;
                 };
+                const index = ImageArrayUtil.findIndex(
+                  hash,
+                  draft.mainViewer.images
+                );
                 if (image) {
                   draft.gridViewer.selectedImage =
                     draft.imageByHash[hash] || null;
-                  draft.gridViewer.index = index;
+                  if (index) {
+                    draft.gridViewer.index = index;
+                  }
                 }
               })
             );
@@ -124,25 +152,25 @@ export default function(store: Store<State>) {
               })
             );
           }
-          if (
-            (store.getState().configuration.enableSubViewer ||
+          if (UrlUtil.isInListThumbSlider() && IFrameUtil.isInIFrame()) {
+            if (
+              !UrlUtil.isInline() ||
               (UrlUtil.isInline() &&
-                !store.getState().configuration.enableSubViewer)) &&
-            UrlUtil.isInThumbSlider() &&
-            IFrameUtil.isInIFrame()
-          ) {
-            store.setState(
-              produce(store.getState(), (draft) => {
-                draft.mainViewer.images = message.payload;
-                draft.imageByHash = keyBy<DedupperImage>(
-                  message.payload,
-                  "hash"
-                );
-                draft.thumbSlider.index = 0;
-                draft.thumbSlider.selectedImage =
-                  draft.mainViewer.images[0] || null;
-              })
-            );
+                !store.getState().configuration.enableSubViewer)
+            ) {
+              store.setState(
+                produce(store.getState(), (draft) => {
+                  draft.mainViewer.images = message.payload;
+                  draft.imageByHash = keyBy<DedupperImage>(
+                    message.payload,
+                    "hash"
+                  );
+                  draft.thumbSlider.index = 0;
+                  draft.thumbSlider.selectedImage =
+                    draft.mainViewer.images[0] || null;
+                })
+              );
+            }
           }
           break;
         case "thumbSliderViewed": {
@@ -174,7 +202,26 @@ export default function(store: Store<State>) {
               );
             }
           }
-          if (UrlUtil.isInThumbSlider()) {
+          if (UrlUtil.isInTimeThumbSlider() && IFrameUtil.isInIFrame()) {
+            debouncedLoadTimeImages(store.getState(), message.payload);
+          } else if (
+            UrlUtil.isInPHashThumbSlider() &&
+            IFrameUtil.isInIFrame()
+          ) {
+            const { p_Hash: pHash, hash } = message.payload;
+            let pHashFixed = pHash;
+            if (!pHash) {
+              const dc = new DedupperClient();
+              const result = await dc.query(
+                `select p_hash from hash where hash = '${hash}'`,
+                false
+              );
+              pHashFixed = result[0]?.p_hash;
+            }
+            if (pHashFixed) {
+              actions(store).loadPHashImages(store.getState(), pHashFixed);
+            }
+          } else if (UrlUtil.isInListThumbSlider()) {
             store.setState(
               produce(store.getState(), (draft) => {
                 const image = draft.imageByHash[message.payload.hash];
@@ -215,10 +262,19 @@ export default function(store: Store<State>) {
             });
           }
           break;
+        case "subViewerReferencePrepared":
+          SubViewerHelper.finishReferenceWaiting();
+          break;
         case "prepareSubViewerReference":
           if (window.opener) {
             try {
               window.opener.subViewerWindow = window;
+              IFrameUtil.postMessageForParent({
+                type: "forAll",
+                payload: {
+                  type: "subViewerReferencePrepared",
+                },
+              });
             } catch (e) {
               // ignore cross domain error
             }
@@ -379,23 +435,25 @@ export default function(store: Store<State>) {
           }
           break;
         case "navigateSubViewer":
-          store.setState(
-            produce(store.getState(), (draft) => {
-              if (message.payload.image) {
-                draft.imageByHash[message.payload.image.hash] =
-                  message.payload.image;
-              }
-            })
-          );
-          navigate(message.payload.path, { replace: true });
-          if (IFrameUtil.isInIFrame()) {
-            window.parent.postMessage(
-              {
-                type: "navigateParent",
-                payload: message.payload.path,
-              },
-              "*"
+          if (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer()) {
+            store.setState(
+              produce(store.getState(), (draft) => {
+                if (message.payload.image) {
+                  draft.imageByHash[message.payload.image.hash] =
+                    message.payload.image;
+                }
+              })
             );
+            navigate(message.payload.path, { replace: true });
+            if (IFrameUtil.isInIFrame()) {
+              window.parent.postMessage(
+                {
+                  type: "navigateParent",
+                  payload: message.payload.path,
+                },
+                "*"
+              );
+            }
           }
           break;
         case "navigate":

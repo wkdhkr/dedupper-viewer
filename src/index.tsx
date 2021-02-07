@@ -7,6 +7,7 @@ import ReactHotkeys from "react-hot-keys";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import store from "./store";
+import { DedupperWindow } from "./types/window";
 
 ReactHotkeys.defaultProps.filter = (event: KeyboardEvent) => {
   const target = (event.target as HTMLElement) || event.srcElement;
@@ -38,10 +39,10 @@ const DedupperViewer = () => (
   </Provider>
 );
 
-(window as any).renderDedupperViewer = () => {
+(window as DedupperWindow).renderDedupperViewer = () => {
   ReactDOM.render(<DedupperViewer />, document.getElementById("root"));
 };
-(window as any).renderDedupperViewer();
+(window as DedupperWindow).renderDedupperViewer();
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
