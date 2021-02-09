@@ -14,6 +14,8 @@ import {
   NavigateBefore,
   Delete,
   Sort,
+  Lock,
+  LockOpen,
 } from "@material-ui/icons";
 import {
   Box,
@@ -124,6 +126,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
   const isShowConfig = !isInline;
   const isShowSort = isInGridViewer || isInMainViewer;
   const isShowClose = isInline;
+  const isShowLock = isInline;
 
   /*
   const isNativeFullscreen =
@@ -252,6 +255,24 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                 </IconButton>
               </Tooltip>
             ) : null}
+            {isShowLock ? (
+              <Tooltip title="lock viewer mode">
+                <IconButton
+                  onClick={() =>
+                    updateConfiguration({
+                      ...configuration,
+                      lockInlineViewer: !configuration.lockInlineViewer,
+                    })
+                  }
+                >
+                  {configuration.lockInlineViewer ? (
+                    <Lock color="primary" style={buttonStyle} />
+                  ) : (
+                    <LockOpen color="primary" style={buttonStyle} />
+                  )}
+                </IconButton>
+              </Tooltip>
+            ) : null}
             {isShowPrevNext ? (
               <Tooltip title="prev">
                 <IconButton onClick={() => navigateImage(true)}>
@@ -377,6 +398,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = (
                 "view_count",
                 "view_date",
                 "delete",
+                "reviewed",
                 "random",
               ] as SortKind[]).map((k) => (
                 <MenuItem

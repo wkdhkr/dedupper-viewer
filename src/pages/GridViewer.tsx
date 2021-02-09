@@ -137,7 +137,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
         if (fitImages.length) {
           const args = [
             ...ImageArrayUtil.detectDestination(fitImages, nextIndex),
-            true,
+            c.enableSubViewer,
           ] as const;
           selected(...args);
         }
@@ -226,7 +226,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
                 const args = [
                   ...ImageArrayUtil.detectDestination(fitImages, nextIndex),
-                  true,
+                  c.enableSubViewer,
                 ] as const;
                 selected(...args);
               }
@@ -282,20 +282,25 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
             if (photo.key) {
               if (
                 event.button === 0 &&
-                index === currentIndex &&
+                // index === currentIndex &&
                 !c.enableSubViewer
               ) {
                 if (
+                  /*
                   selectedImage &&
                   selectedImage.hash === images[index]?.hash
+                  */
+                  images.length
                 ) {
-                  IFrameUtil.postMessageForParent({
-                    type: "forAllWithParent",
-                    payload: {
-                      type: "showMainViewer",
-                      payload: true,
-                    },
-                  });
+                  setTimeout(() =>
+                    IFrameUtil.postMessageForParent({
+                      type: "forAllWithParent",
+                      payload: {
+                        type: "showMainViewer",
+                        payload: true,
+                      },
+                    })
+                  );
                 }
               }
               /*
@@ -354,7 +359,7 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
           {...props}
         />
       </IFrameWrapper>
-      {isInIFrame || props.configuration.enableSubViewer ? (
+      {isInIFrame ? (
         <></>
       ) : (
         <>

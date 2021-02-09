@@ -18,6 +18,7 @@ import useWindowSize from "../../hooks/windowSize";
 import PerformanceUtil from "../../utils/PerformanceUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import MouseEventUtil from "../../utils/MouseEventUtil";
+import GestureUtil from "../../utils/GestureUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -130,8 +131,10 @@ const GridPhoto = React.memo(
       imgStyle.top = top;
     }
     const handleClick = (event: React.MouseEvent<Element, MouseEvent>) => {
-      if (onClick) {
-        onClick(event, { photo, index } as any);
+      if (GestureUtil.detectRating(event, gestureInfo) === null) {
+        if (onClick) {
+          onClick(event, { photo, index } as any);
+        }
       }
     };
 
@@ -351,27 +354,15 @@ const GridPhoto = React.memo(
                 if (e.button !== 0) {
                   return;
                 }
-                const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;
-                const moveX = e.clientX - prevX;
-                const moveY = e.clientY - prevY;
-                const isVertical = Math.abs(moveY) > Math.abs(moveX);
-                const move = isVertical ? moveY : moveX;
-                const isPositive = move > 0;
-                const hash = gestureImage?.hash;
-                if (hash && Math.abs(move) > 32) {
-                  let rating: number | null = null;
-                  if (isVertical) {
-                    rating = isPositive ? 4 : 1;
-                  } else {
-                    rating = isPositive ? 3 : 2;
-                  }
-                  if (gestureImage?.rating === rating) {
-                    rating = 0;
-                  }
+                const rating = GestureUtil.detectRating(e, gestureInfo);
+                if (gestureInfo.image && rating !== null) {
                   e.preventDefault();
-                  updateRating(hash, rating, false);
+                  e.stopPropagation();
+                  updateRating(gestureInfo.image.hash, rating, false);
                 }
-                setGestureInfo({ x: -1, y: -1, image: null });
+                setTimeout(() => {
+                  setGestureInfo({ x: -1, y: -1, image: null });
+                });
               }}
               onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}

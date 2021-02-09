@@ -99,6 +99,10 @@ function addListener(element: any, type: any, listener: any) {
 }
 
 export default function(store: Store<State>) {
+  const debouncedShowSnackbarCustom = debounce(
+    actions(store).showSnackbarCustom,
+    500
+  );
   const isInClassNameEvent = (event: MouseEvent, name: string) =>
     event.composedPath().indexOf(document.getElementsByClassName(name)[0]) !==
     -1;
@@ -195,14 +199,21 @@ export default function(store: Store<State>) {
       }
       if (!UrlUtil.isInSingleViewer()) {
         if (DomUtil.getViewer().index === 0) {
-          actions(store).showSnackbarCustom(store.getState(), [
-            "This is first image.",
-            {
-              variant: "info",
-              autoHideDuration: 3000,
-              anchorOrigin: { horizontal: "right", vertical: "top" },
-            },
-          ]);
+          if (
+            !store.getState().gridViewer.showMainViewer &&
+            UrlUtil.isInline()
+          ) {
+            // ignore
+          } else {
+            debouncedShowSnackbarCustom(store.getState(), [
+              "This is first image.",
+              {
+                variant: "info",
+                autoHideDuration: 3000,
+                anchorOrigin: { horizontal: "right", vertical: "top" },
+              },
+            ]);
+          }
         }
         // preload, for performance
         PerformanceUtil.decodeImage(
@@ -282,11 +293,11 @@ export default function(store: Store<State>) {
   let pointerX = -1;
   let pointerY = -1;
 
-  let pointerStartDate = new Date();
-  let pointerEndDate = new Date();
+  // let pointerStartDate = new Date();
+  // let pointerEndDate = new Date();
 
   addListener(document, EVENT_POINTER_DOWN, function(event: PointerEvent) {
-    pointerStartDate = new Date();
+    // pointerStartDate = new Date();
     pointerX = event.clientX;
     pointerY = event.clientY;
     if (UrlUtil.isInSingleViewer() || UrlUtil.isInMainViewer()) {
@@ -328,7 +339,7 @@ export default function(store: Store<State>) {
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {
-    pointerEndDate = new Date();
+    // pointerEndDate = new Date();
     let viewer: MainViewer | null = null;
     let hash: string | null = null;
     try {

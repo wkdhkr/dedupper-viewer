@@ -3,6 +3,7 @@ import { Dictionary } from "lodash";
 import { OptionsObject } from "notistack";
 
 const SortKindValues = [
+  "reviewed",
   "file_name",
   "file_path",
   "file_size",
@@ -169,6 +170,7 @@ export interface ThumbSliderState {
 }
 
 export interface ConfigurationState {
+  lockInlineViewer: boolean;
   defaultSortKind: SortKind;
   amazonCloudDriveDomain: string;
   dedupperServerProtocol: "http" | "https";

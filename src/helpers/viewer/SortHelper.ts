@@ -1,15 +1,15 @@
 import arrayShuffle from "array-shuffle";
-import { DedupperImage, SortKind } from "../../types/unistore";
 import pathParse from "path-parse";
+import { DedupperImage, SortKind } from "../../types/unistore";
 
 const simpleSortFn = (a: any, b: any) => {
   if (a > b) {
     return 1;
-  } else if (a < b) {
-    return -1;
-  } else {
-    return 0;
   }
+  if (a < b) {
+    return -1;
+  }
+  return 0;
 };
 
 const createSortFn = (convert: (x: DedupperImage) => string | number) => {
@@ -23,6 +23,9 @@ const createSortFn = (convert: (x: DedupperImage) => string | number) => {
 const sortFunctionLookup: {
   [x in SortKind]: (a: DedupperImage, b: DedupperImage) => number;
 } = {
+  reviewed: createSortFn(
+    (x: DedupperImage) => x.t1 || x.rating || x.t2 || x.t3 || x.t4 || x.t5 || 0
+  ),
   file_name: createSortFn((x: DedupperImage) => pathParse(x.to_path).base),
   file_path: createSortFn((x: DedupperImage) => x.to_path),
   file_size: createSortFn((x: DedupperImage) => x.size),
@@ -54,7 +57,7 @@ export default class SortHelper {
   ) => {
     const sortFn = sortFunctionLookup[sortKind];
     const secondarySortFn = sortFunctionLookup[secondarySortKind];
-    const result = images.sort((a, b) => {
+    const sorted = images.sort((a, b) => {
       const result = sortFn(a, b);
       if (result !== 0) {
         return result;
@@ -62,8 +65,8 @@ export default class SortHelper {
       return secondarySortFn(a, b);
     });
     if (sortKind === "random") {
-      return arrayShuffle(result);
+      return arrayShuffle(sorted);
     }
-    return result;
+    return sorted;
   };
 }

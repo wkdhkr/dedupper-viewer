@@ -79,6 +79,10 @@ export default class UrlUtil {
     return UrlUtil.isInGridViewer() === false && UrlUtil.isInChannel();
   };
 
+  static isInlineMainViewer = () => {
+    return UrlUtil.isInMainViewer() && UrlUtil.isInline();
+  };
+
   static isInline = () => {
     const searchParams = new URLSearchParams(window.location.search);
     return searchParams.get("inline") === "1";

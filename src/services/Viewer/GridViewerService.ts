@@ -81,10 +81,12 @@ export default class GridViewerService {
         .filter((i) => (i.t1 || 0) < 1)
         .map((i) => i.hash);
 
-      actions(this.store).selected(
-        state,
-        ...ImageArrayUtil.detectDestination(fitImages, leftTopIndex + range)
-      );
+      const nextIndex = leftTopIndex + range;
+      const args = [
+        ...ImageArrayUtil.detectDestination(fitImages, nextIndex),
+        this.store.getState().configuration.enableSubViewer,
+      ] as const;
+      actions(this.store).selected(state, ...args);
 
       setTimeout(() => {
         if (hashList.length) {

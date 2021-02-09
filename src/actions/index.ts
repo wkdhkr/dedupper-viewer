@@ -575,6 +575,17 @@ const actions = (store: Store<State>) => ({
     next = true
   ) {
     if (next && rating) {
+      if (UrlUtil.isInlineMainViewer()) {
+        if (!state.configuration.lockInlineViewer) {
+          IFrameUtil.postMessageForParent({
+            type: "forAllWithParent",
+            payload: {
+              type: "showMainViewer",
+              payload: false,
+            },
+          });
+        }
+      }
       if (UrlUtil.isInSingleViewer()) {
         if (!UrlUtil.isInRecommended()) {
           await SubViewerHelper.prepareReference();
@@ -630,6 +641,17 @@ const actions = (store: Store<State>) => ({
         }
       }
       */
+      if (UrlUtil.isInMainViewer() && UrlUtil.isInline()) {
+        if (!state.configuration.lockInlineViewer) {
+          IFrameUtil.postMessageForParent({
+            type: "forAllWithParent",
+            payload: {
+              type: "showMainViewer",
+              payload: false,
+            },
+          });
+        }
+      }
       if (UrlUtil.isInSingleViewer()) {
         if (!UrlUtil.isInRecommended()) {
           await SubViewerHelper.prepareReference();
