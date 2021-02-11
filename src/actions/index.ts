@@ -452,7 +452,10 @@ const actions = (store: Store<State>) => ({
       store
     );
   },
-  updateConfiguration(state: State, configurationState: ConfigurationState) {
+  async updateConfiguration(
+    state: State,
+    configurationState: ConfigurationState
+  ) {
     store.setState(
       produce(state, (draft) => {
         draft.configuration = { ...draft.configuration, ...configurationState };
@@ -466,9 +469,8 @@ const actions = (store: Store<State>) => ({
       type: "configuration",
       payload: store.getState().configuration,
     } as IFrameMessage;
-    SubViewerHelper.prepareReference().then(() =>
-      IFrameUtil.postMessageForOther(payload)
-    );
+    await SubViewerHelper.prepareReference();
+    IFrameUtil.postMessageForOther(payload);
   },
   async updateTrim(state: State, hash: string, trim: string) {
     if (state.mainViewer.isPlay) {

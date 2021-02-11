@@ -436,7 +436,10 @@ export default function(store: Store<State>) {
           }
           break;
         case "navigateSubViewer":
-          if (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer()) {
+          if (
+            !UrlUtil.isInline() &&
+            (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer())
+          ) {
             store.setState(
               produce(state, (draft) => {
                 if (message.payload.image) {
