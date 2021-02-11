@@ -201,6 +201,18 @@ export default class UrlUtil {
   static isInRecommended = (url?: string) =>
     UrlUtil.extractParam("recommended", url) === "1";
 
+  static extractOrientation = (url?: string) => UrlUtil.extractParam("o", url);
+
+  static isPortrait = (url?: string) => {
+    const o = UrlUtil.extractOrientation(url);
+    if (o) {
+      return o === "portrait";
+    }
+    return window.innerHeight > window.innerWidth;
+  };
+
+  static isLandscape = (url?: string) => !UrlUtil.isPortrait(url);
+
   static extractParam = (name: string, url?: string) =>
     new URL(url || window.location.href).searchParams.get(name);
 

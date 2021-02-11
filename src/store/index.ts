@@ -12,6 +12,7 @@ import addCustomEventListeners from "./customEventListeners";
 import addMessageEventListeners from "./messageEventListeners";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import ConfigurationHelper from "../helpers/ConfigurationHelper";
+import UtilsBundle from "../utils/UtilsBundle";
 
 log.setDefaultLevel("trace");
 
@@ -100,6 +101,7 @@ log.info("initialized", "MessageEventListener");
 (window as any).actions = actions(store);
 log.info("initialized", "actions");
 (window as any).navigate = navigate;
+(window as any).UtilsBundle = UtilsBundle;
 
 log.info("initialState", store.getState());
 

@@ -87,9 +87,10 @@ export default class ViewerUtil {
     standardHeight: number
   ) => {
     const { innerHeight, innerWidth } = window;
-    const isPortrait = ViewerUtil.isPortrait();
+    // const isPortrait = ViewerUtil.isPortrait();
+    const isPortraitImage = ViewerUtil.isPortraitImage();
     const standardRatio = standardWidth / standardHeight;
-    if (isPortrait) {
+    if (isPortraitImage) {
       const windowRatio = innerHeight / innerWidth;
       if (windowRatio > standardRatio) {
         return [innerWidth, innerWidth * (standardWidth / standardHeight)];
@@ -135,13 +136,7 @@ export default class ViewerUtil {
 
   static detectRange = (unit: number) => ViewerUtil.calcRange(unit);
 
-  static isPortraitImage = () => {
-    const orientation = UrlUtil.extractParam("o");
-    if (orientation === "portrait") {
-      return true;
-    }
-    return false;
-  };
+  static isPortraitImage = () => UrlUtil.isPortrait();
 
   static isPortrait = () => {
     return window.innerHeight > window.innerWidth;

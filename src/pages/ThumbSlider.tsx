@@ -22,7 +22,6 @@ import GridViewerService from "../services/Viewer/GridViewerService";
 import ViewerUtil from "../utils/ViewerUtil";
 import IFrameUtil from "../utils/IFrameUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import useWindowSize from "../hooks/windowSize";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 
@@ -97,8 +96,6 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
   updateTag,
   updateRating,
 }) => {
-  useWindowSize();
-
   const isPortraitImage = ViewerUtil.isPortraitImage();
   const range = ThumbSliderUtil.detectRange(
     selectedImage?.hash || null,
@@ -144,6 +141,10 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
   }, [index, images, range, c, selected]);
 
   if (UrlUtil.isInline() && c.enableSubViewer) {
+    return null;
+  }
+
+  if (images.length === 0) {
     return null;
   }
 
@@ -226,7 +227,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
         margin={0}
         limitNodeSearch={unit}
         targetRowHeight={ThumbSliderUtil.calcTargetRowHeight(
-          selectedImage?.hash || null,
+          selectedImage?.hash || images[0]?.hash,
           images,
           c
         )}

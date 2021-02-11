@@ -313,8 +313,9 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
     props.configuration.standardWidth,
     props.configuration.standardHeight
   );
-  const isVertical = thumbHeight > thumbWidth;
-  const orientation = UrlUtil.extractParam("o");
+  // const isVertical = thumbHeight > thumbWidth;
+  const isVertical = UrlUtil.isPortrait();
+  const orientation = UrlUtil.extractOrientation();
   const origin = props.configuration.iframeOrigin;
   const url = `${window.location.protocol}//${window.location.hostname}:${
     window.location.port

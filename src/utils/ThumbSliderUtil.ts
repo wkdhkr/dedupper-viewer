@@ -13,8 +13,8 @@ export default class ThumbSliderUtil extends GridViewerUtil {
       standardHeight
     );
     const standardRatio = standardWidth / standardHeight;
-    const isPortrait = mainHeight > mainWidth;
-    if (isPortrait) {
+    const isMainViewerPortrait = mainHeight > mainWidth;
+    if (isMainViewerPortrait) {
       const windowRatio = innerHeight / innerWidth;
       if (windowRatio > standardRatio) {
         return [mainWidth, innerHeight - mainHeight];
@@ -55,13 +55,18 @@ export default class ThumbSliderUtil extends GridViewerUtil {
     images: DedupperImage[],
     c: ConfigurationState
   ): number => {
+    /*
     if (!ThumbSliderUtil.isPortrait(c)) {
+      return window.innerHeight + 1;
+    }
+    */
+    if (!ViewerUtil.isPortraitImage()) {
       return window.innerHeight + 1;
     }
 
     const isPortraitImage = ViewerUtil.isPortraitImage();
     const unit = ThumbSliderUtil.detectUnit(hash, images, c);
-    const width = window.innerWidth / unit;
+    const width = window.innerWidth / (unit < 1 ? 1 : unit);
 
     if (isPortraitImage) {
       return width * (c.standardWidth / c.standardHeight);
@@ -75,20 +80,26 @@ export default class ThumbSliderUtil extends GridViewerUtil {
     images: DedupperImage[],
     c: ConfigurationState
   ): number => {
-    const isPortrait = ThumbSliderUtil.isPortrait(c);
-    if (!isPortrait) {
+    // const isPortrait = ThumbSliderUtil.isPortrait(c);
+    const isPortraitImage = ViewerUtil.isPortraitImage();
+    if (!isPortraitImage) {
       return ThumbSliderUtil.detectRange(hash, images, c);
     }
 
+    /*
     const [width] = ThumbSliderUtil.calcThumbSliderSize(
       c.standardWidth,
       c.standardHeight
     );
+    */
+    const width = window.innerWidth;
 
     if (ViewerUtil.isPortraitImage()) {
-      return Math.floor(width / 128);
+      // return Math.floor(width / 128) || 1;
+      return Math.floor(width / 160) || 1;
     }
-    return Math.floor(width / (128 * 2));
+    // return Math.floor(width / (128 * 2)) || 1;
+    return Math.floor(width / (160 * 2)) || 1;
   };
 
   static detectRange = (
@@ -113,11 +124,11 @@ export default class ThumbSliderUtil extends GridViewerUtil {
     }
     */
 
-    if (/* !isPortraitMainViewer */ !isPortrait) {
+    if (/* !isPortraitMainViewer */ !isPortraitImage) {
       const targetWidth = !isPortraitImage
         ? (c.standardWidth / c.standardHeight) * window.innerHeight
         : window.innerHeight / (c.standardHeight / c.standardWidth);
-      return Math.floor(window.innerWidth / targetWidth);
+      return Math.floor(window.innerWidth / targetWidth) || 1;
     }
 
     const [currentIndex] = ThumbSliderUtil.getLeftTopIndexAndHash(

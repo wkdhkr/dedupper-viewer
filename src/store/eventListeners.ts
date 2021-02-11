@@ -2,6 +2,7 @@
 /* eslint-disable prefer-rest-params */
 /* eslint-disable no-underscore-dangle */
 import { Store } from "unistore";
+import produce from "immer";
 import * as log from "loglevel";
 import debounce from "lodash/debounce";
 // import Viewer from "viewerjs";
@@ -17,7 +18,8 @@ import ColorUtil from "../utils/ColorUtil";
 import WindowUtil from "../utils/WindowUtil";
 import PerformanceUtil from "../utils/PerformanceUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import { IFrameMessageType } from "../types/window";
+import { DedupperWindow, IFrameMessageType } from "../types/window";
+import GridViewerUtil from "../utils/GridViewerUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -445,6 +447,11 @@ export default function(store: Store<State>) {
   });
   */
   if (IFrameUtil.isInIFrame()) {
+    /*
+    window.addEventListener("resize", () => {
+      GridViewerUtil.flushLeftTopHashCache();
+    });
+    */
     window.addEventListener(
       "resize",
       debounce(() => {
@@ -461,6 +468,13 @@ export default function(store: Store<State>) {
         }
         // changeScale.function();
         */
+        store.setState(
+          produce(store.getState(), (draft) => {
+            draft.mainViewer.images = draft.mainViewer.images.map((i) => ({
+              ...i,
+            }));
+          })
+        );
         if (UrlUtil.isInThumbSlider()) {
           const hash = store.getState().thumbSlider.selectedImage?.hash;
           if (hash) {

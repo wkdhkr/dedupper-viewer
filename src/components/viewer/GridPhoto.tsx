@@ -14,7 +14,6 @@ import { DedupperImage, GestureInfo } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
 import ColorUtil from "../../utils/ColorUtil";
-import useWindowSize from "../../hooks/windowSize";
 import PerformanceUtil from "../../utils/PerformanceUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import MouseEventUtil from "../../utils/MouseEventUtil";
@@ -70,9 +69,6 @@ const GridPhoto = React.memo(
     left,
   }: GridPhotoProps) => {
     // const isNeighbour = Math.abs(currentIndex - index) < range;
-
-    useWindowSize();
-
     useEffect(() => {
       const isNeighbour =
         currentIndex - range - range < index &&
@@ -142,7 +138,7 @@ const GridPhoto = React.memo(
       const styles: React.CSSProperties = {};
       const leftTopIndex = currentIndex - (currentIndex % range);
       const isNextPageIndex =
-        leftTopIndex + range + unit <= index &&
+        index > leftTopIndex + range + unit &&
         index < leftTopIndex + range * 2.5;
       if (isNextPageIndex) {
         styles.position = "fixed";
