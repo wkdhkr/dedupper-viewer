@@ -113,7 +113,7 @@ export default class ThumbSliderUtil extends GridViewerUtil {
       c.standardHeight
     );
     */
-    const isPortrait = ThumbSliderUtil.isPortrait(c);
+    // const isPortrait = ThumbSliderUtil.isPortrait(c);
     const isPortraitImage = ViewerUtil.isPortraitImage();
 
     /*

@@ -30,7 +30,6 @@ import FullscreenButton from "../components/FullscreenButton";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
-import useWindowSize from "../hooks/windowSize";
 
 const gs = new GridViewerService(store);
 
@@ -109,20 +108,25 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     if (channelId) {
       load(channelId);
     }
+    return () => {
+      unload();
+    };
+  }, [channelId, load, unload]);
 
+  useEffect(() => {
     // setup play mode
     const params = new URLSearchParams(window.location.search);
-    if (params.get("play")) {
+    const isPlayInUrl = params.get("play") === "1";
+    if (isPlayInUrl && !isPlay) {
       togglePlay();
     }
 
     return () => {
-      unload();
       if (isPlay) {
         togglePlay();
       }
     };
-  }, [channelId, togglePlay, load, unload, isPlay]);
+  }, [togglePlay, isPlay]);
 
   useEffect(() => {
     const handleScroll = (event: WheelEvent) => {

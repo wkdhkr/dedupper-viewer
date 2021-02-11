@@ -403,27 +403,30 @@ const actions = (store: Store<State>) => ({
     });
   },
   toggleGridPlay(state: State) {
-    return produce(state, (draft) => {
-      draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
-      const sourceUnit = draft.gridViewer.unit;
-      UrlUtil.syncPlay(draft.gridViewer.isPlay);
-      const forceInterval = UrlUtil.getPlayInterval();
-      gps.switchGridPlay(
-        draft.gridViewer.isPlay,
-        () => {
-          const range = ViewerUtil.detectRange(sourceUnit);
-          let nextIndex = store.getState().gridViewer.index + range;
-          if (!store.getState().mainViewer.images[nextIndex]) {
-            nextIndex = 0;
-          }
-          const nextHash = store.getState().mainViewer.images[nextIndex]?.hash;
-          if (nextHash) {
-            actions(store).selected(store.getState(), nextHash, nextIndex);
-          }
-        },
-        forceInterval || draft.configuration.gridViewerPlayInterval
-      );
-    });
+    store.setState(
+      produce(state, (draft) => {
+        draft.gridViewer.isPlay = !draft.gridViewer.isPlay;
+      })
+    );
+    const newState = store.getState();
+    const sourceUnit = state.gridViewer.unit;
+    UrlUtil.syncPlay(newState.gridViewer.isPlay);
+    const forceInterval = UrlUtil.getPlayInterval();
+    gps.switchGridPlay(
+      newState.gridViewer.isPlay,
+      () => {
+        const range = ViewerUtil.detectRange(sourceUnit);
+        let nextIndex = store.getState().gridViewer.index + range;
+        if (!store.getState().mainViewer.images[nextIndex]) {
+          nextIndex = 0;
+        }
+        const nextHash = store.getState().mainViewer.images[nextIndex]?.hash;
+        if (nextHash) {
+          actions(store).selected(store.getState(), nextHash, nextIndex);
+        }
+      },
+      forceInterval || newState.configuration.gridViewerPlayInterval
+    );
   },
   finishSnackbar(state: State, kind: SnackbarKind) {
     return produce(state, (draft) => {
