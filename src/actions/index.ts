@@ -739,6 +739,7 @@ const actions = (store: Store<State>) => ({
   },
 
   async loadTimeImages(state: State, image: DedupperImage) {
+    log.debug(image);
     const { timestamp, rating } = image;
     let images: DedupperImage[] = [];
     const isPortrait = UrlUtil.extractParam("o") === "portrait";

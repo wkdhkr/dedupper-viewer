@@ -18,6 +18,14 @@ const c: ConfigurationState = JSON.parse(
   localStorage.getItem(CONFIGURATION_LS_KEY) || "{}"
 );
 
+const getPath = (url?: string) => {
+  if (url) {
+    const u = new URL(url);
+    return u.pathname;
+  }
+  return window.location.pathname;
+};
+
 export default class UrlUtil {
   static BASE_URL = `${c.dedupperServerProtocol ||
     "http"}://${hostname}:${c.dedupperServerPort || "8080"}/dedupper/v1/`;
@@ -38,7 +46,7 @@ export default class UrlUtil {
     return null;
   };
 
-  static getAcdUrl = (acdId: string, domain: string) => {
+  static buildAcdUrl = (acdId: string, domain: string) => {
     return `https://${domain}/photos/all/gallery/${acdId}?ref_=cd_lts_sn&sort=sortDateUploaded`;
   };
 
@@ -49,54 +57,69 @@ export default class UrlUtil {
     return u;
   };
 
-  static isInThumbSlider = () => {
-    return window.location.pathname.split("/").includes("thumbs");
+  static isInThumbSlider = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("thumbs");
   };
 
-  static isInChannels = () => {
-    return window.location.pathname.split("/").includes("channels");
+  static isInChannels = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("channels");
   };
 
-  static isInChannel = () => {
-    return window.location.pathname.split("/").includes("channel");
+  static isInChannel = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("channel");
   };
 
-  static isInGridViewer = () => {
-    return window.location.pathname.split("/").includes("grid");
+  static isInGridViewer = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("grid");
   };
 
-  static isInSingleViewer = () => {
-    return window.location.pathname.split("/").includes("image");
+  static isInSingleViewer = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("image");
   };
 
-  static isInSubViewer = () => {
+  static isInSubViewer = (url?: string) => {
     return (
-      UrlUtil.isInSingleViewer() && UrlUtil.extractParam("mode") === "subviewer"
+      UrlUtil.isInSingleViewer(url) &&
+      UrlUtil.extractParam("mode", url) === "subviewer"
     );
   };
 
-  static isInMainViewer = () => {
-    return UrlUtil.isInGridViewer() === false && UrlUtil.isInChannel();
+  static isInMainViewer = (url?: string) => {
+    return UrlUtil.isInGridViewer(url) === false && UrlUtil.isInChannel(url);
   };
 
-  static isInlineMainViewer = () => {
-    return UrlUtil.isInMainViewer() && UrlUtil.isInline();
+  static isInlineMainViewer = (url?: string) => {
+    return UrlUtil.isInMainViewer(url) && UrlUtil.isInline(url);
   };
 
-  static isInline = () => {
-    const searchParams = new URLSearchParams(window.location.search);
+  static isInline = (url?: string) => {
+    const searchParams = url
+      ? new URL(url).searchParams
+      : new URLSearchParams(window.location.search);
     return searchParams.get("inline") === "1";
   };
 
-  static isInStart = () => {
-    return window.location.pathname.split("/").includes("start");
+  static isInStart = (url?: string) => {
+    return getPath(url)
+      .split("/")
+      .includes("start");
   };
 
-  static changeUnit = (n?: number) => {
+  static changeUnit = (n?: number, sourceUrl?: string) => {
     if (!UrlUtil.isInGridViewer()) {
       return;
     }
-    const url = new URL(window.location.href);
+    const url = new URL(sourceUrl || window.location.href);
     if (n) {
       url.searchParams.set("unit", String(n));
     } else {
@@ -118,13 +141,13 @@ export default class UrlUtil {
     }
   };
 
-  static isPlay = () => {
-    const url = new URL(window.location.href);
+  static isPlay = (sourceUrl?: string) => {
+    const url = new URL(sourceUrl || window.location.href);
     return Boolean(url.searchParams.get("play"));
   };
 
-  static getPlayInterval = () => {
-    const url = new URL(window.location.href);
+  static getPlayInterval = (sourceUrl?: string) => {
+    const url = new URL(sourceUrl || window.location.href);
     return parseInt(url.searchParams.get("interval") || "0", 10) || null;
   };
 
@@ -161,18 +184,22 @@ export default class UrlUtil {
     return null;
   };
 
-  static isInListThumbSlider = () =>
-    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "list";
+  static isInListThumbSlider = (url?: string) =>
+    UrlUtil.isInThumbSlider(url) &&
+    UrlUtil.extractParam("mode", url) === "list";
 
-  static isInPHashThumbSlider = () =>
-    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "phash";
+  static isInPHashThumbSlider = (url?: string) =>
+    UrlUtil.isInThumbSlider(url) &&
+    UrlUtil.extractParam("mode", url) === "phash";
 
-  static isInTimeThumbSlider = () =>
-    UrlUtil.isInThumbSlider() && UrlUtil.extractParam("mode") === "time";
+  static isInTimeThumbSlider = (url?: string) =>
+    UrlUtil.isInThumbSlider(url) &&
+    UrlUtil.extractParam("mode", url) === "time";
 
-  static isInRecommend = () => UrlUtil.isInTimeThumbSlider();
+  static isInRecommend = (url?: string) => UrlUtil.isInTimeThumbSlider(url);
 
-  static isInRecommended = () => UrlUtil.extractParam("recommended") === "1";
+  static isInRecommended = (url?: string) =>
+    UrlUtil.extractParam("recommended", url) === "1";
 
   static extractParam = (name: string, url?: string) =>
     new URL(url || window.location.href).searchParams.get(name);

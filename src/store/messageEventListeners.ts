@@ -176,7 +176,11 @@ export default function(store: Store<State>) {
             if (UrlUtil.isInMainViewer()) {
               PerformanceUtil.decodeImage(message.payload.hash);
             }
-            if (UrlUtil.isInGridViewer() && !state.gridViewer.showMainViewer) {
+            if (
+              UrlUtil.isInline(message.fromUrl) &&
+              UrlUtil.isInGridViewer() &&
+              !state.gridViewer.showMainViewer
+            ) {
               actions(store).selected(state, message.payload.hash);
             }
           }
@@ -204,7 +208,9 @@ export default function(store: Store<State>) {
             );
           }
           if (UrlUtil.isInTimeThumbSlider() && IFrameUtil.isInIFrame()) {
-            debouncedLoadTimeImages(store.getState(), message.payload);
+            if (message.payload.timestamp) {
+              debouncedLoadTimeImages(store.getState(), message.payload);
+            }
           } else if (
             UrlUtil.isInPHashThumbSlider() &&
             IFrameUtil.isInIFrame()

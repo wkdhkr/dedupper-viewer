@@ -91,7 +91,7 @@ const DataTable: React.FunctionComponent<DataTableProps> = ({
 
   const flickrUrl = image ? UrlUtil.getFlickrUrl(image.to_path) : null;
   const acdUrl = image?.acd_id
-    ? UrlUtil.getAcdUrl(image.acd_id, c.amazonCloudDriveDomain)
+    ? UrlUtil.buildAcdUrl(image.acd_id, c.amazonCloudDriveDomain)
     : null;
 
   return (
