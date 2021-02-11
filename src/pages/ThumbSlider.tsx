@@ -155,6 +155,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
         updateTag={updateTag}
         updateRating={updateRating}
         image={selectedImage}
+        next={c.selectNextAfterEditInGridViewer}
       />
       <Hotkeys
         keyName="r"

@@ -19,6 +19,7 @@ export type IFrameMessageType =
   | "thumbSliderViewed"
   | "customEvent"
   | "toggleMainViewerPlay"
+  | "toggleGridViewerPlay"
   | "selectedRecommend"
   | "selected"
   | "viewed"

@@ -359,17 +359,24 @@ const actions = (store: Store<State>) => ({
       actions(store).toggleSubViewer(store.getState());
     }
   },
-  togglePlay(state: State) {
+  async togglePlay(state: State) {
     if (UrlUtil.isInThumbSlider()) {
-      SubViewerHelper.prepareReference().then(() =>
+      await SubViewerHelper.prepareReference();
+      if (UrlUtil.isInline() && !state.gridViewer.showMainViewer) {
+        IFrameUtil.postMessageForParent({
+          type: "forAll",
+          payload: {
+            type: "toggleGridViewerPlay",
+          } as IFrameMessage,
+        });
+      } else {
         IFrameUtil.postMessageForParent({
           type: "forAll",
           payload: {
             type: "toggleMainViewerPlay",
-          },
-        })
-      );
-      return state;
+          } as IFrameMessage,
+        });
+      }
     }
     const vc = DomUtil.getViewerCanvas();
     if (vc) {

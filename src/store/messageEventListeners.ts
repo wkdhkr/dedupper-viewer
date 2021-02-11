@@ -23,6 +23,7 @@ export default function(store: Store<State>) {
   window.addEventListener(
     "message",
     async (event: any) => {
+      const state = store.getState();
       const message: IFrameMessage = event.data;
 
       if (((message as any).source || "").startsWith("react-devtools-")) {
@@ -35,7 +36,7 @@ export default function(store: Store<State>) {
       switch (message.type) {
         case "configuration":
           store.setState(
-            produce(store.getState(), (draft) => {
+            produce(state, (draft) => {
               draft.configuration = {
                 ...message.payload,
                 open: draft.configuration.open,
@@ -44,20 +45,19 @@ export default function(store: Store<State>) {
           );
           break;
         case "gridScrollTo": {
-          const hash =
-            message.payload || store.getState().gridViewer.selectedImage?.hash;
+          const hash = message.payload || state.gridViewer.selectedImage?.hash;
           if (hash) {
             GridViewerUtil.scrollToLeftTopHash(
               hash,
-              store.getState().mainViewer.images,
-              store.getState().configuration
+              state.mainViewer.images,
+              state.configuration
             );
           }
           break;
         }
         case "showMainViewer":
           store.setState(
-            produce(store.getState(), (draft) => {
+            produce(state, (draft) => {
               draft.gridViewer.showMainViewer = message.payload;
             })
           );
@@ -72,21 +72,22 @@ export default function(store: Store<State>) {
             );
           }
           break;
+        case "toggleGridViewerPlay":
+          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
+            actions(store).toggleGridPlay(state);
+          }
+          break;
         case "toggleMainViewerPlay":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
-            store.setState(
-              produce(store.getState(), (draft) => {
-                draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
-              })
-            );
+            actions(store).togglePlay(state);
           }
           break;
         case "navigateImage":
           if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
             const isPrev = message.payload;
-            const { gridViewer } = store.getState();
+            const { gridViewer } = state;
             actions(store).selectedByIndex(
-              store.getState(),
+              state,
               gridViewer.index + (isPrev ? -1 : 1)
             );
           }
@@ -97,17 +98,15 @@ export default function(store: Store<State>) {
         case "selected":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
             PerformanceUtil.decodeImage(message.payload.hash);
-            const state = store.getState();
             const index = state.mainViewer.images
               .map((x) => x.hash)
               .indexOf(message.payload.hash);
             if (index !== -1) {
               DomUtil.getViewer().view(index);
             }
-          }
-          if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
+          } else if (UrlUtil.isInGridViewer() && IFrameUtil.isInIFrame()) {
             store.setState(
-              produce(store.getState(), (draft) => {
+              produce(state, (draft) => {
                 const image = draft.imageByHash[message.payload.hash];
                 const { hash } = message.payload as {
                   hash: string;
@@ -142,7 +141,7 @@ export default function(store: Store<State>) {
             IFrameUtil.isInIFrame()
           ) {
             store.setState(
-              produce(store.getState(), (draft) => {
+              produce(state, (draft) => {
                 draft.mainViewer.images = message.payload;
                 draft.imageByHash = keyBy<DedupperImage>(
                   message.payload,
@@ -155,11 +154,10 @@ export default function(store: Store<State>) {
           if (UrlUtil.isInListThumbSlider() && IFrameUtil.isInIFrame()) {
             if (
               !UrlUtil.isInline() ||
-              (UrlUtil.isInline() &&
-                !store.getState().configuration.enableSubViewer)
+              (UrlUtil.isInline() && !state.configuration.enableSubViewer)
             ) {
               store.setState(
-                produce(store.getState(), (draft) => {
+                produce(state, (draft) => {
                   draft.mainViewer.images = message.payload;
                   draft.imageByHash = keyBy<DedupperImage>(
                     message.payload,
@@ -174,33 +172,36 @@ export default function(store: Store<State>) {
           }
           break;
         case "thumbSliderViewed": {
-          PerformanceUtil.decodeImage(message.payload.hash);
+          if (IFrameUtil.isInIFrame()) {
+            if (UrlUtil.isInMainViewer()) {
+              PerformanceUtil.decodeImage(message.payload.hash);
+            }
+            if (UrlUtil.isInGridViewer() && !state.gridViewer.showMainViewer) {
+              actions(store).selected(state, message.payload.hash);
+            }
+          }
           break;
         }
         case "viewed":
-          {
-            const state = store.getState();
-
-            if (
-              UrlUtil.isInGridViewer() &&
-              IFrameUtil.isInIFrame() &&
-              state.gridViewer.showMainViewer
-            ) {
-              store.setState(
-                produce(store.getState(), (draft) => {
-                  const image = draft.imageByHash[message.payload.hash];
-                  const { hash, index } = message.payload as {
-                    hash: string;
-                    index: number;
-                  };
-                  if (image) {
-                    draft.gridViewer.selectedImage =
-                      draft.imageByHash[hash] || null;
-                    draft.gridViewer.index = index;
-                  }
-                })
-              );
-            }
+          if (
+            UrlUtil.isInGridViewer() &&
+            IFrameUtil.isInIFrame() &&
+            state.gridViewer.showMainViewer
+          ) {
+            store.setState(
+              produce(store.getState(), (draft) => {
+                const image = draft.imageByHash[message.payload.hash];
+                const { hash, index } = message.payload as {
+                  hash: string;
+                  index: number;
+                };
+                if (image) {
+                  draft.gridViewer.selectedImage =
+                    draft.imageByHash[hash] || null;
+                  draft.gridViewer.index = index;
+                }
+              })
+            );
           }
           if (UrlUtil.isInTimeThumbSlider() && IFrameUtil.isInIFrame()) {
             debouncedLoadTimeImages(store.getState(), message.payload);
@@ -422,7 +423,7 @@ export default function(store: Store<State>) {
         case "subViewer":
           if (UrlUtil.isInGridViewer()) {
             store.setState(
-              produce(store.getState(), (draft) => {
+              produce(state, (draft) => {
                 draft.gridViewer.subViewer.isOpen = true;
                 draft.mainViewer.subViewer.isOpen = false;
                 draft.mainViewer.subViewer.url = null;
@@ -437,7 +438,7 @@ export default function(store: Store<State>) {
         case "navigateSubViewer":
           if (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer()) {
             store.setState(
-              produce(store.getState(), (draft) => {
+              produce(state, (draft) => {
                 if (message.payload.image) {
                   draft.imageByHash[message.payload.image.hash] =
                     message.payload.image;
