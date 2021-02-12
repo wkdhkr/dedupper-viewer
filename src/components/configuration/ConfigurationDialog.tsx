@@ -162,7 +162,35 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = (
                     <h2>Viewer</h2>
                     <SliderItem
                       reset={reset}
-                      title="Standard size - Width (restart required)"
+                      title="thumbnail width for portrait image"
+                      step={1}
+                      min={120}
+                      max={512}
+                      value={draftConfig.thumbWidthForPortrait}
+                      onChange={(e, size) =>
+                        setDraftConfig({
+                          ...draftConfig,
+                          thumbWidthForPortrait: size,
+                        })
+                      }
+                    />
+                    <SliderItem
+                      reset={reset}
+                      title="thumbnail width for landscape image"
+                      step={1}
+                      min={120}
+                      max={512}
+                      value={draftConfig.thumbWidthForLandscape}
+                      onChange={(e, size) =>
+                        setDraftConfig({
+                          ...draftConfig,
+                          thumbWidthForLandscape: size,
+                        })
+                      }
+                    />
+                    <SliderItem
+                      reset={reset}
+                      title="Standard size - width (restart required)"
                       step={2}
                       min={1024}
                       max={1920 * 2}

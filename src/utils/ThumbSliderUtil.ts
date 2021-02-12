@@ -96,10 +96,10 @@ export default class ThumbSliderUtil extends GridViewerUtil {
 
     if (ViewerUtil.isPortraitImage()) {
       // return Math.floor(width / 128) || 1;
-      return Math.floor(width / 160) || 1;
+      return Math.floor(width / c.thumbWidthForPortrait) || 1;
     }
     // return Math.floor(width / (128 * 2)) || 1;
-    return Math.floor(width / (160 * 2)) || 1;
+    return Math.floor(width / c.thumbWidthForLandscape) || 1;
   };
 
   static detectRange = (

@@ -170,6 +170,8 @@ export interface ThumbSliderState {
 }
 
 export interface ConfigurationState {
+  thumbWidthForPortrait: number;
+  thumbWidthForLandscape: number;
   lockInlineViewer: boolean;
   defaultSortKind: SortKind;
   amazonCloudDriveDomain: string;

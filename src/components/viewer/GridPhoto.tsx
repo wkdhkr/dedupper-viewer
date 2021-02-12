@@ -28,6 +28,7 @@ let currentHover: string | null = null;
 const imgWithClick = { cursor: "pointer" };
 
 type GridPhotoProps = RenderImageProps & {
+  leftTopIndex: number | null;
   isThumbSlider: boolean;
   range: number;
   isPlay: boolean;
@@ -49,6 +50,7 @@ type GridPhotoProps = RenderImageProps & {
 
 const GridPhoto = React.memo(
   ({
+    leftTopIndex,
     isThumbSlider = false,
     gestureInfo,
     setGestureInfo,
@@ -136,10 +138,9 @@ const GridPhoto = React.memo(
 
     const createPredecodeStyle = () => {
       const styles: React.CSSProperties = {};
-      const leftTopIndex = currentIndex - (currentIndex % range);
       const isNextPageIndex =
-        index > leftTopIndex + range + unit &&
-        index < leftTopIndex + range * 2.5;
+        index > (leftTopIndex || 0) + range + unit &&
+        index < (leftTopIndex || 0) + range * 2.5;
       if (isNextPageIndex) {
         styles.position = "fixed";
         styles.top = window.innerHeight + 1;

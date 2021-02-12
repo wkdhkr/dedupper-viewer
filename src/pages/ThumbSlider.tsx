@@ -97,6 +97,11 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
   updateRating,
 }) => {
   const isPortraitImage = ViewerUtil.isPortraitImage();
+  const [leftTopIndex] = ThumbSliderUtil.getLeftTopIndexAndHash(
+    selectedImage?.hash || null,
+    images,
+    c
+  );
   const range = ThumbSliderUtil.detectRange(
     selectedImage?.hash || null,
     images,
@@ -208,6 +213,7 @@ const ThumbSlider: React.FunctionComponent<ThumbSliderProps> = ({
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...{
               ...props,
+              leftTopIndex,
               isThumbSlider: true,
               gestureInfo,
               setGestureInfo,

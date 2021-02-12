@@ -30,6 +30,7 @@ import FullscreenButton from "../components/FullscreenButton";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
+import GridViewerUtil from "../utils/GridViewerUtil";
 
 const gs = new GridViewerService(store);
 
@@ -98,6 +99,14 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
   updateRating,
 }) => {
   const range = ViewerUtil.detectRange(unit);
+  /*
+  const [leftTopIndex] = GridViewerUtil.getLeftTopIndexAndHash(
+    selectedImage?.hash || null,
+    images,
+    c
+  );
+  */
+  const leftTopIndex = index - (index % range);
   // console.log(unit, range);
   const isPortraitImage = ViewerUtil.isPortraitImage();
 
@@ -132,12 +141,12 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     const handleScroll = (event: WheelEvent) => {
       if (!c.open && !showMainViewer) {
         event.preventDefault();
-        const leftTopIndex = index - (index % range);
+        const mayLeftTopIndex = index - (index % range);
         let nextIndex = index;
         if (event.deltaY > 0) {
-          nextIndex = leftTopIndex + range;
+          nextIndex = mayLeftTopIndex + range;
         } else {
-          nextIndex = leftTopIndex - range;
+          nextIndex = mayLeftTopIndex - range;
         }
         if (fitImages.length) {
           const args = [
@@ -254,6 +263,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               // eslint-disable-next-line react/jsx-props-no-spreading
               {...{
                 ...props,
+                leftTopIndex,
                 gestureInfo,
                 isThumbSlider: false,
                 setGestureInfo,

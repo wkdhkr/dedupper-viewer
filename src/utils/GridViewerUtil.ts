@@ -117,9 +117,9 @@ export default class GridViewerUtil {
     }
 
     const cacheKey = generateCacheKey(
-      `${window.innerHeight}${window.innerWidth}${images
-        .map((i) => i.hash)
-        .join("")}`
+      `${c.thumbWidthForLandscape}${c.thumbWidthForPortrait}${
+        window.innerHeight
+      }${window.innerWidth}${images.map((i) => i.hash).join("")}`
     );
 
     if (useCache && leftTopHashesCache[cacheKey]) {
