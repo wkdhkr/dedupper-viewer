@@ -19,7 +19,11 @@ export default class GestureUtil {
       } else {
         rating = isPositive ? 3 : 2;
       }
-      if (gestureImage?.rating === rating) {
+      if (gestureImage?.rating === 4 && rating === 4) {
+        rating = 5;
+      } else if (gestureImage?.rating === rating) {
+        rating = 0;
+      } else if (gestureImage?.rating === 5 && rating === 4) {
         rating = 0;
       }
       return rating;

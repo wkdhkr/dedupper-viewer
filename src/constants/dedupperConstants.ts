@@ -15,3 +15,5 @@ export const EVENT_X_KEY = "EVENT_X_KEY";
 export const EVENT_R_KEY = "EVENT_R_KEY";
 
 export const EVENT_UPDATE_IMAGE = "EVENT_UPDATE_IMAGE";
+
+export const PORTRAIT_MAX_RATIO = 0.7;

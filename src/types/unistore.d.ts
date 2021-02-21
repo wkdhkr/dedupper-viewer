@@ -139,6 +139,7 @@ export interface MainViewerState {
   isOpen: boolean;
   isPlay: boolean;
   index: number;
+  isTrimRotation: boolean;
   currentImage: DedupperImage | null;
   images: DedupperImage[];
 }

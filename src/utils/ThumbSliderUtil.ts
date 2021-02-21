@@ -3,6 +3,24 @@ import GridViewerUtil from "./GridViewerUtil";
 import ViewerUtil from "./ViewerUtil";
 
 export default class ThumbSliderUtil extends GridViewerUtil {
+  static calcThumbSliderSizeForFixed = (
+    standardWidth: number,
+    standardHeight: number
+  ) => {
+    let [w, h] = ThumbSliderUtil.calcThumbSliderSize(
+      standardWidth,
+      standardHeight
+    );
+
+    if (h < 128) {
+      h = 128;
+    }
+    if (w < 200) {
+      w = 200;
+    }
+    return [w, h];
+  };
+
   static calcThumbSliderSize = (
     standardWidth: number,
     standardHeight: number

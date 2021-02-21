@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
@@ -18,6 +19,7 @@ import PerformanceUtil from "../../utils/PerformanceUtil";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import MouseEventUtil from "../../utils/MouseEventUtil";
 import GestureUtil from "../../utils/GestureUtil";
+import TrimUtil from "../../utils/dedupper/TrimUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -28,39 +30,41 @@ let currentHover: string | null = null;
 const imgWithClick = { cursor: "pointer" };
 
 type GridPhotoProps = RenderImageProps & {
-  leftTopIndex: number | null;
-  isThumbSlider: boolean;
-  range: number;
-  isPlay: boolean;
-  unit: number;
+  readOnly?: boolean;
+  leftTopIndex?: number | null;
+  isThumbSlider?: boolean;
+  range?: number;
+  isPlay?: boolean;
+  unit?: number;
   image: DedupperImage;
-  currentIndex: number;
-  selectedImage: DedupperImage | null;
-  gestureInfo: GestureInfo;
-  setGestureInfo: (x: GestureInfo) => void;
-  updateSize: (hash: string, w: number, h: number) => void;
-  updateTag: (
+  currentIndex?: number;
+  selectedImage?: DedupperImage | null;
+  gestureInfo?: GestureInfo;
+  setGestureInfo?: (x: GestureInfo) => void;
+  updateSize?: (hash: string, w: number, h: number) => void;
+  updateTag?: (
     hash: string,
     x: number | null,
     name: string,
     next?: boolean
   ) => void;
-  updateRating: (hash: string, x: number | null, next?: boolean) => void;
+  updateRating?: (hash: string, x: number | null, next?: boolean) => void;
 };
 
 const GridPhoto = React.memo(
   ({
-    leftTopIndex,
+    readOnly = false,
+    leftTopIndex = null,
     isThumbSlider = false,
-    gestureInfo,
+    gestureInfo = { image: null, x: -1, y: -1 },
     setGestureInfo,
-    range,
-    currentIndex,
-    isPlay,
-    index,
+    range = 1,
+    currentIndex = 0,
+    isPlay = false,
+    index = 0,
     image,
-    selectedImage,
-    unit,
+    selectedImage = null,
+    unit = 1,
     photo,
     updateSize,
     onClick,
@@ -175,7 +179,8 @@ const GridPhoto = React.memo(
           naturalWidth: di.width,
           naturalHeight: di.height,
           aspectRatio,
-          ratio: di.width / di.width,
+          // ratio: di.width / di.width,
+          ratio: 1,
           width: di.width,
           height: di.height,
           left: 0,
@@ -187,17 +192,21 @@ const GridPhoto = React.memo(
         if (ViewerUtil.isPortraitImage()) {
           ratio = photo.height / trim.naturalHeight;
         }
-        if (di.trim) {
-          if (ViewerUtil.isPortraitImage()) {
+        const hasTrim = TrimUtil.hasTrim(image);
+        if (hasTrim) {
+          const isPortraitFrame = photo.height > photo.width;
+          if (isPortraitFrame) {
             ratio = photo.height / STANDARD_WIDTH;
           } else {
             ratio = photo.width / STANDARD_WIDTH;
           }
-          trim = JSON.parse(di.trim);
+          const [landscapeTrim, portraitTrim] = TrimUtil.prepareTrim(di);
+          trim = (isPortraitFrame ? portraitTrim : landscapeTrim) || trim;
+          // trim = JSON.parse(di.trim);
         }
         // const ratio = photo.width / STANDARD_WIDTH;
         const imageData = ViewerUtil.adjustImageData(trim, ratio);
-        if (di.trim) {
+        if (hasTrim) {
           style.width = imageData.width;
           style.height = imageData.height;
           style.marginLeft = imageData.left;
@@ -228,7 +237,7 @@ const GridPhoto = React.memo(
       currentIndex - range - range < index &&
       index < currentIndex + range + range;
     const isBigArea = photo.height > 120 && photo.width > 156;
-    const isShowRatingAndTag = isNeighbour && !isPlay && isBigArea;
+    const isShowRatingAndTag = Boolean(isNeighbour && !isPlay && isBigArea);
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;
 
@@ -236,22 +245,30 @@ const GridPhoto = React.memo(
     // const decoding = isNeighbour ? "sync" : "async";
 
     const handleContextMenu = (event: React.MouseEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+      if (!readOnly) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (updateTag) {
+          updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+        }
+      }
     };
 
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
-      if (event.button === 1) {
-        if (!UrlUtil.isInRecommend()) {
-          gs.applyTagForImagesInScreen();
+      if (!readOnly) {
+        if (event.button === 1) {
+          if (!UrlUtil.isInRecommend()) {
+            gs.applyTagForImagesInScreen();
+          }
+          event.preventDefault();
+        } else {
+          if (event.button !== 0) {
+            return;
+          }
+          if (setGestureInfo) {
+            setGestureInfo({ image, x: event.clientX, y: event.clientY });
+          }
         }
-        event.preventDefault();
-      } else {
-        if (event.button !== 0) {
-          return;
-        }
-        setGestureInfo({ image, x: event.clientX, y: event.clientY });
       }
     };
     const handleWheel = () => {
@@ -259,7 +276,8 @@ const GridPhoto = React.memo(
     };
     const onMouseEnter = (event: React.MouseEvent) => {
       const moveEvent = MouseEventUtil.getMoveEvent();
-      if (!isPlay) {
+      if (!isPlay && !UrlUtil.isInRecommend()) {
+        event.persist();
         currentHover = photo.key || null;
         setTimeout(() => {
           if (
@@ -295,7 +313,7 @@ const GridPhoto = React.memo(
           width={photo.width}
           height={photo.height}
         >
-          {isShowRatingAndTag ? (
+          {isShowRatingAndTag && updateTag && updateRating ? (
             <Box
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
@@ -355,11 +373,15 @@ const GridPhoto = React.memo(
                 if (gestureInfo.image && rating !== null) {
                   e.preventDefault();
                   e.stopPropagation();
-                  updateRating(gestureInfo.image.hash, rating, false);
+                  if (updateRating) {
+                    updateRating(gestureInfo.image.hash, rating, false);
+                  }
                 }
-                setTimeout(() => {
-                  setGestureInfo({ x: -1, y: -1, image: null });
-                });
+                if (setGestureInfo) {
+                  setTimeout(() => {
+                    setGestureInfo({ x: -1, y: -1, image: null });
+                  });
+                }
               }}
               onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
@@ -369,7 +391,7 @@ const GridPhoto = React.memo(
               onMouseLeave={onMouseLeave}
               onLoad={async (e) => {
                 const imageElement = e.target as HTMLImageElement;
-                if (image.width !== imageElement.naturalWidth) {
+                if (image.width !== imageElement.naturalWidth && updateSize) {
                   // may be rotated, fix it.
                   updateSize(
                     image.hash,
@@ -392,10 +414,10 @@ const GridPhoto = React.memo(
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;
     }
-    const { range } = n;
+    const { range = 1, index = 0, currentIndex = 0 } = n;
     const isNeighbour =
-      n.currentIndex - range - range < n.index &&
-      n.index < n.currentIndex + range + range;
+      currentIndex - range - range < index &&
+      index < currentIndex + range + range;
     // const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
     if (isNeighbour) {
       return false;
@@ -425,4 +447,14 @@ const GridPhoto = React.memo(
     return true;
   }
 );
+
+/*
+const defaultProps = {
+  readOnly: false,
+  isThumbSlider: false
+};
+
+GridPhoto.defaultProps = defaultProps;
+*/
+
 export default GridPhoto;

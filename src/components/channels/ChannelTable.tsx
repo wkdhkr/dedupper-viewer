@@ -96,6 +96,14 @@ type ChannelTableProps = {
   setCurrentChannelId: (x: string | null) => void;
 };
 
+const launchViewer = (url: string, enableSubViewer = false) => {
+  if (enableSubViewer) {
+    launchSubViewer(url);
+  } else {
+    RouterUtil.navigateForIFWrap(url);
+  }
+};
+
 const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
   ({
     enableSubViewer,
@@ -180,11 +188,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?play=1&o=${o}`;
-                  if (enableSubViewer) {
-                    launchSubViewer(url);
-                  } else {
-                    RouterUtil.navigateForIFWrap(url);
-                  }
+                  launchViewer(url);
                 }),
             },
             {
@@ -194,11 +198,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?o=${o}`;
-                  if (enableSubViewer) {
-                    launchSubViewer(url);
-                  } else {
-                    RouterUtil.navigateForIFWrap(url);
-                  }
+                  launchViewer(url);
                 }),
             },
             {

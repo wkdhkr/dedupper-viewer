@@ -86,7 +86,12 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
                   }
                   name={`tag__${name}__${currentImage.hash}`}
                   onChange={(event, value) =>
-                    onTagChange(currentImage.hash, value, name, next)
+                    onTagChange(
+                      currentImage.hash,
+                      value,
+                      name,
+                      name === "t1" ? next : false
+                    )
                   }
                   max={1}
                 />

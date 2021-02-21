@@ -30,7 +30,6 @@ import FullscreenButton from "../components/FullscreenButton";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
-import GridViewerUtil from "../utils/GridViewerUtil";
 
 const gs = new GridViewerService(store);
 

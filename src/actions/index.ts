@@ -39,9 +39,16 @@ const dc = new DedupperClient();
 const ps = new PlayerService();
 const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
+  toggleTrimRotation(state: State, direction: "right" | "left" = "right") {
+    store.setState(
+      produce(state, (draft) => {
+        draft.mainViewer.isTrimRotation = !draft.mainViewer.isTrimRotation;
+      })
+    );
+  },
   setShowMainViewer(state: State, isShow = true) {
     store.setState(
-      produce(store.getState(), (draft) => {
+      produce(state, (draft) => {
         draft.gridViewer.showMainViewer = isShow;
       })
     );
@@ -792,14 +799,19 @@ const actions = (store: Store<State>) => ({
       useProcessState
         ? "inner join process_state on hash.hash = process_state.hash"
         : "",
-      rating > 0 ? "" : "left outer join tag ON hash.hash = tag.hash",
+      // rating > 0 ? "" : "left outer join tag ON hash.hash = tag.hash",
+      "left outer join tag ON hash.hash = tag.hash",
       "where",
       `hash.state >= 200`,
       `and hash.ratio ${ratioCondition}`,
       `and hash.timestamp >= ${start}`,
       `and hash.timestamp < ${image.timestamp}`,
-      rating > 0 ? "" : "and tag.t1 is NULL",
-      rating > 0 ? "and process_state.rating > 0" : "",
+      // rating > 0 ? "" : "and tag.t1 is NULL",
+      "and tag.t1 is NULL",
+      // rating > 0 ? "and process_state.rating > 0" : "",
+      rating > 0
+        ? "and process_state.rating > 0"
+        : "and process_state.rating < 1",
       "and process_state.missing <= -1",
       `order by hash.timestamp limit 25)`,
       "union all",

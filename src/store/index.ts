@@ -46,6 +46,7 @@ const initialState: State = {
       url: null,
       isOpen: false,
     },
+    isTrimRotation: false,
     isLoading: false,
     index: -1,
     isOpen: true,

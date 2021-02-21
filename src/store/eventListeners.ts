@@ -18,8 +18,8 @@ import ColorUtil from "../utils/ColorUtil";
 import WindowUtil from "../utils/WindowUtil";
 import PerformanceUtil from "../utils/PerformanceUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
-import { DedupperWindow, IFrameMessageType } from "../types/window";
-import GridViewerUtil from "../utils/GridViewerUtil";
+import { IFrameMessageType } from "../types/window";
+import TrimUtil from "../utils/dedupper/TrimUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -132,20 +132,13 @@ export default function(store: Store<State>) {
         return;
       }
       if (isInClassNameEvent(event, "viewer-flip-horizontal")) {
-        event.preventDefault();
+        event.preventDefault(); // TODO: at once
         setTimeout(() => {
           if (viewer && hash) {
+            const left = TrimUtil.calcFitLeftPosition(viewer.imageData);
             const fixedImageData = { ...viewer.imageData };
-            if (fixedImageData.left !== 0) {
-              fixedImageData.left = 0;
-              fixedImageData.x = 0;
-            } else {
-              const left =
-                fixedImageData.naturalWidth * fixedImageData.ratio -
-                window.innerWidth;
-              fixedImageData.left = -left;
-              fixedImageData.x = -left;
-            }
+            fixedImageData.x = left;
+            fixedImageData.left = left;
             update(hash, viewer, fixedImageData);
           }
         });
@@ -153,20 +146,19 @@ export default function(store: Store<State>) {
         event.preventDefault();
         setTimeout(() => {
           if (viewer && hash) {
+            const top = TrimUtil.calcFitTopPosition(viewer.imageData);
             const fixedImageData = { ...viewer.imageData };
-            if (fixedImageData.top !== 0) {
-              fixedImageData.top = 0;
-              fixedImageData.y = 0;
-            } else {
-              const top =
-                fixedImageData.naturalHeight * fixedImageData.ratio -
-                window.innerHeight;
-              fixedImageData.top = -top;
-              fixedImageData.y = -top;
-            }
+            fixedImageData.y = top;
+            fixedImageData.top = top;
             update(hash, viewer, fixedImageData);
           }
         });
+      } else if (isInClassNameEvent(event, "viewer-rotate-right")) {
+        event.preventDefault();
+        actions(store).toggleTrimRotation(store.getState(), "right");
+      } else if (isInClassNameEvent(event, "viewer-rotate-left")) {
+        event.preventDefault();
+        actions(store).toggleTrimRotation(store.getState(), "left");
       }
     },
     false

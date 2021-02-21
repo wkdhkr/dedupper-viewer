@@ -31,6 +31,7 @@ import useWindowSize from "../hooks/windowSize";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import UrlUtil from "../utils/dedupper/UrlUtil";
+import TrimRotationPreview from "../components/viewer/TrimRotationPreview";
 
 const reload = async () => {
   await SubViewerHelper.prepareReference();
@@ -86,6 +87,7 @@ const Transition: any = React.forwardRef(function Transition(props: any, ref) {
 });
 
 export const MainViewer: React.SFC<MainViewerProps> = ({
+  isTrimRotation,
   isInline = false,
   configuration: c,
   connectionCount,
@@ -261,6 +263,12 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
             configuration={c}
           />
         </Box>
+        <Box position="fixed" left="0px" width="300px" top="0px" zIndex="1410">
+          <TrimRotationPreview
+            image={currentImage}
+            disabled={!isTrimRotation}
+          />
+        </Box>
         <PlayHotKey togglePlay={togglePlay} />
         <ReactHotkeys keyName="x" onKeyUp={() => applyTag()} />
         <ReactHotkeys keyName="r" onKeyUp={() => reload()} />
@@ -308,8 +316,15 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
   props
 ) => {
   const mode = props.mode || "list";
+
   useWindowSize();
-  const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
+
+  const [isHover, setIsHover] = useState(false);
+  const [minThumbWidth, minThumbHeight] = ThumbSliderUtil.calcThumbSliderSize(
+    props.configuration.standardWidth,
+    props.configuration.standardHeight
+  );
+  const [thumbWidth, thumbHeight] = ThumbSliderUtil.calcThumbSliderSizeForFixed(
     props.configuration.standardWidth,
     props.configuration.standardHeight
   );
@@ -322,16 +337,31 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
   }/thumbs?o=${orientation}&mode=${mode}&inline=${props.isInline ? "1" : "0"}`;
   const iframeUrl = new URL(url);
   iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
+
+  let top = isVertical ? 0 : window.innerHeight - minThumbHeight;
+  if (isHover) {
+    top = isVertical ? 0 : window.innerHeight - thumbHeight;
+  }
+  let left = isVertical ? window.innerWidth - minThumbWidth : 0;
+  if (isHover) {
+    left = isVertical ? window.innerWidth - thumbWidth : 0;
+  }
+
   return (
     <>
       {IFrameUtil.isInIFrame() ? (
         <></>
       ) : (
         <Box
+          style={{
+            transition: "0.2s",
+          }}
+          onMouseOver={() => setIsHover(true)}
+          onMouseOut={() => setIsHover(false)}
           zIndex={props.zIndex ? props.zIndex : "auto"}
-          position="absolute"
-          top={isVertical ? 0 : window.innerHeight - thumbHeight}
-          left={isVertical ? window.innerWidth - thumbWidth : 0}
+          position="fixed"
+          top={top}
+          left={left}
           width={thumbWidth}
           height={thumbHeight}
         >
@@ -356,11 +386,13 @@ const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
       <FullscreenButton />
       {!isInSingleViewer ? (
         <ThumbSliderIFrame
+          zIndex={1000}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
         />
       ) : (
         <ThumbSliderIFrame
+          zIndex={1000}
           // eslint-disable-next-line react/jsx-props-no-spreading
           {...props}
           mode="time"

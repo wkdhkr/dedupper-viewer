@@ -3,6 +3,7 @@ import CacheUtil from "./CacheUtil";
 import ColorUtil from "./ColorUtil";
 import AuthUtil from "./dedupper/AuthUtil";
 import SqliteUtil from "./dedupper/SqliteUtil";
+import TrimUtil from "./dedupper/TrimUtil";
 import UrlUtil from "./dedupper/UrlUtil";
 import DomUtil from "./DomUtil";
 import GestureUtil from "./GestureUtil";
@@ -18,6 +19,7 @@ import ViewerUtil from "./ViewerUtil";
 import WindowUtil from "./WindowUtil";
 
 const UtilsBundle = {
+  TrimUtil,
   AuthUtil,
   SqliteUtil,
   AxiosUtil,

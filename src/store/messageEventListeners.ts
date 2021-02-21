@@ -30,7 +30,10 @@ export default function(store: Store<State>) {
         return;
       }
 
-      if (!message?.type.startsWith("for")) {
+      if (
+        !message?.type.startsWith("for") &&
+        message?.type !== "subViewerReferencePrepared"
+      ) {
         log.trace(message, window.location.href);
       }
       switch (message.type) {
