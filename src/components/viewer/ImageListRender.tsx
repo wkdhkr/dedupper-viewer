@@ -6,6 +6,7 @@ import { initImageExpand } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import DomUtil from "../../utils/DomUtil";
+import PerformanceUtil from "../../utils/PerformanceUtil";
 
 interface ImageListRenderProps {
   channelId: string | null;
@@ -46,7 +47,11 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
               data-hash={hash}
               loading="lazy"
               decoding="async"
-              src={UrlUtil.generateImageUrl(hash)}
+              {...{ importance: "high" }}
+              src={
+                PerformanceUtil.getImageCache(hash) ||
+                UrlUtil.generateImageUrl(hash)
+              }
             />
           </li>
         ))}
@@ -81,6 +86,17 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
     };
 
     const options: Viewer.Options & { focus: boolean } = {
+      inheritedAttributes: [
+        "crossOrigin",
+        "decoding",
+        "isMap",
+        "loading",
+        "referrerPolicy",
+        "sizes",
+        "srcset",
+        "useMap",
+        "importance",
+      ],
       toggleOnDblclick: false,
       container: "#viewerContainer",
       focus: false,

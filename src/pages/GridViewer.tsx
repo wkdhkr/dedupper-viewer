@@ -295,15 +295,14 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
           onClick={(event, { photo, index: currentIndex }) => {
             if (photo.key) {
               if (
+                event.type !== "mouseenter" &&
                 event.button === 0 &&
                 // index === currentIndex &&
                 !c.enableSubViewer
               ) {
                 if (
-                  /*
-                  selectedImage &&
-                  selectedImage.hash === images[index]?.hash
-                  */
+                  // selectedImage &&
+                  // selectedImage.hash === images[index]?.hash
                   images.length
                 ) {
                   setTimeout(() =>
@@ -377,11 +376,6 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
         <></>
       ) : (
         <>
-          <ThumbSliderIFrame
-            zIndex={mainViewerForceTop || "auto"}
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...{ ...mainViewerProps, isInline: true }}
-          />
           <IFrameWrapper
             forceTop={mainViewerForceTop}
             keepAspectRatio
@@ -406,6 +400,11 @@ const GridViewerWrapped: React.FunctionComponent<GridViewerProps> = (props) => {
               />
             )}
           </IFrameWrapper>
+          <ThumbSliderIFrame
+            zIndex={mainViewerForceTop || "auto"}
+            // eslint-disable-next-line react/jsx-props-no-spreading
+            {...{ ...mainViewerProps, isInline: true }}
+          />
         </>
       )}
     </>

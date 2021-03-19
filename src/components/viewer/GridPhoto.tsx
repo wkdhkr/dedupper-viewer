@@ -20,6 +20,7 @@ import UrlUtil from "../../utils/dedupper/UrlUtil";
 import MouseEventUtil from "../../utils/MouseEventUtil";
 import GestureUtil from "../../utils/GestureUtil";
 import TrimUtil from "../../utils/dedupper/TrimUtil";
+import Toolbar from "./ui/Toolbar";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -240,6 +241,7 @@ const GridPhoto = React.memo(
     const isShowRatingAndTag = Boolean(isNeighbour && !isPlay && isBigArea);
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;
+    const isShowToolbar = photo.width > 250 && isSelected;
 
     // const decoding = isPlay || isNeighbour ? "sync" : "async";
     // const decoding = isNeighbour ? "sync" : "async";
@@ -287,6 +289,7 @@ const GridPhoto = React.memo(
             handleClick(event);
           }
         }, 500);
+        PerformanceUtil.storeImageCache(image.hash);
       }
     };
     const onMouseLeave = () => {
@@ -313,6 +316,7 @@ const GridPhoto = React.memo(
           width={photo.width}
           height={photo.height}
         >
+          {isShowToolbar ? <Toolbar /> : null}
           {isShowRatingAndTag && updateTag && updateRating ? (
             <Box
               onMouseEnter={onMouseEnter}
@@ -362,6 +366,7 @@ const GridPhoto = React.memo(
               {...imagePerformanceProps}
               alt={image.hash}
               id={`photo-image__${photo.key}`}
+              crossOrigin="anonymous"
               decoding="async"
               src={photo.src}
               style={createStyle()}

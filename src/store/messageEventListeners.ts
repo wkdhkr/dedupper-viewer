@@ -18,6 +18,8 @@ import ImageArrayUtil from "../utils/ImageArrayUtil";
 import actions from "../actions";
 import DedupperClient from "../services/dedupper/DedupperClient";
 
+let receivedIds: string[] = [];
+
 export default function(store: Store<State>) {
   const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 500);
   window.addEventListener(
@@ -36,6 +38,17 @@ export default function(store: Store<State>) {
       ) {
         log.trace(message, window.location.href);
       }
+      const isReceived = message.id ? receivedIds.includes(message.id) : false;
+      if (isReceived) {
+        return;
+      }
+      if (message.id) {
+        receivedIds.push(message.id);
+      }
+      if (receivedIds.length > 100) {
+        receivedIds = receivedIds.slice(-50);
+      }
+
       switch (message.type) {
         case "configuration":
           store.setState(
@@ -100,7 +113,9 @@ export default function(store: Store<State>) {
         }
         case "selected":
           if (UrlUtil.isInMainViewer() && IFrameUtil.isInIFrame()) {
-            PerformanceUtil.decodeImage(message.payload.hash);
+            if (!message.payload.cached) {
+              PerformanceUtil.decodeImage(message.payload.hash);
+            }
             const index = state.mainViewer.images
               .map((x) => x.hash)
               .indexOf(message.payload.hash);
@@ -185,6 +200,47 @@ export default function(store: Store<State>) {
               !state.gridViewer.showMainViewer
             ) {
               actions(store).selected(state, message.payload.hash);
+            }
+          }
+          break;
+        }
+        case "toolbarClicked": {
+          const { kind, isContextMenu } = message.payload;
+          if (
+            (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer()) &&
+            IFrameUtil.isInIFrame()
+          ) {
+            if (
+              !UrlUtil.isInline() ||
+              (UrlUtil.isInline() && !state.configuration.enableSubViewer)
+            ) {
+              const el = document.querySelector(
+                `.viewer-${kind}`
+              ) as HTMLLIElement | null;
+              if (el) {
+                if (isContextMenu) {
+                  const e = new MouseEvent("contextmenu", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                    buttons: 2,
+                  });
+                  el.dispatchEvent(e);
+                } else {
+                  const e = new MouseEvent("click", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                  });
+                  el.dispatchEvent(e);
+                  const pointerEvent = new PointerEvent("pointerup", {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window,
+                  });
+                  el.dispatchEvent(pointerEvent);
+                }
+              }
             }
           }
           break;

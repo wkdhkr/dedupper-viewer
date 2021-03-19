@@ -1,5 +1,4 @@
 import { MainViewer } from "../types/viewer";
-import UrlUtil from "./dedupper/UrlUtil";
 
 export default class DomUtil {
   static getViewerFooter = () =>
@@ -37,7 +36,7 @@ export default class DomUtil {
 
   static getCurrentHash = (event?: CustomEvent) => {
     const viewer = DomUtil.getViewer(event);
-    const hash = UrlUtil.extractHashParam(viewer.image.src);
+    const hash = viewer.image.alt;
     if (!hash) {
       throw new Error("hash not found.");
     }

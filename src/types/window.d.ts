@@ -42,10 +42,12 @@ export type IFrameMessageType =
   | "mainSubViewer"
   | "reload"
   | "loadImages"
+  | "toolbarClicked"
   | "applyTag";
 
 export type IFrameMessage = {
   type: IFrameMessageType;
   payload: any;
+  id?: string;
   fromUrl?: string;
 };

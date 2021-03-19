@@ -32,6 +32,7 @@ import { IFrameMessage } from "../types/window";
 import SortHelper from "../helpers/viewer/SortHelper";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import SqliteUtil from "../utils/dedupper/SqliteUtil";
+import PerformanceUtil from "../utils/PerformanceUtil";
 
 // let subWindowHandle: Window | null = null;
 
@@ -265,11 +266,18 @@ const actions = (store: Store<State>) => ({
     const isInRecommend = UrlUtil.isInRecommend();
     const type = isInRecommend ? "selectedRecommend" : "selected";
     SubViewerHelper.prepareReference().then(() => {
+      if (!PerformanceUtil.getImageCache(hash)) {
+        const img = document.getElementById(
+          `photo-image__${hash}`
+        ) as HTMLImageElement;
+        PerformanceUtil.storeImageCache(hash, img);
+      }
       IFrameUtil.postMessageForOther({
         type,
         payload: {
           hash,
           index,
+          cached: true,
         },
       });
     });
@@ -469,6 +477,7 @@ const actions = (store: Store<State>) => ({
     store.setState(
       produce(state, (draft) => {
         draft.configuration = { ...draft.configuration, ...configurationState };
+        PerformanceUtil.flushImageCache();
         localStorage.setItem(
           "_dedupper_viewer_configuration",
           JSON.stringify(draft.configuration)
@@ -840,7 +849,8 @@ const actions = (store: Store<State>) => ({
     */
     const cacheKey = timestamp + (rating ? "r" : "n");
     const sourceImages: DedupperImage[] =
-      state.imagesCache[cacheKey] || (await dc.query(sql));
+      state.imagesCache[cacheKey] ||
+      (await dc.query(sql, true, true, "loadTimeImages"));
     images = sourceImages
       /*
       .filter((i) => {
