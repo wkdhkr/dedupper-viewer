@@ -13,6 +13,7 @@ const Toolbar: React.FunctionComponent<ToolbarProps> = () => {
     kind: string,
     isContextMenu = false
   ) => {
+    e.preventDefault();
     await SubViewerHelper.prepareReference();
     IFrameUtil.postMessageForOther({
       type: "toolbarClicked",
