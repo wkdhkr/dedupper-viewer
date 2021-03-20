@@ -209,7 +209,7 @@ export function initImageExpand(this: any, done: any) {
   const _this2 = this;
 
   const { options } = this;
-  const { image } = this;
+  const { image } = this as { image: HTMLImageElement };
   const { viewerData } = this;
   // const footerHeight = this.footer.offsetHeight;
   const footerHeight = 0;
@@ -228,7 +228,7 @@ export function initImageExpand(this: any, done: any) {
     this.options,
     (naturalWidth: number, naturalHeight: number) => {
       const state = store.getState();
-      const hash = UrlUtil.extractHashParam(image.src);
+      const { hash } = image.dataset;
       const dedupperImage = state.mainViewer.images.find(
         (i) => i.hash === hash
       );

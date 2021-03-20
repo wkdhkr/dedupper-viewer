@@ -87,6 +87,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
 
     const options: Viewer.Options & { focus: boolean } = {
       inheritedAttributes: [
+        "data-hash",
         "crossOrigin",
         "decoding",
         "isMap",

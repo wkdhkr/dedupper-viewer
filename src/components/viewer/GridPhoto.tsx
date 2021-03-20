@@ -241,7 +241,8 @@ const GridPhoto = React.memo(
     const isShowRatingAndTag = Boolean(isNeighbour && !isPlay && isBigArea);
     // const isVirtual = !(Math.abs(currentIndex - index) < unit * unit * 4);
     const isVirtual = false;
-    const isShowToolbar = photo.width > 250 && isSelected;
+    const isShowToolbar =
+      photo.width > 250 && isSelected && !UrlUtil.isInThumbSlider();
 
     // const decoding = isPlay || isNeighbour ? "sync" : "async";
     // const decoding = isNeighbour ? "sync" : "async";
