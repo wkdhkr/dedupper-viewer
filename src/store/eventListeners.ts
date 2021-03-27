@@ -207,7 +207,7 @@ export default function(store: Store<State>) {
       }
       const viewer = DomUtil.getViewer();
       const filter = ColorUtil.createFilter(viewer.imageData);
-      if (filter) {
+      if (filter && viewer.image) {
         viewer.image.style.filter = filter;
       }
       if (!UrlUtil.isInSingleViewer()) {
@@ -392,7 +392,9 @@ export default function(store: Store<State>) {
       ) {
         // reset button clicked
         actions(store).updateTrim(store.getState(), hash, "");
-        viewer.image.style.filter = "";
+        if (viewer.image) {
+          viewer.image.style.filter = "";
+        }
       }
       [
         "viewer-rotate-left",

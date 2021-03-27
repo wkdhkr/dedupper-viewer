@@ -14,6 +14,9 @@ export default class CanvasUtil {
     if (!CanvasUtil.isPreparedImage(img)) {
       return null;
     }
+    if (img.naturalWidth > 5000 || img.naturalHeight > 5000) {
+      return null;
+    }
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth;
     canvas.height = img.naturalHeight;

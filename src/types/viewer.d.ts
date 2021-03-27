@@ -29,7 +29,7 @@ export type MainViewer = Viewer & {
   options: Viewer.Options;
   index: number;
   items: HTMLLIElement[];
-  image: HTMLImageElement;
+  image: HTMLImageElement | null;
   imageData: ImageData;
   initialImageData: ImageData;
 };

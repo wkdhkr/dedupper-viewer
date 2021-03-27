@@ -306,7 +306,37 @@ const GridPhoto = React.memo(
 
     const sizeFactor = 1.25;
     return (
-      <Box id={`photo-container__${photo.key}`} key={photo.key}>
+      <Box
+        id={`photo-container__${photo.key}`}
+        key={photo.key}
+        onMouseUp={(e: React.MouseEvent) => {
+          if (e.button !== 0) {
+            return;
+          }
+          const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
+          if (flags) {
+            if (flags.isLeftBottomMove) {
+              setTimeout(() => gs.applyTagForImagesInScreen(), 100);
+            } else if (flags.isLeftTopMove) {
+              //
+            }
+          } else {
+            const rating = GestureUtil.detectRating(e, gestureInfo);
+            if (gestureInfo.image && rating !== null) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (updateRating) {
+                updateRating(gestureInfo.image.hash, rating, false);
+              }
+            }
+          }
+          if (setGestureInfo) {
+            setTimeout(() => {
+              setGestureInfo({ x: -1, y: -1, image: null });
+            });
+          }
+        }}
+      >
         <Box
           overflow="hidden"
           style={{
@@ -366,33 +396,6 @@ const GridPhoto = React.memo(
               decoding="async"
               src={photo.src}
               style={createStyle()}
-              onMouseUp={(e: React.MouseEvent) => {
-                if (e.button !== 0) {
-                  return;
-                }
-                const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
-                if (flags) {
-                  if (flags.isLeftBottomMove) {
-                    setTimeout(() => gs.applyTagForImagesInScreen(), 100);
-                  } else if (flags.isLeftTopMove) {
-                    //
-                  }
-                } else {
-                  const rating = GestureUtil.detectRating(e, gestureInfo);
-                  if (gestureInfo.image && rating !== null) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (updateRating) {
-                      updateRating(gestureInfo.image.hash, rating, false);
-                    }
-                  }
-                }
-                if (setGestureInfo) {
-                  setTimeout(() => {
-                    setGestureInfo({ x: -1, y: -1, image: null });
-                  });
-                }
-              }}
               onDragStart={(e: React.DragEvent) => e.preventDefault()}
               onClick={onClick ? handleClick : undefined}
               onWheel={handleWheel}

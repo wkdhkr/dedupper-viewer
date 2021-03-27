@@ -181,6 +181,9 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         } else {
           // for delay loading issue
           const viewer = DomUtil.getViewer();
+          if (!viewer.image) {
+            return;
+          }
           const url = new URL(viewer.image.src);
           const hash = url.searchParams.get("hash");
           if (hash && hash !== images[0].hash) {

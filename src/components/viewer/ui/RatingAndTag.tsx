@@ -3,7 +3,7 @@ import * as colors from "@material-ui/core/colors";
 import { Box, Tooltip } from "@material-ui/core";
 import Rating from "@material-ui/lab/Rating";
 import { withStyles } from "@material-ui/core/styles";
-import { Delete, DeleteForever, Label } from "@material-ui/icons";
+import { DeleteForever, Label } from "@material-ui/icons";
 import { DedupperImage } from "../../../types/unistore";
 import { TAGS } from "../../../constants/dedupperConstants";
 

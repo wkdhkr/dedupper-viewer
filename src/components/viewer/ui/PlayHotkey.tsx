@@ -15,7 +15,7 @@ const PlayHotkey: React.FunctionComponent<Props> = ({ togglePlay }) => {
         event.preventDefault();
       }}
       */
-      onKeyUp={(keyName: string, event: KeyboardEvent) => {
+      onKeyUp={() => {
         togglePlay();
       }}
     />
