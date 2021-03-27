@@ -177,6 +177,8 @@ export interface ThumbSliderState {
 }
 
 export interface ConfigurationState {
+  showLeftRatingAndTags: boolean;
+  showRightRatingAndTags: boolean;
   thumbWidthForPortrait: number;
   thumbWidthForLandscape: number;
   lockInlineViewer: boolean;

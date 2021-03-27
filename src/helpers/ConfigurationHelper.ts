@@ -7,6 +7,8 @@ const defaultDomain = `${window.location.hostname.replace(
 
 export default class ConfigurationHelper {
   static getInitialState = (): ConfigurationState => ({
+    showLeftRatingAndTags: true,
+    showRightRatingAndTags: true,
     thumbWidthForPortrait: 198,
     thumbWidthForLandscape: 240,
     lockInlineViewer: false,

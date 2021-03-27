@@ -164,6 +164,29 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = R
                   {IFrameUtil.isInIFrame() ? (
                     <>
                       <h2>Viewer</h2>
+                      <h3>Rating and tags UI visibility</h3>
+                      <SwitchItem
+                        onChange={(e, value) =>
+                          setDraftConfig({
+                            ...draftConfig,
+                            showLeftRatingAndTags: value,
+                          })
+                        }
+                        name="showLeftRatingAndTags"
+                        label="Left"
+                        value={draftConfig.showLeftRatingAndTags}
+                      />
+                      <SwitchItem
+                        onChange={(e, value) =>
+                          setDraftConfig({
+                            ...draftConfig,
+                            showRightRatingAndTags: value,
+                          })
+                        }
+                        name="showRightRatingAndTags"
+                        label="Right"
+                        value={draftConfig.showRightRatingAndTags}
+                      />
                       <SliderItem
                         reset={reset}
                         title="thumbnail width for portrait image"

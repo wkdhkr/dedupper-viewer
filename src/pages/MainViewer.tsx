@@ -203,28 +203,32 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
       <Box className="viewer-main-container">
         {!isPlay && (
           <>
-            <Box
-              onContextMenu={handleContextMenu}
-              onWheel={onWheelInRatingAndTag}
-              style={{ opacity: 0.7 }}
-              position="fixed"
-              zIndex="1355"
-              m={2}
-              right={0}
-              bottom={40}
-            >
-              {ratingAndTag}
-            </Box>
-            <Box
-              onContextMenu={handleContextMenu}
-              onWheel={onWheelInRatingAndTag}
-              style={{ opacity: 0.7 }}
-              position="fixed"
-              zIndex="1355"
-              m={2}
-            >
-              {ratingAndTag}
-            </Box>
+            {c.showRightRatingAndTags ? (
+              <Box
+                onContextMenu={handleContextMenu}
+                onWheel={onWheelInRatingAndTag}
+                style={{ opacity: 0.5 }}
+                position="fixed"
+                zIndex="1355"
+                m={2}
+                right={0}
+                bottom={40}
+              >
+                {ratingAndTag}
+              </Box>
+            ) : null}
+            {c.showLeftRatingAndTags ? (
+              <Box
+                onContextMenu={handleContextMenu}
+                onWheel={onWheelInRatingAndTag}
+                style={{ opacity: 0.5 }}
+                position="fixed"
+                zIndex="1355"
+                m={2}
+              >
+                {ratingAndTag}
+              </Box>
+            ) : null}
             <Box
               onContextMenu={handleContextMenu}
               position="fixed"
@@ -232,7 +236,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
               m={2}
               width={200}
               right={0}
-              bottom={40 + 148}
+              bottom={40 + (c.showRightRatingAndTags ? 148 : 0)}
             >
               <ColorTuner
                 reset={colorReset}

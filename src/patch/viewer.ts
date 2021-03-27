@@ -211,10 +211,10 @@ function isUndefined(value: any) {
 
 const isFit = (imageData: ImageData, isPortraitImage: boolean) => {
   const isFitVertical =
-    Math.floor(imageData.naturalHeight * imageData.ratio) ===
+    Math.round(imageData.naturalHeight * imageData.ratio) ===
     window.innerHeight;
   const isFitHorizontal =
-    Math.floor(imageData.naturalWidth * imageData.ratio) === window.innerWidth;
+    Math.round(imageData.naturalWidth * imageData.ratio) === window.innerWidth;
   if (isPortraitImage) {
     return isFitVertical;
   }
