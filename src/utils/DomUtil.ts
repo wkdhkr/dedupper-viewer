@@ -36,7 +36,7 @@ export default class DomUtil {
 
   static getCurrentHash = (event?: CustomEvent) => {
     const viewer = DomUtil.getViewer(event);
-    const hash = viewer.image.alt;
+    const hash = viewer.image?.alt;
     if (!hash) {
       throw new Error("hash not found.");
     }
