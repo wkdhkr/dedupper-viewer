@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Slider, Box, Typography, Paper } from "@material-ui/core";
 import debounce from "lodash/debounce";
 import { DedupperImage } from "../../../types/unistore";
+import TrimUtil from "../../../utils/dedupper/TrimUtil";
 
 type ColorTunerProps = {
   reset: number;
@@ -25,6 +26,12 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
       1000
     );
 
+  const imageData = TrimUtil.detectTrim(image);
+  const hue = imageData?.hue || 0;
+  const contrast = imageData?.contrast || 100;
+  const saturate = imageData?.saturate || 100;
+  const brightness = imageData?.brightness || 100;
+
   return (
     <Box
       onMouseEnter={() => setIsHover(true)}
@@ -41,7 +48,7 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
               key={reset}
               onChange={createHandleChange("hue")}
               valueLabelDisplay="auto"
-              defaultValue={0}
+              defaultValue={hue}
               step={1}
               min={0}
               max={360}
@@ -53,7 +60,7 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
               key={reset}
               onChange={createHandleChange("contrast")}
               valueLabelDisplay="auto"
-              defaultValue={100}
+              defaultValue={contrast}
               step={1}
               min={0}
               max={200}
@@ -65,7 +72,7 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
               key={reset}
               onChange={createHandleChange("saturate")}
               valueLabelDisplay="auto"
-              defaultValue={100}
+              defaultValue={saturate}
               step={1}
               min={0}
               max={200}
@@ -77,7 +84,7 @@ const ColorTuner: React.FunctionComponent<ColorTunerProps> = ({
               key={reset}
               onChange={createHandleChange("brightness")}
               valueLabelDisplay="auto"
-              defaultValue={100}
+              defaultValue={brightness}
               step={1}
               min={0}
               max={200}

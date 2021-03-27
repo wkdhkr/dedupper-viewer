@@ -1,5 +1,13 @@
 .viewer-main-container .viewer-rating-container .MuiRating-root {
+  font-size: 2.5rem !important;
+}
+
+.viewer-main-container .viewer-tag-container .MuiRating-root {
   font-size: 3rem !important;
+}
+
+.react-photo-gallery--gallery .viewer-rating-container .MuiRating-root {
+  font-size: 1.25rem !important;
 }
 
 #viewer-data-table {

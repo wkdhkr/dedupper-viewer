@@ -31,6 +31,8 @@ import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
 import FullscreenHotkey from "../components/viewer/ui/FullscreenHotkey";
+import MouseEventUtil from "../utils/MouseEventUtil";
+import GestureTip from "../components/viewer/ui/GestureTip";
 
 const gs = new GridViewerService(store);
 
@@ -165,6 +167,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
 
   return (
     <>
+      <GestureTip gestureInfo={gestureInfo} />
       <AjaxProgress connectionCount={connectionCount} />
       <AutoReload
         disabled={!c.autoReload}

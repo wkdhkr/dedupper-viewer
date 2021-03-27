@@ -326,7 +326,7 @@ const GridPhoto = React.memo(
               onContextMenu={handleContextMenu}
               style={{
                 marginTop: "8px",
-                opacity: 0.4,
+                opacity: 0.7,
                 transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`,
               }}
               position="absolute"
@@ -370,12 +370,21 @@ const GridPhoto = React.memo(
                 if (e.button !== 0) {
                   return;
                 }
-                const rating = GestureUtil.detectRating(e, gestureInfo);
-                if (gestureInfo.image && rating !== null) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (updateRating) {
-                    updateRating(gestureInfo.image.hash, rating, false);
+                const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
+                if (flags) {
+                  if (flags.isLeftBottomMove) {
+                    setTimeout(() => gs.applyTagForImagesInScreen(), 100);
+                  } else if (flags.isLeftTopMove) {
+                    //
+                  }
+                } else {
+                  const rating = GestureUtil.detectRating(e, gestureInfo);
+                  if (gestureInfo.image && rating !== null) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (updateRating) {
+                      updateRating(gestureInfo.image.hash, rating, false);
+                    }
                   }
                 }
                 if (setGestureInfo) {

@@ -17,6 +17,7 @@ import GridViewerUtil from "../utils/GridViewerUtil";
 import ImageArrayUtil from "../utils/ImageArrayUtil";
 import actions from "../actions";
 import DedupperClient from "../services/dedupper/DedupperClient";
+import FullscreenUtil from "../utils/FullscreenUtil";
 
 let receivedIds: string[] = [];
 
@@ -51,7 +52,7 @@ export default function(store: Store<State>) {
 
       switch (message.type) {
         case "toggleFullscreen": {
-          WindowUtil.toggleFullscreen();
+          FullscreenUtil.toggleFullscreen();
           break;
         }
         case "configuration":

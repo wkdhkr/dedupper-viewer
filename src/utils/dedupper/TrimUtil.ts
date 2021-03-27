@@ -1,5 +1,4 @@
 import { isArray } from "lodash";
-import * as log from "loglevel";
 import {
   STANDARD_WIDTH,
   PORTRAIT_MAX_RATIO,

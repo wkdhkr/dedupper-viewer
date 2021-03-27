@@ -20,6 +20,7 @@ import PerformanceUtil from "../utils/PerformanceUtil";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import { IFrameMessageType } from "../types/window";
 import TrimUtil from "../utils/dedupper/TrimUtil";
+import WorkerUtil from "../utils/WorkerUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -120,6 +121,17 @@ export default function(store: Store<State>) {
     viewer.zoomTo(fixedImageData.ratio);
   };
 
+  const updateColor = (hash: string, value: number) => {
+    let fixedValue = value;
+    if (value > 360) {
+      fixedValue -= 360;
+    }
+    if (value < 0) {
+      fixedValue += 360;
+    }
+    actions(store).updateColor(store.getState(), hash, "hue", fixedValue);
+  };
+
   document.body.addEventListener(
     "contextmenu",
     function(event) {
@@ -131,8 +143,15 @@ export default function(store: Store<State>) {
       } catch (e) {
         return;
       }
-      if (isInClassNameEvent(event, "viewer-flip-horizontal")) {
-        event.preventDefault(); // TODO: at once
+      const currentHue = viewer.imageData.hue || 0;
+      if (isInClassNameEvent(event, "viewer-zoom-in")) {
+        event.preventDefault();
+        updateColor(hash, currentHue + 10);
+      } else if (isInClassNameEvent(event, "viewer-zoom-out")) {
+        event.preventDefault();
+        updateColor(hash, currentHue - 10);
+      } else if (isInClassNameEvent(event, "viewer-flip-horizontal")) {
+        event.preventDefault();
         setTimeout(() => {
           if (viewer && hash) {
             const left = TrimUtil.calcFitLeftPosition(viewer.imageData);
@@ -438,6 +457,10 @@ export default function(store: Store<State>) {
     changeScale.function();
   });
   */
+  window.addEventListener("beforunload", () => {
+    WorkerUtil.terminate();
+  });
+
   if (IFrameUtil.isInIFrame()) {
     /*
     window.addEventListener("resize", () => {

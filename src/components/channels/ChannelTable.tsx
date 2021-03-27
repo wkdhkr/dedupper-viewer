@@ -1,6 +1,6 @@
 import React, { forwardRef, Ref, useState } from "react";
 import MaterialTable, { Icons } from "material-table";
-import { Box, Container, Grid, Paper, SvgIcon } from "@material-ui/core";
+import { Box, Container, Grid, SvgIcon } from "@material-ui/core";
 import {
   AddBox,
   Slideshow,
@@ -31,6 +31,7 @@ import { DedupperChannel } from "../../types/unistore";
 import RouterUtil from "../../utils/RouterUtil";
 import { IFrameMessage } from "../../types/window";
 import FilterRadioButtons, { ChannelFilter } from "./FilterRadioButtons";
+import ViewerUtil from "../../utils/ViewerUtil";
 
 const getOrientationByName = (name: string) => {
   return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
@@ -118,7 +119,9 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
     setEdit,
     channels,
   }) => {
-    const [filter, setFilter] = useState<ChannelFilter>("none");
+    const [filter, setFilter] = useState<ChannelFilter>(
+      ViewerUtil.isPortrait() ? "portrait" : "landscape"
+    );
     return (
       <Container maxWidth="lg">
         <Grid container spacing={3}>

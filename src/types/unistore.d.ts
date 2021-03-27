@@ -110,6 +110,12 @@ export interface DedupperImage {
   t3: number | null;
   t4: number | null;
   t5: number | null;
+  t6: number | null;
+  t7: number | null;
+  t8: number | null;
+  t9: number | null;
+  t10: number | null;
+  t11: number | null;
   acd_id: string | null;
   to_path: string;
   view_date: number;

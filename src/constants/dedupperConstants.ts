@@ -18,4 +18,16 @@ export const EVENT_UPDATE_IMAGE = "EVENT_UPDATE_IMAGE";
 
 export const PORTRAIT_MAX_RATIO = 0.7;
 
-export const TAGS = ["t1", "t2", "t3", "t4", "t5"] as const;
+export const TAGS = [
+  "t1",
+  "t2",
+  "t3",
+  "t4",
+  "t5",
+  "t6",
+  "t7",
+  "t8",
+  "t9",
+  "t10",
+  "t11",
+] as const;

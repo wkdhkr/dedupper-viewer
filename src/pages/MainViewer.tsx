@@ -206,7 +206,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
             <Box
               onContextMenu={handleContextMenu}
               onWheel={onWheelInRatingAndTag}
-              style={{ opacity: 0.4 }}
+              style={{ opacity: 0.7 }}
               position="fixed"
               zIndex="1355"
               m={2}
@@ -218,7 +218,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
             <Box
               onContextMenu={handleContextMenu}
               onWheel={onWheelInRatingAndTag}
-              style={{ opacity: 0.4 }}
+              style={{ opacity: 0.7 }}
               position="fixed"
               zIndex="1355"
               m={2}
@@ -232,7 +232,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
               m={2}
               width={200}
               right={0}
-              bottom={40 + 104}
+              bottom={40 + 148}
             >
               <ColorTuner
                 reset={colorReset}
@@ -352,6 +352,21 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
     left = window.innerWidth - (isHover ? thumbWidth : minThumbWidth);
   }
 
+  useEffect(() => {
+    const onMouseout = (event: MouseEvent) => {
+      if (
+        event.clientY <= 0 ||
+        event.clientX <= 0 ||
+        event.clientX >= window.innerWidth ||
+        event.clientY >= window.innerHeight
+      ) {
+        setIsHover(false);
+      }
+    };
+    document.body.addEventListener("mouseleave", onMouseout);
+    return () => document.body.removeEventListener("mouseleave", onMouseout);
+  }, []);
+
   return (
     <>
       {IFrameUtil.isInIFrame() ? (
@@ -362,7 +377,7 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
             transition: "0.2s",
           }}
           onMouseOver={() => setIsHover(true)}
-          onMouseOut={() => setIsHover(false)}
+          onMouseLeave={() => setIsHover(false)}
           zIndex={props.zIndex ? props.zIndex : "auto"}
           position="fixed"
           top={top}

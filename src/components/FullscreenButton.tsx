@@ -2,8 +2,8 @@ import { Box, Fab } from "@material-ui/core";
 import { Fullscreen, FullscreenExit } from "@material-ui/icons";
 import React, { useState } from "react";
 import useWindowSize from "../hooks/windowSize";
+import FullscreenUtil from "../utils/FullscreenUtil";
 import IFrameUtil from "../utils/IFrameUtil";
-import WindowUtil from "../utils/WindowUtil";
 
 type FullscreenButtonProps = {};
 
@@ -38,7 +38,7 @@ const FullscreenButton: React.FunctionComponent<FullscreenButtonProps> = React.m
           size="small"
           onClick={() => {
             setIsHover(false);
-            WindowUtil.toggleFullscreen();
+            FullscreenUtil.toggleFullscreen();
           }}
           color="secondary"
         >

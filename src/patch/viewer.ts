@@ -3,6 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import store from "../store";
+import { ImageData, MainViewer } from "../types/viewer";
 import ViewerUtil from "../utils/ViewerUtil";
 
 const { isNaN } = Number;
@@ -202,6 +203,108 @@ export function initImage(this: any, done: any) {
       }
     }
   );
+}
+
+function isUndefined(value: any) {
+  return typeof value === "undefined";
+}
+
+const isFit = (imageData: ImageData, isPortraitImage: boolean) => {
+  const isFitVertical =
+    Math.floor(imageData.naturalHeight * imageData.ratio) ===
+    window.innerHeight;
+  const isFitHorizontal =
+    Math.floor(imageData.naturalWidth * imageData.ratio) === window.innerWidth;
+  if (isPortraitImage) {
+    return isFitVertical;
+  }
+  return isFitHorizontal;
+};
+
+const isFitHorizontal = (imageData: ImageData, isPortraitImage: boolean) => {
+  return (
+    imageData.left === 0 &&
+    !isPortraitImage &&
+    imageData.rotate === 0 &&
+    isFit(imageData, isPortraitImage)
+  );
+};
+
+const isFitVertical = (imageData: ImageData, isPortraitImage: boolean) => {
+  return (
+    imageData.top === 0 &&
+    isPortraitImage &&
+    imageData.rotate === 0 &&
+    isFit(imageData, isPortraitImage)
+  );
+};
+
+const getX = (imageData: ImageData, x: number, isPortraitImage: boolean) => {
+  if (
+    Math.floor(imageData.left) === 0 &&
+    !isPortraitImage &&
+    imageData.rotate === 0 &&
+    isFit(imageData, isPortraitImage)
+  ) {
+    return 0;
+  }
+  if (isFitVertical(imageData, isPortraitImage)) {
+    const left = imageData.left + x;
+    const maxOffset = -(
+      imageData.naturalWidth * imageData.ratio -
+      window.innerWidth
+    );
+    if (left > 0) {
+      return -imageData.left;
+    }
+    if (left < maxOffset) {
+      return maxOffset - imageData.left;
+    }
+  }
+  return x;
+};
+
+const getY = (imageData: ImageData, y: number, isPortraitImage: boolean) => {
+  if (
+    Math.floor(imageData.top) === 0 &&
+    isPortraitImage &&
+    imageData.rotate === 0 &&
+    isFit(imageData, isPortraitImage)
+  ) {
+    return 0;
+  }
+  if (isFitHorizontal(imageData, isPortraitImage)) {
+    const top = imageData.top + y;
+    const maxOffset = -(
+      imageData.naturalHeight * imageData.ratio -
+      window.innerHeight
+    );
+    if (top > 0) {
+      return -imageData.top;
+    }
+    if (top < maxOffset) {
+      return maxOffset - imageData.top;
+    }
+  }
+  return y;
+};
+
+export function move(this: MainViewer, x: any) {
+  const isPortraitImage = ViewerUtil.isPortraitImage();
+  const self = this;
+  const y =
+    // eslint-disable-next-line prefer-rest-params
+    arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : x;
+  const { imageData } = self;
+  self.moveTo(
+    isUndefined(x)
+      ? x
+      : (imageData.x || 0) + getX(imageData, Number(x), isPortraitImage),
+    isUndefined(y)
+      ? y
+      : (imageData.y || 0) + getY(imageData, Number(y), isPortraitImage)
+  );
+  return self;
 }
 
 export function initImageExpand(this: any, done: any) {

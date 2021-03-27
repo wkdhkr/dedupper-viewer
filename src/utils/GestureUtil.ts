@@ -1,6 +1,47 @@
 import { GestureInfo } from "../types/unistore";
 
 export default class GestureUtil {
+  static detectDiagonalFlags = (
+    e: React.MouseEvent | MouseEvent,
+    gestureInfo: GestureInfo
+  ) => {
+    const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;
+    const hash = gestureImage?.hash;
+    if (!hash) {
+      return null;
+    }
+    const moveX = e.clientX - prevX;
+    const moveY = e.clientY - prevY;
+    const isMoveHorizontal = Math.abs(moveX) > 40;
+    const isMoveVertical = Math.abs(moveY) > 40;
+    const isPositiveHorizontal = moveX > 0;
+    const isPositiveVertical = moveY > 0;
+
+    const isLeftMove = !isPositiveHorizontal && isMoveHorizontal;
+    const isRightMove = isPositiveHorizontal && isMoveHorizontal;
+    const isTopMove = !isPositiveVertical && isMoveVertical;
+    const isBottomMove = isPositiveVertical && isMoveVertical;
+
+    const isLeftTopMove = isLeftMove && isTopMove;
+    const isLeftBottomMove = isLeftMove && isBottomMove;
+    const isRightTopMove = isRightMove && isTopMove;
+    const isRightBottomMove = isRightMove && isBottomMove;
+
+    if (
+      [isLeftTopMove, isLeftBottomMove, isRightTopMove, isRightBottomMove].some(
+        Boolean
+      )
+    ) {
+      return {
+        isLeftTopMove,
+        isLeftBottomMove,
+        isRightTopMove,
+        isRightBottomMove,
+      };
+    }
+    return null;
+  };
+
   static detectRating = (
     e: React.MouseEvent | MouseEvent,
     gestureInfo: GestureInfo

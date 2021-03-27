@@ -2,7 +2,7 @@ import Viewer from "viewerjs";
 import React, { PureComponent } from "react";
 
 import "viewerjs/dist/viewer.min.css";
-import { initImageExpand } from "../../patch/viewer";
+import { initImageExpand, move } from "../../patch/viewer";
 import { DedupperImage } from "../../types/unistore";
 import UrlUtil from "../../utils/dedupper/UrlUtil";
 import DomUtil from "../../utils/DomUtil";
@@ -231,6 +231,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       options
     );
     (viewer as any).initImage = initImageExpand;
+    (viewer as any).move = move;
     viewer.view(0);
     this.viewer = viewer;
   };
