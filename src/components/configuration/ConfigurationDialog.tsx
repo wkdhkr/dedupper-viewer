@@ -81,6 +81,10 @@ const ConfigurationDialog: React.FunctionComponent<ConfigurationDialogProps> = R
         value: "space,d",
       },
       {
+        name: "toggle Fullscreen",
+        value: "m",
+      },
+      {
         name: "Change grid count",
         value: "g",
       },

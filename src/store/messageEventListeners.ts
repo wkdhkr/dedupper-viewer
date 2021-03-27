@@ -22,7 +22,7 @@ import FullscreenUtil from "../utils/FullscreenUtil";
 let receivedIds: string[] = [];
 
 export default function(store: Store<State>) {
-  const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 2000);
+  const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 3000);
   window.addEventListener(
     "message",
     async (event: any) => {

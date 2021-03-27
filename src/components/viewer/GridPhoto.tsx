@@ -326,7 +326,7 @@ const GridPhoto = React.memo(
               onContextMenu={handleContextMenu}
               style={{
                 marginTop: "8px",
-                opacity: 0.7,
+                opacity: 0.6,
                 transform: `scale3d(${sizeFactor}, ${sizeFactor}, 1)`,
               }}
               position="absolute"
