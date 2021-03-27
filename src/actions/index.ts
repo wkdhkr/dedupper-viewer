@@ -96,7 +96,9 @@ const actions = (store: Store<State>) => ({
 
     actions(store).updateTrim(state, hash, JSON.stringify(trimObj));
     viewer.imageData = trimObj;
-    viewer.image.style.filter = ColorUtil.createFilter(trimObj);
+    if (viewer.image) {
+      viewer.image.style.filter = ColorUtil.createFilter(trimObj);
+    }
   },
   async createChannel(state: State, channel: DedupperChannel) {
     const newChannel = await dc.createChannel(channel);
