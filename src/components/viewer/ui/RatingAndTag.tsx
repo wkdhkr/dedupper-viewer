@@ -5,6 +5,7 @@ import Rating from "@material-ui/lab/Rating";
 import { withStyles } from "@material-ui/core/styles";
 import { Delete, Label } from "@material-ui/icons";
 import { DedupperImage } from "../../../types/unistore";
+import { TAGS } from "../../../constants/dedupperConstants";
 
 const getColor = (name: string, isHover = false) => {
   let color = null;
@@ -39,9 +40,7 @@ const getLabelRating = (name: string) =>
     },
   })(Rating);
 
-const labelRatingList = ["t1", "t2", "t3", "t4", "t5"].map((name) =>
-  getLabelRating(name)
-);
+const labelRatingList = TAGS.map((name) => getLabelRating(name));
 
 interface RatingAndTagProps {
   next?: boolean;
@@ -103,6 +102,18 @@ const RatingAndTag: React.FunctionComponent<RatingAndTagProps> = React.memo(
     }
 
     return <></>;
+  },
+  (p, n) => {
+    const { currentImage: pi } = p;
+    const { currentImage: ni } = n;
+    if (pi && ni) {
+      if (pi.hash === ni.hash && pi.rating === ni.rating) {
+        if (TAGS.every((t) => pi[t] === ni[t])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 );
 

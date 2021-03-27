@@ -17,3 +17,5 @@ export const EVENT_R_KEY = "EVENT_R_KEY";
 export const EVENT_UPDATE_IMAGE = "EVENT_UPDATE_IMAGE";
 
 export const PORTRAIT_MAX_RATIO = 0.7;
+
+export const TAGS = ["t1", "t2", "t3", "t4", "t5"] as const;

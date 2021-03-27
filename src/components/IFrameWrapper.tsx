@@ -3,6 +3,7 @@ import IFrame from "react-iframe";
 import { Box } from "@material-ui/core";
 import IFrameUtil from "../utils/IFrameUtil";
 import ViewerUtil from "../utils/ViewerUtil";
+import UrlUtil from "../utils/dedupper/UrlUtil";
 
 const getHeight = () =>
   window.innerHeight ||
@@ -14,7 +15,7 @@ const getWidth = () =>
   document.documentElement.clientWidth ||
   document.body.clientWidth;
 
-function useCurrentWitdhHeight() {
+function useCurrentWidthHeight() {
   // save current window width in the state object
   const [width, setWidth] = useState(getWidth());
   const [height, setHeight] = useState(getHeight());
@@ -77,7 +78,7 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
     children,
     origin,
   }) => {
-    let [w, h] = useCurrentWitdhHeight();
+    let [w, h] = useCurrentWidthHeight();
     if (IFrameUtil.isInIFrame()) {
       return children;
     }
@@ -90,7 +91,7 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
       h = fixedHeight;
     }
     const iframeUrl = new URL(url || window.location.href);
-    iframeUrl.hostname = new URL(origin).hostname; // TODO: configuration
+    iframeUrl.hostname = new URL(origin).hostname;
     return (
       <Box
         position="absolute"
@@ -118,6 +119,7 @@ const IFrameWrapper: React.FunctionComponent<IFrameWrapperProps> = React.memo(
   },
   (p, n) => {
     if (
+      UrlUtil.extractOrientation(p.url) !== UrlUtil.extractOrientation(n.url) ||
       p.forceTop !== n.forceTop ||
       p.forceLeft !== n.forceLeft ||
       p.forceWidth !== n.forceWidth ||

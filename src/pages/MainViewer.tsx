@@ -4,7 +4,7 @@ import IFrame from "react-iframe";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
 
 import Slide from "@material-ui/core/Slide";
-import { RouteComponentProps } from "@reach/router";
+import { RouteComponentProps, useLocation } from "@reach/router";
 import "./MainViewer.css";
 
 import ReactHotkeys from "react-hot-keys";
@@ -32,6 +32,7 @@ import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import TrimRotationPreview from "../components/viewer/TrimRotationPreview";
+import FullscreenHotkey from "../components/viewer/ui/FullscreenHotkey";
 
 const reload = async () => {
   await SubViewerHelper.prepareReference();
@@ -270,6 +271,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
           />
         </Box>
         <PlayHotKey togglePlay={togglePlay} />
+        <FullscreenHotkey />
         <ReactHotkeys keyName="x" onKeyUp={() => applyTag()} />
         <ReactHotkeys keyName="r" onKeyUp={() => reload()} />
         <RatingAndTagHotkey
@@ -328,7 +330,7 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
     props.configuration.standardWidth,
     props.configuration.standardHeight
   );
-  // const isVertical = thumbHeight > thumbWidth;
+  const isThumbVertical = thumbHeight > thumbWidth;
   const isVertical = UrlUtil.isPortrait();
   const orientation = UrlUtil.extractOrientation();
   const origin = props.configuration.iframeOrigin;
@@ -345,6 +347,9 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
   let left = isVertical ? window.innerWidth - minThumbWidth : 0;
   if (isHover) {
     left = isVertical ? window.innerWidth - thumbWidth : 0;
+  }
+  if (isThumbVertical && left === 0) {
+    left = window.innerWidth - (isHover ? thumbWidth : minThumbWidth);
   }
 
   return (
@@ -380,6 +385,25 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
 };
 
 const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
+  useLocation();
+  const orientation = UrlUtil.extractOrientation();
+  useEffect(() => {
+    if (!IFrameUtil.isInIFrame()) {
+      const el = document.getElementById(
+        "main-viewer-iframe"
+      ) as HTMLIFrameElement | null;
+      if (el) {
+        const frameOrientation = UrlUtil.extractOrientation(el.src);
+        if (
+          orientation &&
+          frameOrientation &&
+          orientation !== frameOrientation
+        ) {
+          window.location.reload();
+        }
+      }
+    }
+  }, [orientation]);
   const isInSingleViewer = UrlUtil.isInSingleViewer();
   return (
     <>
@@ -404,6 +428,7 @@ const MainViewerWrapped: React.FunctionComponent<MainViewerProps> = (props) => {
         standardWidth={props.configuration.standardWidth}
         id="main-viewer-iframe"
         origin={props.configuration.iframeOrigin}
+        url={window.location.href}
       >
         <MainViewer
           // eslint-disable-next-line react/jsx-props-no-spreading

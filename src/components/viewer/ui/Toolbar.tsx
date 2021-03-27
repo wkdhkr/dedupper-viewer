@@ -7,7 +7,7 @@ import IFrameUtil from "../../../utils/IFrameUtil";
 
 type ToolbarProps = {};
 
-const Toolbar: React.FunctionComponent<ToolbarProps> = () => {
+const Toolbar: React.FunctionComponent<ToolbarProps> = React.memo(() => {
   const handleClick = async (
     e: React.MouseEvent,
     kind: string,
@@ -89,6 +89,6 @@ const Toolbar: React.FunctionComponent<ToolbarProps> = () => {
       </div>
     </div>
   );
-};
+});
 
 export default Toolbar;

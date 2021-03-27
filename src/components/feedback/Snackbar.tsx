@@ -28,6 +28,7 @@ const Snackbar: React.FunctionComponent<SnackbarProps> = ({
       "The tag has been updated.",
       {
         variant: "success",
+        disableWindowBlurListener: true,
         autoHideDuration: 3000,
         anchorOrigin,
       },
@@ -36,6 +37,7 @@ const Snackbar: React.FunctionComponent<SnackbarProps> = ({
       "The rating has been updated.",
       {
         variant: "success",
+        disableWindowBlurListener: true,
         autoHideDuration: 3000,
         anchorOrigin,
       },
@@ -44,6 +46,7 @@ const Snackbar: React.FunctionComponent<SnackbarProps> = ({
       "The layout has been updated.",
       {
         variant: "success",
+        disableWindowBlurListener: true,
         autoHideDuration: 3000,
         anchorOrigin,
       },

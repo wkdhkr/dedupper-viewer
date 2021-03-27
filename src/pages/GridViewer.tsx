@@ -30,6 +30,7 @@ import FullscreenButton from "../components/FullscreenButton";
 import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import AjaxProgress from "../components/viewer/ui/AjaxProgress";
 import { MainViewer, MainViewerProps, ThumbSliderIFrame } from "./MainViewer";
+import FullscreenHotkey from "../components/viewer/ui/FullscreenHotkey";
 
 const gs = new GridViewerService(store);
 
@@ -184,6 +185,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
       ) : (
         <>
           <PlayHotKey togglePlay={togglePlay} />
+          <FullscreenHotkey />
           <RatingAndTagHotkey
             updateTag={updateTag}
             updateRating={updateRating}

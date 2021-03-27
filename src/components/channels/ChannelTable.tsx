@@ -1,6 +1,6 @@
-import React, { forwardRef, Ref } from "react";
+import React, { forwardRef, Ref, useState } from "react";
 import MaterialTable, { Icons } from "material-table";
-import { Container, SvgIcon } from "@material-ui/core";
+import { Box, Container, Grid, Paper, SvgIcon } from "@material-ui/core";
 import {
   AddBox,
   Slideshow,
@@ -30,6 +30,7 @@ import { DedupperChannel } from "../../types/unistore";
 // import SubViewerHelper from "../../helpers/viewer/SubViewerHelper";
 import RouterUtil from "../../utils/RouterUtil";
 import { IFrameMessage } from "../../types/window";
+import FilterRadioButtons, { ChannelFilter } from "./FilterRadioButtons";
 
 const getOrientationByName = (name: string) => {
   return name.toLowerCase().includes("portrait") ? "portrait" : "landscape";
@@ -117,9 +118,22 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
     setEdit,
     channels,
   }) => {
+    const [filter, setFilter] = useState<ChannelFilter>("none");
     return (
       <Container maxWidth="lg">
-        <h2>Channels</h2>
+        <Grid container spacing={3}>
+          <Grid item xs={6}>
+            <h2>Channels</h2>
+          </Grid>
+          <Grid item xs={6}>
+            <Box textAlign="right" m={2}>
+              <FilterRadioButtons
+                onChange={(v) => setFilter(v)}
+                value={filter}
+              />
+            </Box>
+          </Grid>
+        </Grid>
         <MaterialTable
           icons={tableIcons}
           columns={[
@@ -130,6 +144,17 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
           ]}
           data={
             channels
+              .filter((c) => {
+                const isLandscape = c.name.includes("Landscape");
+                const isPortrait = c.name.includes("Portrait");
+                if (filter === "landscape") {
+                  return isLandscape;
+                }
+                if (filter === "portrait") {
+                  return isPortrait;
+                }
+                return true;
+              })
               .map((c) => ({ ...c }))
               .sort((a, b) => (a.name > b.name ? 1 : -1)) as DedupperChannel[]
           }
@@ -188,7 +213,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?play=1&o=${o}`;
-                  launchViewer(url);
+                  launchViewer(url, enableSubViewer);
                 }),
             },
             {
@@ -198,7 +223,7 @@ const ChannelTable: React.FunctionComponent<ChannelTableProps> = React.memo(
                 (Array.isArray(rowData) ? rowData : [rowData]).forEach((r) => {
                   const o = getOrientationByName(r.name);
                   const url = `/channel/${r.id}?o=${o}`;
-                  launchViewer(url);
+                  launchViewer(url, enableSubViewer);
                 }),
             },
             {

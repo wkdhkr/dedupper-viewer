@@ -32,6 +32,7 @@ export type IFrameMessageType =
   | "forSubViewer"
   | "customEvent"
   | "superReload"
+  | "reload"
   | "navigate"
   | "navigateSubViewer"
   | "navigateParent"
@@ -43,6 +44,7 @@ export type IFrameMessageType =
   | "reload"
   | "loadImages"
   | "toolbarClicked"
+  | "toggleFullscreen"
   | "applyTag";
 
 export type IFrameMessage = {

@@ -21,7 +21,7 @@ import DedupperClient from "../services/dedupper/DedupperClient";
 let receivedIds: string[] = [];
 
 export default function(store: Store<State>) {
-  const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 500);
+  const debouncedLoadTimeImages = debounce(actions(store).loadTimeImages, 2000);
   window.addEventListener(
     "message",
     async (event: any) => {
@@ -50,6 +50,10 @@ export default function(store: Store<State>) {
       }
 
       switch (message.type) {
+        case "toggleFullscreen": {
+          WindowUtil.toggleFullscreen();
+          break;
+        }
         case "configuration":
           store.setState(
             produce(state, (draft) => {
@@ -435,6 +439,9 @@ export default function(store: Store<State>) {
           document.dispatchEvent(e);
           break;
         }
+        case "reload":
+          window.location.reload();
+          break;
         case "superReload":
           [
             document.getElementById("thumb-slider-iframe"),
@@ -513,6 +520,7 @@ export default function(store: Store<State>) {
                 }
               })
             );
+            const prevO = UrlUtil.extractOrientation();
             navigate(message.payload.path, { replace: true });
             if (IFrameUtil.isInIFrame()) {
               window.parent.postMessage(
@@ -522,6 +530,15 @@ export default function(store: Store<State>) {
                 },
                 "*"
               );
+              const nextO = UrlUtil.extractOrientation();
+              if (prevO && nextO && prevO !== nextO) {
+                window.parent.postMessage(
+                  {
+                    type: "reload",
+                  },
+                  "*"
+                );
+              }
             }
           }
           break;

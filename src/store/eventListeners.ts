@@ -476,5 +476,27 @@ export default function(store: Store<State>) {
         }
       }, 200)
     );
+  } else {
+    /*
+    window.addEventListener("popstate", (e) => {
+      if (!UrlUtil.isInSubViewer() || !e.state) {
+        return;
+      }
+      const orientation = UrlUtil.extractOrientation();
+      const el = document.getElementById(
+        "main-viewer-iframe"
+      ) as HTMLIFrameElement | null;
+      if (el) {
+        const frameOrientation = UrlUtil.extractOrientation(el.src);
+        if (
+          orientation &&
+          frameOrientation &&
+          orientation !== frameOrientation
+        ) {
+          window.location.reload();
+        }
+      }
+    });
+    */
   }
 }

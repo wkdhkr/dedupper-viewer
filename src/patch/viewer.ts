@@ -3,7 +3,6 @@
 /* eslint-disable no-underscore-dangle */
 
 import store from "../store";
-import UrlUtil from "../utils/dedupper/UrlUtil";
 import ViewerUtil from "../utils/ViewerUtil";
 
 const { isNaN } = Number;

@@ -250,7 +250,7 @@ const actions = (store: Store<State>) => ({
       actions(store).selected(store.getState(), nextHash, nextIndex, true);
     }
   },
-  selected(
+  async selected(
     state: State,
     hash: string | null,
     mayIndex: number | null = null,
@@ -265,13 +265,8 @@ const actions = (store: Store<State>) => ({
         : mayIndex;
     const isInRecommend = UrlUtil.isInRecommend();
     const type = isInRecommend ? "selectedRecommend" : "selected";
-    SubViewerHelper.prepareReference().then(() => {
-      if (!PerformanceUtil.getImageCache(hash)) {
-        const img = document.getElementById(
-          `photo-image__${hash}`
-        ) as HTMLImageElement;
-        PerformanceUtil.storeImageCache(hash, img);
-      }
+    await SubViewerHelper.prepareReference();
+    const postOther = () =>
       IFrameUtil.postMessageForOther({
         type,
         payload: {
@@ -280,7 +275,14 @@ const actions = (store: Store<State>) => ({
           cached: true,
         },
       });
-    });
+    if (!PerformanceUtil.getImageCache(hash)) {
+      const img = document.getElementById(
+        `photo-image__${hash}`
+      ) as HTMLImageElement;
+      PerformanceUtil.storeImageCache(hash, img).then(postOther);
+    } else {
+      postOther();
+    }
     if (isInRecommend && state.imageByHash[hash]) {
       let baseParamString = `recommended=1&mode=subviewer&parentHost=${window.location.hostname}`;
       const orientation = UrlUtil.extractParam("o");

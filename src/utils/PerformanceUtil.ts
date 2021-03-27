@@ -8,7 +8,7 @@ const decodeStatus: { [x: string]: boolean } = {};
 const imageCacheKey = "_dedupper_viewer_image_cache";
 
 export default class PerformanceUtil {
-  static storeImageCache = (
+  static storeImageCache = async (
     hash: string,
     source: HTMLImageElement | string | null = null
   ) => {
@@ -17,7 +17,11 @@ export default class PerformanceUtil {
         ? (document.getElementById(`photo-image__${hash}`) as HTMLImageElement)
         : source;
     if (s) {
-      const dataUrl = isString(s) ? s : CanvasUtil.convertToDataUrl(s);
+      // const dataUrl = isString(s) ? s : CanvasUtil.convertToDataUrl(s);
+      const dataUrl = isString(s)
+        ? s
+        : await CanvasUtil.convertToDataUrlAsync(s);
+      // await CanvasUtil.convertToDataUrl(s);
       if (dataUrl) {
         try {
           localStorage.setItem(imageCacheKey, [hash, dataUrl].join("\t"));

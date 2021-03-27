@@ -7,7 +7,6 @@ import omit from "lodash/omit";
 import { shallowEqual } from "shallow-equal-object";
 import { RenderImageProps } from "react-photo-gallery";
 import { Box } from "@material-ui/core";
-import { CheckCircle } from "@material-ui/icons";
 import store from "../../store";
 import ViewerUtil from "../../utils/ViewerUtil";
 import { STANDARD_WIDTH } from "../../constants/dedupperConstants";
@@ -21,6 +20,7 @@ import MouseEventUtil from "../../utils/MouseEventUtil";
 import GestureUtil from "../../utils/GestureUtil";
 import TrimUtil from "../../utils/dedupper/TrimUtil";
 import Toolbar from "./ui/Toolbar";
+import CurrentIcon from "./ui/CurrentIcon";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -342,12 +342,7 @@ const GridPhoto = React.memo(
             </Box>
           ) : null}
           {!isVirtual && isSelected ? (
-            <Box zIndex={1000} position="absolute" right="0px">
-              <CheckCircle
-                fontSize={unit < 7 ? "large" : "default"}
-                color="secondary"
-              />
-            </Box>
+            <CurrentIcon fontSize={unit < 7 ? "large" : "default"} />
           ) : null}
           {isVirtual ? (
             // eslint-disable-next-line jsx-a11y/no-static-element-interactions

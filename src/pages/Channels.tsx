@@ -22,7 +22,6 @@ import { useQueryString } from "../hooks/queryString";
 import SlideUp from "../transitions/SlideUp";
 import ChannelTable from "../components/channels/ChannelTable";
 import RouterUtil from "../utils/RouterUtil";
-// import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 
 const useStyles = makeStyles((theme) => ({
   root: {

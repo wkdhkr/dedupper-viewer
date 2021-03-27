@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import { v4 as uuidv4 } from "uuid";
 import * as log from "loglevel";
 import { IFrameMessage } from "../types/window";
 import UrlUtil from "./dedupper/UrlUtil";
@@ -21,7 +21,7 @@ export default class IFrameUtil {
 
   static postMessageForOther = (sourcePayload: IFrameMessage) => {
     const payload: IFrameMessage = {
-      id: uniqueId("message_"),
+      id: `message_${uuidv4()}`,
       ...sourcePayload,
     };
     if (UrlUtil.isInGridViewer()) {
