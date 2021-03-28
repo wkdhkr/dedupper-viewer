@@ -319,13 +319,13 @@ const GridPhoto = React.memo(
           const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
           if (flags) {
             if (flags.isLeftBottomMove) {
-              setTimeout(() => gs.applyTagForImagesInScreen(), 100);
+              setTimeout(() => gs.applyTagForImagesInScreen());
             } else if (flags.isLeftTopMove) {
               //
             } else if (flags.isRightBottomMove) {
               //
             } else if (flags.isRightTopMove) {
-              //
+              setTimeout(() => gs.applyTagForImagesInScreen());
             }
           } else {
             const rating = GestureUtil.detectRating(e, gestureInfo);
