@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { connect } from "unistore/react";
 import "./App.css";
 import { SnackbarProvider } from "notistack";
@@ -39,6 +39,7 @@ interface BaseAppProps {
   configuration: ConfigurationState;
   channels: DedupperChannel[];
   channelById: Dictionary<DedupperChannel>;
+  togglePlayUniversal: () => void;
   setGestureInfo: (x: GestureInfo) => void;
   updateRating: (hash: string, x: number | null) => void;
   updateColor: (hash: string, kind: string, value: number) => void;
@@ -54,9 +55,9 @@ interface BaseAppProps {
   createChannel: (c: DedupperChannel) => Promise<void>;
   changeUnit: (x: number) => void;
   changeSort: (x: SortKind, reverse: boolean) => void;
-  togglePlay: Function;
-  toggleGridPlay: Function;
-  loadChannels: Function;
+  togglePlay: () => void;
+  toggleGridPlay: () => void;
+  loadChannels: () => Promise<void>;
   toggleSubViewer: (close: boolean | null) => void;
   selected: (
     hash: string | null,
@@ -162,7 +163,7 @@ const App = connect<{}, {}, State, AppProps>(
               updateRating: props.updateRating,
               updateTag: props.updateTag,
               updateColor: props.updateColor,
-              togglePlay: () => {},
+              togglePlay: useCallback(() => {}, []),
               unload: props.unloadMainViewerImages,
               load: props.loadMainViewerImage,
             }}
@@ -204,13 +205,7 @@ const App = connect<{}, {}, State, AppProps>(
             configuration={props.configuration}
             updateConfiguration={props.updateConfiguration}
             loadChannels={props.loadChannels}
-            togglePlay={() => {
-              if (UrlUtil.isInMainViewer()) {
-                props.togglePlay();
-              } else {
-                props.toggleGridPlay();
-              }
-            }}
+            togglePlay={props.togglePlayUniversal}
             changeUnit={props.changeUnit}
             changeSort={props.changeSort}
             updateTag={props.updateTag}

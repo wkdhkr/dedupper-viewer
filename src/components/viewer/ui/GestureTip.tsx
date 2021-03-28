@@ -12,9 +12,10 @@ type GestureTipProps = {
 
 const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
   ({ gestureInfo, disabled }) => {
-    const [[gestureTip, x, y], setGestureTip] = useState<
+    const [gestureTipWithXy, setGestureTip] = useState<
       [string | null, number, number]
     >([null, 0, 0]);
+    const [gestureTip, x, y] = gestureTipWithXy;
 
     useEffect(() => {
       const onMouseout = (event: MouseEvent) => {
@@ -46,7 +47,7 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
             } else if (flags.isRightTopMove) {
               setGestureTip(["↗️", event.clientX, event.clientY]);
             } else {
-              setGestureTip([null, 0, 0]);
+              setGestureTip(gestureTipWithXy);
             }
           } else {
             const rating = GestureUtil.detectRating(event, gestureInfo);
@@ -57,11 +58,11 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
                 event.clientY,
               ]);
             } else {
-              setGestureTip([null, 0, 0]);
+              setGestureTip(gestureTipWithXy);
             }
           }
         } else {
-          setGestureTip([null, 0, 0]);
+          setGestureTip(gestureTipWithXy);
         }
       }, 32);
       document.body.addEventListener("mousemove", onMouseMove);

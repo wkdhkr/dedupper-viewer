@@ -13,33 +13,33 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  Divider
+  Divider,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { RssFeed } from "@material-ui/icons";
 import { APP_NAME } from "../constants/dedupperConstants";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   list: {
-    width: 250
+    width: 250,
   },
   fullList: {
-    width: "auto"
+    width: "auto",
   },
   root: {
-    flexGrow: 1
+    flexGrow: 1,
   },
   menuButton: {
-    marginRight: theme.spacing(2)
+    marginRight: theme.spacing(2),
   },
   title: {
-    flexGrow: 1
-  }
+    flexGrow: 1,
+  },
 }));
 
 type HomeProps = RouteComponentProps;
 
-const Home: React.FunctionComponent<HomeProps> = ({ children }) => {
+const Home: React.FunctionComponent<HomeProps> = React.memo(({ children }) => {
   const classes = useStyles();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   return (
@@ -95,6 +95,6 @@ const Home: React.FunctionComponent<HomeProps> = ({ children }) => {
       {children}
     </>
   );
-};
+});
 
 export default Home;

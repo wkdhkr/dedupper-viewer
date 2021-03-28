@@ -378,6 +378,13 @@ const actions = (store: Store<State>) => ({
       actions(store).toggleSubViewer(store.getState());
     }
   },
+  togglePlayUniversal(state: State) {
+    if (UrlUtil.isInMainViewer()) {
+      actions(store).togglePlay(state);
+    } else {
+      actions(store).toggleGridPlay(state);
+    }
+  },
   async togglePlay(state: State) {
     if (UrlUtil.isInThumbSlider()) {
       await SubViewerHelper.prepareReference();

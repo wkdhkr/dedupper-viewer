@@ -1,5 +1,5 @@
 /* eslint-disable react/destructuring-assignment */
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import IFrame from "react-iframe";
 import { LinearProgress, Dialog, Box } from "@material-ui/core";
 
@@ -286,7 +286,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
         <Dialog fullScreen open TransitionComponent={Transition}>
           {isLoading && <LinearProgress color="secondary" />}
           <MultiImageViewer
-            load={async () => {
+            load={useCallback(async () => {
               /*
               if (channelId) {
                 load(channelId);
@@ -297,9 +297,9 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
                 load(hash);
               }
               */
-            }}
+            }, [])}
             channelId={channelId || null}
-            options={{}}
+            options={useMemo(() => ({}), [])}
             setColorReset={setColorReset}
             colorReset={colorReset}
             unload={unload}
