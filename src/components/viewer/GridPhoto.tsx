@@ -299,9 +299,12 @@ const GridPhoto = React.memo(
       }
     };
 
-    const imagePerformanceProps: { loading?: "lazy" } = {};
+    const imagePerformanceProps: { loading?: "lazy"; importance?: "low" } = {};
     if (UrlUtil.isInline() && !isNeighbour) {
       imagePerformanceProps.loading = "lazy";
+    }
+    if (UrlUtil.isInThumbSlider()) {
+      imagePerformanceProps.importance = "low";
     }
 
     const sizeFactor = 1.25;
@@ -318,6 +321,10 @@ const GridPhoto = React.memo(
             if (flags.isLeftBottomMove) {
               setTimeout(() => gs.applyTagForImagesInScreen(), 100);
             } else if (flags.isLeftTopMove) {
+              //
+            } else if (flags.isRightBottomMove) {
+              //
+            } else if (flags.isRightTopMove) {
               //
             }
           } else {

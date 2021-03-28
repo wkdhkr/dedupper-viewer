@@ -162,11 +162,19 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
     // setup scroll handler for override default behavior
     window.addEventListener("wheel", handleScroll as any, { passive: false });
     return () => window.removeEventListener("wheel", handleScroll as any, {});
-  }, [index, c.open, fitImages, range, selected, showMainViewer]);
+  }, [
+    index,
+    c.open,
+    fitImages,
+    range,
+    selected,
+    showMainViewer,
+    c.enableSubViewer,
+  ]);
 
   return (
     <>
-      <GestureTip gestureInfo={gestureInfo} />
+      <GestureTip disabled={!gestureInfo.image} gestureInfo={gestureInfo} />
       <AjaxProgress connectionCount={connectionCount} />
       <AutoReload
         disabled={!c.autoReload}
