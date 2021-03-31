@@ -4,7 +4,7 @@ const OFFSET_DIAGONAL = 50;
 
 export default class GestureUtil {
   static detectDiagonalFlags = (
-    e: React.MouseEvent | MouseEvent,
+    e: React.MouseEvent | MouseEvent | PointerEvent,
     gestureInfo: GestureInfo
   ) => {
     const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;
@@ -45,7 +45,7 @@ export default class GestureUtil {
   };
 
   static detectRating = (
-    e: React.MouseEvent | MouseEvent,
+    e: React.MouseEvent | MouseEvent | PointerEvent,
     gestureInfo: GestureInfo
   ) => {
     const { image: gestureImage, x: prevX, y: prevY } = gestureInfo;

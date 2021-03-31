@@ -358,17 +358,26 @@ export default function(store: Store<State>) {
         if (isInClassNameEvent(event, "viewer-canvas")) {
           mouseDownFlag = true;
 
+          const gestureInfo = {
+            image: store.getState().mainViewer.currentImage,
+            x: event.clientX,
+            y: event.clientY,
+          };
           setTimeout(() => {
             MouseEventUtil.resetMoved();
             const state = store.getState();
-            actions(store).setGestureInfo(state, {
-              image: state.mainViewer.currentImage,
-              x: event.clientX,
-              y: event.clientY,
-            });
+            actions(store).setGestureInfo(state, gestureInfo);
           });
           setTimeout(() => {
-            if (!MouseEventUtil.isMoved() && mouseDownFlag) {
+            const mouseEvent = MouseEventUtil.getPointerMoveEvent();
+            if (!mouseEvent) {
+              return;
+            }
+            const isMoved =
+              GestureUtil.detectDiagonalFlags(mouseEvent, gestureInfo) !==
+                null ||
+              GestureUtil.detectRating(mouseEvent, gestureInfo) !== null;
+            if (!isMoved && mouseDownFlag) {
               DomUtil.setViewerMovable(true);
               DomUtil.getViewer().pointerdown(event);
               actions(store).setGestureInfo(store.getState(), {
@@ -404,7 +413,10 @@ export default function(store: Store<State>) {
           y: 0,
         });
       });
-      if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
+      if (
+        isInClassNameEvent(event, "viewer-canvas") ||
+        isInClassNameEvent(event, "viewer-hud-layer-container")
+      ) {
         const isMovable = viewer.options.movable;
         DomUtil.setViewerMovable(false);
         if (event.button === 1 && IFrameUtil.isInIFrame()) {
