@@ -1,6 +1,7 @@
 import { Box, Chip } from "@material-ui/core";
 import { throttle } from "lodash";
 import React, { useEffect, useState } from "react";
+import { shallowEqual } from "shallow-equal-object";
 import { GestureInfo } from "../../../types/unistore";
 import GestureUtil from "../../../utils/GestureUtil";
 import MouseEventUtil from "../../../utils/MouseEventUtil";
@@ -15,7 +16,7 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     const [gestureTipWithXy, setGestureTip] = useState<
       [string | null, number, number]
     >([null, 0, 0]);
-    const [gestureTip, x, y] = gestureTipWithXy;
+    const [gestureTip] = gestureTipWithXy;
 
     useEffect(() => {
       const onMouseout = (event: MouseEvent) => {
@@ -34,18 +35,26 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     }, [disabled]);
 
     useEffect(() => {
-      const onMouseMove = throttle((event: MouseEvent) => {
+      const onMouseMove = throttle((event: PointerEvent) => {
         if (gestureInfo.image) {
           const flags = GestureUtil.detectDiagonalFlags(event, gestureInfo);
           if (flags) {
             if (flags.isLeftBottomMove) {
-              setGestureTip(["↙️", event.clientX, event.clientY]);
+              setGestureTip([
+                "↙️ apply delete tag",
+                event.clientX,
+                event.clientY,
+              ]);
             } else if (flags.isLeftTopMove) {
               setGestureTip(["↖️", event.clientX, event.clientY]);
             } else if (flags.isRightBottomMove) {
               setGestureTip(["↘️", event.clientX, event.clientY]);
             } else if (flags.isRightTopMove) {
-              setGestureTip(["↗️", event.clientX, event.clientY]);
+              setGestureTip([
+                "↗ apply delete tag",
+                event.clientX,
+                event.clientY,
+              ]);
             } else {
               setGestureTip(gestureTipWithXy);
             }
@@ -64,20 +73,21 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
         } else {
           setGestureTip(gestureTipWithXy);
         }
-      }, 32);
-      document.body.addEventListener("mousemove", onMouseMove);
+      }, 16);
+      document.body.addEventListener("pointermove", onMouseMove);
       return () => {
         setGestureTip([null, 0, 0]);
-        document.body.removeEventListener("mousemove", onMouseMove);
+        document.body.removeEventListener("pointermove", onMouseMove);
       };
     }, [gestureInfo, disabled]);
 
-    const e = MouseEventUtil.getMoveEvent();
+    const e = MouseEventUtil.getPointerMoveEvent();
 
     if (!e || !gestureTip) {
       return <></>;
     }
-    if (e.button !== 0) {
+
+    if (e.button !== 0 && e.button !== -1) {
       return <></>;
     }
 
@@ -89,12 +99,22 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
       <Box
         zIndex={1355}
         position="fixed"
-        top={(y || e.clientY) + 5}
-        left={(x || e.clientX) + 5}
+        top={e.clientY + 5}
+        left={e.clientX + 5}
       >
         <Chip color="primary" label={gestureTip} />
       </Box>
     );
+  },
+  (p, n) => {
+    if (!shallowEqual(p.gestureInfo, n.gestureInfo)) {
+      return false;
+    }
+    if (p.disabled !== n.disabled) {
+      return false;
+    }
+
+    return true;
   }
 );
 

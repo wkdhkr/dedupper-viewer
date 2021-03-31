@@ -21,6 +21,8 @@ import SubViewerHelper from "../helpers/viewer/SubViewerHelper";
 import { IFrameMessageType } from "../types/window";
 import TrimUtil from "../utils/dedupper/TrimUtil";
 import WorkerUtil from "../utils/WorkerUtil";
+import MouseEventUtil from "../utils/MouseEventUtil";
+import GestureUtil from "../utils/GestureUtil";
 
 const REGEXP_SPACES = /\s\s*/; // Misc
 const IS_BROWSER =
@@ -131,6 +133,8 @@ export default function(store: Store<State>) {
     }
     actions(store).updateColor(store.getState(), hash, "hue", fixedValue);
   };
+
+  let mouseDownFlag = false;
 
   document.body.addEventListener(
     "contextmenu",
@@ -309,49 +313,76 @@ export default function(store: Store<State>) {
   // let pointerStartDate = new Date();
   // let pointerEndDate = new Date();
 
+  const dispatchEventX = (type: IFrameMessageType) => {
+    if (!UrlUtil.isInRecommended()) {
+      IFrameUtil.postMessageForParent({
+        type,
+        payload: {
+          type: "customEvent",
+          payload: {
+            name: EVENT_X_KEY,
+          },
+        },
+      });
+    }
+  };
+
+  const handleMiddleClickForMain = () => {
+    if (UrlUtil.isInSubViewer() && UrlUtil.isInSingleViewer()) {
+      SubViewerHelper.prepareReference().then(() => dispatchEventX("forGrid"));
+    } else if (UrlUtil.isInMainViewer()) {
+      SubViewerHelper.prepareReference().then(() =>
+        dispatchEventX("forThumbSlider")
+      );
+    } else {
+      try {
+        const hash = DomUtil.getCurrentHash();
+        const next = store.getState().configuration
+          .selectNextAfterEditInMainViewer;
+        actions(store).updateTag(store.getState(), hash, 1, "t1", next);
+      } catch (e) {
+        // ignore
+      }
+    }
+  };
+
   addListener(document, EVENT_POINTER_DOWN, function(event: PointerEvent) {
     // pointerStartDate = new Date();
     pointerX = event.clientX;
     pointerY = event.clientY;
     if (UrlUtil.isInSingleViewer() || UrlUtil.isInMainViewer()) {
-      const dispatchEventX = (type: IFrameMessageType) => {
-        if (!UrlUtil.isInRecommended()) {
-          IFrameUtil.postMessageForParent({
-            type,
-            payload: {
-              type: "customEvent",
-              payload: {
-                name: EVENT_X_KEY,
-              },
-            },
-          });
-        }
-      };
       if (event.button === 1) {
         event.preventDefault();
-        if (UrlUtil.isInSubViewer() && UrlUtil.isInSingleViewer()) {
-          SubViewerHelper.prepareReference().then(() =>
-            dispatchEventX("forGrid")
-          );
-        } else if (UrlUtil.isInMainViewer()) {
-          SubViewerHelper.prepareReference().then(() =>
-            dispatchEventX("forThumbSlider")
-          );
-        } else {
-          try {
-            const hash = DomUtil.getCurrentHash();
-            const next = store.getState().configuration
-              .selectNextAfterEditInMainViewer;
-            actions(store).updateTag(store.getState(), hash, 1, "t1", next);
-          } catch (e) {
-            // ignore
-          }
+        handleMiddleClickForMain();
+      } else if (event.button === 0) {
+        if (isInClassNameEvent(event, "viewer-canvas")) {
+          mouseDownFlag = true;
+
+          MouseEventUtil.resetMoved();
+          setTimeout(() => {
+            if (!MouseEventUtil.isMoved() && mouseDownFlag) {
+              DomUtil.setViewerMovable(true);
+              DomUtil.getViewer().pointerdown(event);
+              actions(store).setGestureInfo(store.getState(), {
+                image: null,
+                x: 0,
+                y: 0,
+              });
+            }
+          }, 1000);
+          const state = store.getState();
+          actions(store).setGestureInfo(state, {
+            image: state.mainViewer.currentImage,
+            x: event.clientX,
+            y: event.clientY,
+          });
         }
       }
     }
   });
 
   addListener(document, EVENT_POINTER_UP, function(event: PointerEvent) {
+    mouseDownFlag = false;
     // pointerEndDate = new Date();
     let viewer: MainViewer | null = null;
     let hash: string | null = null;
@@ -362,6 +393,15 @@ export default function(store: Store<State>) {
       return;
     }
     if (hash && viewer) {
+      const state = store.getState();
+
+      setTimeout(() => {
+        actions(store).setGestureInfo(state, {
+          image: null,
+          x: 0,
+          y: 0,
+        });
+      });
       if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
         if (event.button === 1 && IFrameUtil.isInIFrame()) {
           IFrameUtil.postMessageForParent({
@@ -371,18 +411,48 @@ export default function(store: Store<State>) {
             },
           });
         } else if (pointerX !== event.clientX || pointerY !== event.clientY) {
-          if (!isEqual(viewer.imageData, viewer.initialImageData)) {
+          const isMovable = viewer.options.movable;
+          DomUtil.setViewerMovable(false);
+          if (
+            isMovable &&
+            !isEqual(viewer.imageData, viewer.initialImageData)
+          ) {
             const trim = JSON.stringify(viewer.imageData);
-            actions(store).updateTrim(store.getState(), hash, trim);
+            actions(store).updateTrim(state, hash, trim);
+          } else if (event.button === 0 || event.button === -1) {
+            /*
+            // TODO: drag lock mode
+            let rating = store.getState().mainViewer.currentImage?.rating || 0;
+            rating += 1;
+            if (rating > 5) {
+              rating = 0;
+            }
+            actions(store).updateRating(store.getState(), hash, rating, false);
+            */
+            const { gestureInfo } = state.mainViewer;
+            const flags = GestureUtil.detectDiagonalFlags(event, gestureInfo);
+            if (flags) {
+              if (flags.isLeftBottomMove) {
+                setTimeout(() => handleMiddleClickForMain());
+              } else if (flags.isLeftTopMove) {
+                //
+              } else if (flags.isRightBottomMove) {
+                //
+              } else if (flags.isRightTopMove) {
+                setTimeout(() => handleMiddleClickForMain());
+              }
+            } else {
+              const rating = GestureUtil.detectRating(event, gestureInfo);
+              if (gestureInfo.image && rating !== null) {
+                actions(store).updateRating(
+                  state,
+                  gestureInfo.image.hash,
+                  rating,
+                  state.configuration.selectNextAfterEditInMainViewer
+                );
+              }
+            }
           }
-        } else if (event.button === 0) {
-          // TODO: drag lock mode
-          let rating = store.getState().mainViewer.currentImage?.rating || 0;
-          rating += 1;
-          if (rating > 5) {
-            rating = 0;
-          }
-          actions(store).updateRating(store.getState(), hash, rating, false);
         }
       }
       if (
@@ -391,7 +461,7 @@ export default function(store: Store<State>) {
           .indexOf(document.getElementsByClassName("viewer-reset")[0]) !== -1
       ) {
         // reset button clicked
-        actions(store).updateTrim(store.getState(), hash, "");
+        actions(store).updateTrim(state, hash, "");
         if (viewer.image) {
           viewer.image.style.filter = "";
         }

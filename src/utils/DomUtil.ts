@@ -20,6 +20,14 @@ export default class DomUtil {
     }
   };
 
+  static setViewerMovable = (movable: boolean) => {
+    const viewer = DomUtil.getViewerSafe();
+    if (viewer) {
+      viewer.options.movable = movable;
+      viewer.image?.classList[movable ? "add" : "remove"]("viewer-move");
+    }
+  };
+
   static getViewer = (event?: CustomEvent) => {
     const container = event
       ? (event as any).target

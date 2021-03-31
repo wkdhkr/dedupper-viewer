@@ -33,6 +33,7 @@ import ThumbSliderUtil from "../utils/ThumbSliderUtil";
 import UrlUtil from "../utils/dedupper/UrlUtil";
 import TrimRotationPreview from "../components/viewer/TrimRotationPreview";
 import FullscreenHotkey from "../components/viewer/ui/FullscreenHotkey";
+import GestureTip from "../components/viewer/ui/GestureTip";
 
 const reload = async () => {
   await SubViewerHelper.prepareReference();
@@ -91,6 +92,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
   isTrimRotation,
   isInline = false,
   configuration: c,
+  gestureInfo,
   connectionCount,
   isPlay,
   load,
@@ -160,6 +162,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
 
   return (
     <>
+      <GestureTip disabled={!gestureInfo.image} gestureInfo={gestureInfo} />
       <AjaxProgress connectionCount={connectionCount} />
       <HudLayer
         updateTag={updateTag}

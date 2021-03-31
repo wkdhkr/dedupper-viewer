@@ -25,6 +25,7 @@ export interface ImageData {
 }
 
 export type MainViewer = Viewer & {
+  pointerdown: (x: MouseEvent) => void;
   wheeling: boolean;
   options: Viewer.Options;
   index: number;

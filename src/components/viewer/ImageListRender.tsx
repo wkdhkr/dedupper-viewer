@@ -98,6 +98,7 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
         "useMap",
         "importance",
       ],
+      movable: false,
       toggleOnDblclick: false,
       container: "#viewerContainer",
       focus: false,

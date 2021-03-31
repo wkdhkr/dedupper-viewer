@@ -1,5 +1,7 @@
 import { GestureInfo } from "../types/unistore";
 
+const OFFSET_DIAGONAL = 50;
+
 export default class GestureUtil {
   static detectDiagonalFlags = (
     e: React.MouseEvent | MouseEvent,
@@ -12,8 +14,8 @@ export default class GestureUtil {
     }
     const moveX = e.clientX - prevX;
     const moveY = e.clientY - prevY;
-    const isMoveHorizontal = Math.abs(moveX) > 40;
-    const isMoveVertical = Math.abs(moveY) > 40;
+    const isMoveHorizontal = Math.abs(moveX) > OFFSET_DIAGONAL;
+    const isMoveVertical = Math.abs(moveY) > OFFSET_DIAGONAL;
     const isPositiveHorizontal = moveX > 0;
     const isPositiveVertical = moveY > 0;
 

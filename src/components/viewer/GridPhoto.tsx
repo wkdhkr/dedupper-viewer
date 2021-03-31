@@ -2,14 +2,19 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
-import React, { MouseEventHandler, useEffect } from "react";
+import React, {
+  MouseEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 import omit from "lodash/omit";
 import { shallowEqual } from "shallow-equal-object";
 import { RenderImageProps } from "react-photo-gallery";
 import { Box } from "@material-ui/core";
 import store from "../../store";
 import ViewerUtil from "../../utils/ViewerUtil";
-import { STANDARD_WIDTH } from "../../constants/dedupperConstants";
+import { STANDARD_WIDTH, TAGS } from "../../constants/dedupperConstants";
 import { DedupperImage, GestureInfo } from "../../types/unistore";
 import RatingAndTag from "./ui/RatingAndTag";
 import GridViewerService from "../../services/Viewer/GridViewerService";
@@ -25,6 +30,8 @@ import CurrentIcon from "./ui/CurrentIcon";
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
 const gs = new GridViewerService(store);
+
+const onDragStart = (e: React.DragEvent) => e.preventDefault();
 
 let currentHover: string | null = null;
 
@@ -75,6 +82,20 @@ const GridPhoto = React.memo(
     top,
     left,
   }: GridPhotoProps) => {
+    const onLoad = useCallback(
+      (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        const imageElement = e.target as HTMLImageElement;
+        if (image.width !== imageElement.naturalWidth && updateSize) {
+          // may be rotated, fix it.
+          updateSize(
+            image.hash,
+            imageElement.naturalWidth,
+            imageElement.naturalHeight
+          );
+        }
+      },
+      [updateSize, image.width, image.hash]
+    );
     // const isNeighbour = Math.abs(currentIndex - index) < range;
     useEffect(() => {
       const isNeighbour =
@@ -133,18 +154,21 @@ const GridPhoto = React.memo(
       imgStyle.left = left;
       imgStyle.top = top;
     }
-    const handleClick = (event: React.MouseEvent<Element, MouseEvent>) => {
-      if (GestureUtil.detectRating(event, gestureInfo) === null) {
-        if (onClick) {
-          onClick(event, { photo, index } as any);
+    const handleClick = useCallback(
+      (event: React.MouseEvent<Element, MouseEvent>) => {
+        if (GestureUtil.detectRating(event, gestureInfo) === null) {
+          if (onClick) {
+            onClick(event, { photo, index } as any);
+          }
         }
-      }
-    };
+      },
+      [gestureInfo, photo.key, index]
+    );
 
     const createPredecodeStyle = () => {
       const styles: React.CSSProperties = {};
       const isNextPageIndex =
-        index > (leftTopIndex || 0) + range + unit &&
+        index > (leftTopIndex || 0) + (range - 1) + unit &&
         index < (leftTopIndex || 0) + range * 2.5;
       if (isNextPageIndex) {
         styles.position = "fixed";
@@ -158,7 +182,7 @@ const GridPhoto = React.memo(
       }
       return styles;
     };
-
+    const isPortraitImage = ViewerUtil.isPortraitImage();
     const createStyle = () => {
       let style: React.CSSProperties = imgStyle;
       const di = image;
@@ -190,7 +214,7 @@ const GridPhoto = React.memo(
           // top: (photo.height - height) / 2
         };
         let ratio = photo.width / trim.naturalWidth;
-        if (ViewerUtil.isPortraitImage()) {
+        if (isPortraitImage) {
           ratio = photo.height / trim.naturalHeight;
         }
         const hasTrim = TrimUtil.hasTrim(image);
@@ -232,6 +256,7 @@ const GridPhoto = React.memo(
       }
       return style;
     };
+
     const isSelected = !isPlay && photo.key === selectedImage?.hash;
     // const isShowRatingAndTag = isNeighbour && !isPlay;
     const isNeighbour =
@@ -247,15 +272,18 @@ const GridPhoto = React.memo(
     // const decoding = isPlay || isNeighbour ? "sync" : "async";
     // const decoding = isNeighbour ? "sync" : "async";
 
-    const handleContextMenu = (event: React.MouseEvent) => {
-      if (!readOnly) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (updateTag) {
-          updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+    const handleContextMenu = useCallback(
+      (event: React.MouseEvent) => {
+        if (!readOnly) {
+          event.preventDefault();
+          event.stopPropagation();
+          if (updateTag) {
+            updateTag(image.hash, image.t1 ? null : 1, "t1", false);
+          }
         }
-      }
-    };
+      },
+      [readOnly, updateTag, image]
+    );
 
     const mouseDownHandler: MouseEventHandler = (event: React.MouseEvent) => {
       if (!readOnly) {
@@ -318,6 +346,8 @@ const GridPhoto = React.memo(
           }
           const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
           if (flags) {
+            e.preventDefault();
+            e.stopPropagation();
             if (flags.isLeftBottomMove) {
               setTimeout(() => gs.applyTagForImagesInScreen());
             } else if (flags.isLeftTopMove) {
@@ -339,7 +369,7 @@ const GridPhoto = React.memo(
           }
           if (setGestureInfo) {
             setTimeout(() => {
-              setGestureInfo({ x: -1, y: -1, image: null });
+              setGestureInfo({ x: 0, y: 0, image: null });
             });
           }
         }}
@@ -389,7 +419,7 @@ const GridPhoto = React.memo(
                 width: photo.width,
                 height: photo.height,
               }}
-              onDragStart={(e: React.DragEvent) => e.preventDefault()}
+              onDragStart={onDragStart}
               onClick={onClick ? handleClick : undefined}
               onMouseDown={mouseDownHandler}
               onWheel={handleWheel}
@@ -402,24 +432,27 @@ const GridPhoto = React.memo(
               crossOrigin="anonymous"
               decoding="async"
               src={photo.src}
-              style={createStyle()}
-              onDragStart={(e: React.DragEvent) => e.preventDefault()}
+              style={useMemo(createStyle, [
+                Boolean(onClick),
+                image,
+                currentIndex,
+                photo.key,
+                photo.height,
+                photo.width,
+                isPortraitImage,
+                index,
+                range,
+                window.innerHeight,
+                window.innerWidth,
+                unit,
+              ])}
+              onDragStart={onDragStart}
               onClick={onClick ? handleClick : undefined}
               onWheel={handleWheel}
               onContextMenu={handleContextMenu}
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
-              onLoad={async (e) => {
-                const imageElement = e.target as HTMLImageElement;
-                if (image.width !== imageElement.naturalWidth && updateSize) {
-                  // may be rotated, fix it.
-                  updateSize(
-                    image.hash,
-                    imageElement.naturalWidth,
-                    imageElement.naturalHeight
-                  );
-                }
-              }}
+              onLoad={onLoad}
               onMouseDown={mouseDownHandler}
             />
           )}
@@ -430,7 +463,13 @@ const GridPhoto = React.memo(
   (p, n) => {
     // console.log(omitBy(n, (v, k) => (p as any)[k] === v));
     // ignore specific fields
-    const skipFields = ["onClick", "photo", "currentIndex", "selectedImage"];
+    const skipFields = [
+      "onClick",
+      "photo",
+      "currentIndex",
+      "selectedImage",
+      "gestureInfo",
+    ];
     if (!shallowEqual(omit(p, skipFields), omit(n, skipFields))) {
       return false;
     }
@@ -439,14 +478,17 @@ const GridPhoto = React.memo(
       currentIndex - range - range < index &&
       index < currentIndex + range + range;
     // const isNeighbour = leftTopIndex < n.index && leftTopIndex + n.range * 2;
-    if (isNeighbour) {
+    if (isNeighbour && p.currentIndex !== n.currentIndex) {
       return false;
     }
     if (p.image.rating !== n.image.rating) {
       return false;
     }
+    if (p.image.trim !== n.image.trim) {
+      return false;
+    }
     if (
-      Array.from(Array(5))
+      Array.from(Array(TAGS.length))
         .map((x, num: number) => num + 1)
         .some((num) => {
           const key = `t${num}`;
@@ -463,6 +505,11 @@ const GridPhoto = React.memo(
     }
     if (n.currentIndex === n.index) {
       return false;
+    }
+    if (p.gestureInfo && n.gestureInfo) {
+      if (p.gestureInfo.image !== n.gestureInfo.image && isNeighbour) {
+        return false;
+      }
     }
     return true;
   }

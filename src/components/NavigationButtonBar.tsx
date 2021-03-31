@@ -201,7 +201,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = R
         onMouseEnter={() => setIsHover(true)}
         onMouseLeave={() => setIsHover(false)}
         // onClick={() => setIsHover(false)}
-        bottom={40}
+        bottom={UrlUtil.isInGridViewer() ? 50 : 40}
         left="50%"
         zIndex="1500"
       >

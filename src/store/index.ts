@@ -16,6 +16,12 @@ import UtilsBundle from "../utils/UtilsBundle";
 
 log.setDefaultLevel("trace");
 
+const spawnInitialGestureInfo = () => ({
+  image: null,
+  x: -1,
+  y: -1,
+});
+
 const initialState: State = {
   imagesCache: {},
   sortKind: ConfigurationHelper.getInitialState().defaultSortKind,
@@ -41,6 +47,7 @@ const initialState: State = {
   channels: [],
   channelById: {},
   mainViewer: {
+    gestureInfo: spawnInitialGestureInfo(),
     faces: [],
     subViewer: {
       url: null,
@@ -60,21 +67,13 @@ const initialState: State = {
       isOpen: false,
     },
     unit: parseInt(UrlUtil.extractParam("unit") || "0", 10) || 3,
-    gestureInfo: {
-      image: null,
-      x: -1,
-      y: -1,
-    },
+    gestureInfo: spawnInitialGestureInfo(),
     selectedImage: null,
     isPlay: false,
     index: -1,
   },
   thumbSlider: {
-    gestureInfo: {
-      image: null,
-      x: -1,
-      y: -1,
-    },
+    gestureInfo: spawnInitialGestureInfo(),
     selectedImage: null,
     index: -1,
   },

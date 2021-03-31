@@ -139,6 +139,7 @@ export interface DedupperImage {
   p_hash?: string;
 }
 export interface MainViewerState {
+  gestureInfo: GestureInfo;
   faces: FacePPRow[];
   isLoading: boolean;
   subViewer: SubViewerState & { url: string | null };

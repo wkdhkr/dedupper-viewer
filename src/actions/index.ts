@@ -63,6 +63,9 @@ const actions = (store: Store<State>) => ({
         if (UrlUtil.isInThumbSlider()) {
           draft.thumbSlider.gestureInfo = info;
         }
+        if (UrlUtil.isInMainViewer() || UrlUtil.isInSingleViewer()) {
+          draft.mainViewer.gestureInfo = info;
+        }
       })
     );
   },
@@ -277,7 +280,8 @@ const actions = (store: Store<State>) => ({
           cached: true,
         },
       });
-    if (!PerformanceUtil.getImageCache(hash)) {
+    const useDecodeCache = UrlUtil.isInGridViewer();
+    if (useDecodeCache && !PerformanceUtil.getImageCache(hash)) {
       const img = document.getElementById(
         `photo-image__${hash}`
       ) as HTMLImageElement;
