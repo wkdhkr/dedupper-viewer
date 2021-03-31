@@ -19,6 +19,14 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     const [gestureTip] = gestureTipWithXy;
 
     useEffect(() => {
+      const onMouseup = () => {
+        setGestureTip([null, 0, 0]);
+      };
+      document.body.addEventListener("mouseup", onMouseup);
+      return () => document.body.removeEventListener("mouseup", onMouseup);
+    }, []);
+
+    useEffect(() => {
       const onMouseout = (event: MouseEvent) => {
         if (
           event.clientY <= 0 ||

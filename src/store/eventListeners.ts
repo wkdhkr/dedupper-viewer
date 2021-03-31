@@ -358,7 +358,15 @@ export default function(store: Store<State>) {
         if (isInClassNameEvent(event, "viewer-canvas")) {
           mouseDownFlag = true;
 
-          MouseEventUtil.resetMoved();
+          setTimeout(() => {
+            MouseEventUtil.resetMoved();
+            const state = store.getState();
+            actions(store).setGestureInfo(state, {
+              image: state.mainViewer.currentImage,
+              x: event.clientX,
+              y: event.clientY,
+            });
+          });
           setTimeout(() => {
             if (!MouseEventUtil.isMoved() && mouseDownFlag) {
               DomUtil.setViewerMovable(true);
@@ -370,12 +378,6 @@ export default function(store: Store<State>) {
               });
             }
           }, 1000);
-          const state = store.getState();
-          actions(store).setGestureInfo(state, {
-            image: state.mainViewer.currentImage,
-            x: event.clientX,
-            y: event.clientY,
-          });
         }
       }
     }
@@ -403,6 +405,8 @@ export default function(store: Store<State>) {
         });
       });
       if (event.composedPath().indexOf(DomUtil.getViewerCanvas()) !== -1) {
+        const isMovable = viewer.options.movable;
+        DomUtil.setViewerMovable(false);
         if (event.button === 1 && IFrameUtil.isInIFrame()) {
           IFrameUtil.postMessageForParent({
             type: "customEvent",
@@ -411,8 +415,6 @@ export default function(store: Store<State>) {
             },
           });
         } else if (pointerX !== event.clientX || pointerY !== event.clientY) {
-          const isMovable = viewer.options.movable;
-          DomUtil.setViewerMovable(false);
           if (
             isMovable &&
             !isEqual(viewer.imageData, viewer.initialImageData)
