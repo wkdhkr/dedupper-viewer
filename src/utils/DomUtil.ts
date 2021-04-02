@@ -25,6 +25,7 @@ export default class DomUtil {
     if (viewer) {
       viewer.options.movable = movable;
       viewer.image?.classList[movable ? "add" : "remove"]("viewer-move");
+      document.body.classList[movable ? "add" : "remove"]("viewer-move");
     }
   };
 

@@ -162,6 +162,30 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
 
   return (
     <>
+      <ReactHotkeys
+        keyName="z"
+        onKeyUp={async () => {
+          IFrameUtil.postMessage({
+            type: "toolbarClicked",
+            payload: {
+              kind: "viewer-zoom-in",
+              isContextMenu: true,
+            },
+          });
+        }}
+      />
+      <ReactHotkeys
+        keyName="q"
+        onKeyUp={() => {
+          IFrameUtil.postMessage({
+            type: "toolbarClicked",
+            payload: {
+              kind: "viewer-zoom-out",
+              isContextMenu: true,
+            },
+          });
+        }}
+      />
       <GestureTip disabled={!gestureInfo.image} gestureInfo={gestureInfo} />
       <AjaxProgress connectionCount={connectionCount} />
       <HudLayer

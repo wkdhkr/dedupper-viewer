@@ -202,6 +202,32 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
             image={selectedImage}
           />
           <Hotkeys
+            keyName="z"
+            onKeyUp={async () => {
+              await SubViewerHelper.prepareReference();
+              IFrameUtil.postMessageForOther({
+                type: "toolbarClicked",
+                payload: {
+                  kind: "viewer-zoom-in",
+                  isContextMenu: true,
+                },
+              });
+            }}
+          />
+          <Hotkeys
+            keyName="q"
+            onKeyUp={async () => {
+              await SubViewerHelper.prepareReference();
+              IFrameUtil.postMessageForOther({
+                type: "toolbarClicked",
+                payload: {
+                  kind: "viewer-zoom-out",
+                  isContextMenu: true,
+                },
+              });
+            }}
+          />
+          <Hotkeys
             keyName="g"
             onKeyUp={() => {
               // grid unit change

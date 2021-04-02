@@ -16,7 +16,7 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     const [gestureTipWithXy, setGestureTip] = useState<
       [string | null, number, number]
     >([null, 0, 0]);
-    const [gestureTip] = gestureTipWithXy;
+    const [gestureTip, x, y] = gestureTipWithXy;
 
     useEffect(() => {
       const onMouseup = () => {
@@ -102,6 +102,12 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     if (disabled) {
       return <></>;
     }
+
+    /*
+    if (e.clientX === x && e.clientY === y) {
+      return <></>;
+    }
+    */
 
     return (
       <Box
