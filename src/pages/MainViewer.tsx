@@ -168,7 +168,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
           IFrameUtil.postMessage({
             type: "toolbarClicked",
             payload: {
-              kind: "viewer-zoom-in",
+              kind: "zoom-in",
               isContextMenu: true,
             },
           });
@@ -180,7 +180,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
           IFrameUtil.postMessage({
             type: "toolbarClicked",
             payload: {
-              kind: "viewer-zoom-out",
+              kind: "zoom-out",
               isContextMenu: true,
             },
           });

@@ -208,7 +208,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               IFrameUtil.postMessageForOther({
                 type: "toolbarClicked",
                 payload: {
-                  kind: "viewer-zoom-in",
+                  kind: "zoom-in",
                   isContextMenu: true,
                 },
               });
@@ -221,7 +221,7 @@ const GridViewer: React.FunctionComponent<GridViewerProps> = ({
               IFrameUtil.postMessageForOther({
                 type: "toolbarClicked",
                 payload: {
-                  kind: "viewer-zoom-out",
+                  kind: "zoom-out",
                   isContextMenu: true,
                 },
               });
