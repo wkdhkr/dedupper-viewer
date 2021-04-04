@@ -7,7 +7,7 @@ import Slide from "@material-ui/core/Slide";
 import { RouteComponentProps, useLocation } from "@reach/router";
 import "./MainViewer.css";
 
-import ReactHotkeys from "react-hot-keys";
+import Hotkeys from "react-hot-keys";
 import { MultiImageViewer } from "../components/viewer";
 import {
   MainViewerState,
@@ -162,9 +162,9 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
 
   return (
     <>
-      <ReactHotkeys
+      <Hotkeys
         keyName="z"
-        onKeyUp={async () => {
+        onKeyUp={() => {
           IFrameUtil.postMessage({
             type: "toolbarClicked",
             payload: {
@@ -174,7 +174,7 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
           });
         }}
       />
-      <ReactHotkeys
+      <Hotkeys
         keyName="q"
         onKeyUp={() => {
           IFrameUtil.postMessage({
@@ -303,8 +303,8 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
         </Box>
         <PlayHotKey togglePlay={togglePlay} />
         <FullscreenHotkey />
-        <ReactHotkeys keyName="x" onKeyUp={() => applyTag()} />
-        <ReactHotkeys keyName="r" onKeyUp={() => reload()} />
+        <Hotkeys keyName="x" onKeyUp={() => applyTag()} />
+        <Hotkeys keyName="r" onKeyUp={() => reload()} />
         <RatingAndTagHotkey
           image={currentImage}
           updateRating={updateRating}

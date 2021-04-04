@@ -118,7 +118,7 @@ export default class ViewerUtil {
     if (isPoraitImage) {
       return [3, 6, 7];
     }
-    return [1, 2, 3, 4];
+    return [1, 2, 3, 4, 5];
   };
 
   static detectNextUnit = (unit: number) => {

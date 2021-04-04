@@ -29,6 +29,8 @@ import CurrentIcon from "./ui/CurrentIcon";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
+let gestureTimeoutTimer: NodeJS.Timeout | null = null;
+
 const gs = new GridViewerService(store);
 
 const onDragStart = (e: React.DragEvent) => e.preventDefault();
@@ -344,6 +346,9 @@ const GridPhoto = React.memo(
           if (e.button !== 0) {
             return;
           }
+          if (gestureTimeoutTimer) {
+            clearTimeout(gestureTimeoutTimer);
+          }
           const flags = GestureUtil.detectDiagonalFlags(e, gestureInfo);
           if (flags) {
             e.preventDefault();
@@ -368,6 +373,13 @@ const GridPhoto = React.memo(
             }
           }
           if (setGestureInfo) {
+            gestureTimeoutTimer = setTimeout(() => {
+              setGestureInfo({
+                image: null,
+                x: 0,
+                y: 0,
+              });
+            }, 5000);
             setTimeout(() => {
               setGestureInfo({ x: 0, y: 0, image: null });
             });

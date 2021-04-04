@@ -104,6 +104,8 @@ function addListener(element: any, type: any, listener: any) {
 }
 
 export default function(store: Store<State>) {
+  let gestureTimeoutTimer: NodeJS.Timeout | null = null;
+
   const debouncedShowSnackbarCustom = debounce(
     actions(store).showSnackbarCustom,
     500
@@ -368,6 +370,14 @@ export default function(store: Store<State>) {
             const state = store.getState();
             actions(store).setGestureInfo(state, gestureInfo);
           });
+          gestureTimeoutTimer = setTimeout(() => {
+            actions(store).setGestureInfo(store.getState(), {
+              image: null,
+              x: 0,
+              y: 0,
+            });
+          }, 5000);
+
           setTimeout(() => {
             const mouseEvent = MouseEventUtil.getPointerMoveEvent();
             if (!mouseEvent) {
@@ -417,6 +427,9 @@ export default function(store: Store<State>) {
         isInClassNameEvent(event, "viewer-canvas") ||
         isInClassNameEvent(event, "viewer-hud-layer-container")
       ) {
+        if (gestureTimeoutTimer) {
+          clearTimeout(gestureTimeoutTimer);
+        }
         const isMovable = viewer.options.movable;
         DomUtil.setViewerMovable(false);
         if (event.button === 1 && IFrameUtil.isInIFrame()) {
