@@ -26,6 +26,7 @@ import GestureUtil from "../../utils/GestureUtil";
 import TrimUtil from "../../utils/dedupper/TrimUtil";
 import Toolbar from "./ui/Toolbar";
 import CurrentIcon from "./ui/CurrentIcon";
+import IFrameUtil from "../../utils/IFrameUtil";
 
 const selectedTransform = "translateZ(0px) scale3d(0.97, 0.97, 1)";
 
@@ -356,9 +357,21 @@ const GridPhoto = React.memo(
             if (flags.isLeftBottomMove) {
               setTimeout(() => gs.applyTagForImagesInScreen());
             } else if (flags.isLeftTopMove) {
-              //
+              IFrameUtil.postMessageForOther({
+                type: "toolbarClicked",
+                payload: {
+                  kind: "zoom-out",
+                  isContextMenu: true,
+                },
+              });
             } else if (flags.isRightBottomMove) {
-              //
+              IFrameUtil.postMessageForOther({
+                type: "toolbarClicked",
+                payload: {
+                  kind: "zoom-in",
+                  isContextMenu: true,
+                },
+              });
             } else if (flags.isRightTopMove) {
               setTimeout(() => gs.applyTagForImagesInScreen());
             }

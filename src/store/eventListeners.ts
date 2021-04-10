@@ -462,9 +462,21 @@ export default function(store: Store<State>) {
               if (flags.isLeftBottomMove) {
                 setTimeout(() => handleMiddleClickForMain());
               } else if (flags.isLeftTopMove) {
-                //
+                IFrameUtil.postMessage({
+                  type: "toolbarClicked",
+                  payload: {
+                    kind: "zoom-out",
+                    isContextMenu: true,
+                  },
+                });
               } else if (flags.isRightBottomMove) {
-                //
+                IFrameUtil.postMessage({
+                  type: "toolbarClicked",
+                  payload: {
+                    kind: "zoom-in",
+                    isContextMenu: true,
+                  },
+                });
               } else if (flags.isRightTopMove) {
                 setTimeout(() => handleMiddleClickForMain());
               }
