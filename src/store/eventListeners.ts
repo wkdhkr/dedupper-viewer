@@ -357,7 +357,10 @@ export default function(store: Store<State>) {
         event.preventDefault();
         handleMiddleClickForMain();
       } else if (event.button === 0) {
-        if (isInClassNameEvent(event, "viewer-canvas")) {
+        if (
+          isInClassNameEvent(event, "viewer-canvas") ||
+          isInClassNameEvent(event, "viewer-hud-layer-container")
+        ) {
           mouseDownFlag = true;
 
           const gestureInfo = {

@@ -54,9 +54,9 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
                 event.clientY,
               ]);
             } else if (flags.isLeftTopMove) {
-              setGestureTip(["↖️", event.clientX, event.clientY]);
+              setGestureTip(["↖ color:️ down", event.clientX, event.clientY]);
             } else if (flags.isRightBottomMove) {
-              setGestureTip(["↘️", event.clientX, event.clientY]);
+              setGestureTip(["↘️ color: up", event.clientX, event.clientY]);
             } else if (flags.isRightTopMove) {
               setGestureTip([
                 "↗ apply delete tag",
