@@ -339,7 +339,7 @@ export default function(store: Store<State>) {
         case "prepareSubViewerReference":
           if (window.opener) {
             try {
-              window.opener.subViewerWindow = window;
+              (window.opener as any).subViewerWindow = window;
               IFrameUtil.postMessageForParent({
                 type: "forAll",
                 payload: {
