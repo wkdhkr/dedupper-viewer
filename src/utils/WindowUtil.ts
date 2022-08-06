@@ -25,4 +25,8 @@ export default class WindowUtil {
       window.scrollBy(0, 1);
     }
   };
+
+  static isVertical = () => window.innerHeight > window.innerWidth;
+
+  static isHolizontal = () => !WindowUtil.isVertical();
 }

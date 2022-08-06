@@ -485,6 +485,7 @@ const NavigationButtonBar: React.FunctionComponent<NavigationButtonBarProps> = R
     const prevMainHash = p.mainViewer.currentImage?.hash;
     const nextMainHash = n.mainViewer.currentImage?.hash;
     if (
+      p.mainViewer.isPlay !== n.mainViewer.isPlay ||
       p.gridViewer.isPlay !== n.gridViewer.isPlay ||
       p.gridViewer.unit !== n.gridViewer.unit ||
       p.gridViewer.selectedImage !== n.gridViewer.selectedImage ||

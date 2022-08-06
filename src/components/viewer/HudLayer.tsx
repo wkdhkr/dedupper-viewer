@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Dialog,
@@ -21,6 +21,7 @@ import ViewerUtil from "../../utils/ViewerUtil";
 import { ImageData } from "../../types/viewer";
 import DomUtil from "../../utils/DomUtil";
 import SlideUp from "../../transitions/SlideUp";
+import usePrevious from "../../hooks/previous";
 
 type HudLayerProps = {
   updateTag: (hash: string, x: number | null, name: string) => void;
@@ -88,6 +89,16 @@ const HudLayer: React.FunctionComponent<HudLayerProps> = ({
   const [hover, setHover] = useState<boolean>(false);
   const [hoverFace, setHoverFace] = useState<string | null>(null);
   const [selectedFace, setSelectedFace] = useState<FacePPRow | null>(null);
+
+  const prevImage = usePrevious(image);
+  const isImageChanged = prevImage?.hash !== image?.hash;
+
+  useEffect(() => {
+    if (isImageChanged) {
+      setHover(false);
+      setHoverFace(null);
+    }
+  }, [isImageChanged, hover, hoverFace]);
 
   const hoverFaceFixed = faces
     .map((face) => face.face_token)

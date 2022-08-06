@@ -1,6 +1,7 @@
 import { ConfigurationState, DedupperImage } from "../types/unistore";
 import GridViewerUtil from "./GridViewerUtil";
 import ViewerUtil from "./ViewerUtil";
+import WindowUtil from "./WindowUtil";
 
 export default class ThumbSliderUtil extends GridViewerUtil {
   static calcThumbSliderSizeForFixed = (
@@ -101,7 +102,10 @@ export default class ThumbSliderUtil extends GridViewerUtil {
     // const isPortrait = ThumbSliderUtil.isPortrait(c);
     const isPortraitImage = ViewerUtil.isPortraitImage();
     if (!isPortraitImage) {
-      return ThumbSliderUtil.detectRange(hash, images, c);
+      if (WindowUtil.isHolizontal()) {
+        return ThumbSliderUtil.detectRange(hash, images, c);
+      }
+      return 1;
     }
 
     /*
@@ -143,10 +147,15 @@ export default class ThumbSliderUtil extends GridViewerUtil {
     */
 
     if (/* !isPortraitMainViewer */ !isPortraitImage) {
-      const targetWidth = !isPortraitImage
-        ? (c.standardWidth / c.standardHeight) * window.innerHeight
-        : window.innerHeight / (c.standardHeight / c.standardWidth);
-      return Math.floor(window.innerWidth / targetWidth) || 1;
+      if (WindowUtil.isHolizontal()) {
+        const targetWidth = !isPortraitImage
+          ? (c.standardWidth / c.standardHeight) * window.innerHeight
+          : window.innerHeight / (c.standardHeight / c.standardWidth);
+        return Math.floor(window.innerWidth / targetWidth) || 1;
+      }
+      const targetHeight =
+        c.standardHeight / (c.standardWidth / (window.innerWidth - 1));
+      return Math.floor(window.innerHeight / targetHeight) || 1;
     }
 
     const [currentIndex] = ThumbSliderUtil.getLeftTopIndexAndHash(

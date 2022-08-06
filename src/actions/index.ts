@@ -412,25 +412,27 @@ const actions = (store: Store<State>) => ({
     if (vc) {
       vc.style.transform = "none";
     }
-    return produce(state, (draft) => {
-      draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
-      const display = draft.mainViewer.isPlay ? "none" : "block";
-      const viewer = DomUtil.getViewerSafe();
-      if (viewer) {
-        // avoid wheeling is play mode.
-        viewer.wheeling = draft.mainViewer.isPlay;
-      }
-      const footer = DomUtil.getViewerFooter();
-      if (footer) {
-        footer.style.display = display;
-      }
-      UrlUtil.syncPlay(draft.mainViewer.isPlay);
-      const forceInterval = UrlUtil.getPlayInterval();
-      ps.switchPlay(
-        draft.mainViewer.isPlay,
-        forceInterval || draft.configuration.mainViewerPlayInterval
-      );
-    });
+    store.setState(
+      produce(state, (draft) => {
+        draft.mainViewer.isPlay = !draft.mainViewer.isPlay;
+        const display = draft.mainViewer.isPlay ? "none" : "block";
+        const viewer = DomUtil.getViewerSafe();
+        if (viewer) {
+          // avoid wheeling is play mode.
+          viewer.wheeling = draft.mainViewer.isPlay;
+        }
+        const footer = DomUtil.getViewerFooter();
+        if (footer) {
+          footer.style.display = display;
+        }
+        UrlUtil.syncPlay(draft.mainViewer.isPlay);
+        const forceInterval = UrlUtil.getPlayInterval();
+        ps.switchPlay(
+          draft.mainViewer.isPlay,
+          forceInterval || draft.configuration.mainViewerPlayInterval
+        );
+      })
+    );
   },
   toggleGridPlay(state: State) {
     store.setState(

@@ -235,9 +235,13 @@ export default function(store: Store<State>) {
           }
         }
         // preload, for performance
-        PerformanceUtil.decodeImage(
-          mainViewer.images[event.detail.index + 1]?.hash
-        );
+        let i = 1;
+        while (i < 5) {
+          PerformanceUtil.decodeImage(
+            mainViewer.images[event.detail.index + i]?.hash
+          ); // next
+          i += 1;
+        }
         PerformanceUtil.decodeImage(
           (
             mainViewer.images[event.detail.index - 1] ||
