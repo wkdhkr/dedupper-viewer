@@ -63,7 +63,7 @@
     "luxon": "^1.25.0",
     "material-table": "^1.57.2",
     "notistack": "^0.9.11",
-    "path-parse": "^1.0.6",
+    "path-parse": "^1.0.7",
     "react": "^16.13.1",
     "react-children-utilities": "^2.1.0",
     "react-dom": "^16.13.1",
