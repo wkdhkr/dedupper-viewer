@@ -40,6 +40,7 @@ const dc = new DedupperClient();
 const ps = new PlayerService();
 const gps = new PlayerService();
 const actions = (store: Store<State>) => ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   toggleTrimRotation(state: State, direction: "right" | "left" = "right") {
     store.setState(
       produce(state, (draft) => {

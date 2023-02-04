@@ -151,7 +151,11 @@ export const MainViewer: React.SFC<MainViewerProps> = ({
     }
   };
 
-  const ratingAndTag = (
+  const isInRender = UrlUtil.isInRender();
+
+  const ratingAndTag = isInRender ? (
+    <></>
+  ) : (
     <RatingAndTag
       next={c.selectNextAfterEditInMainViewer}
       currentImage={currentImage}
@@ -397,6 +401,10 @@ export const ThumbSliderIFrame: React.FunctionComponent<ThumbSliderIFrameProps> 
     document.body.addEventListener("mouseleave", onMouseout);
     return () => document.body.removeEventListener("mouseleave", onMouseout);
   }, []);
+
+  if (UrlUtil.isInRender()) {
+    return <></>;
+  }
 
   return (
     <>

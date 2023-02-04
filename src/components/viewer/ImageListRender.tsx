@@ -80,8 +80,9 @@ class ImageListRender extends PureComponent<ImageListRenderProps> {
       hidden,
       ...restOptions
     } = customOptions || { toolbar: {} };
+    const isInRender = UrlUtil.isInRender();
     const toolbarOptions = {
-      show: true,
+      show: !isInRender,
       size: "large" as Viewer.ToolbarButtonSize,
     };
 

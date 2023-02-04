@@ -184,6 +184,9 @@ export default class UrlUtil {
     return null;
   };
 
+  static isInRender = (url?: string) =>
+    UrlUtil.extractParam("render", url) === "1";
+
   static isInListThumbSlider = (url?: string) =>
     UrlUtil.isInThumbSlider(url) &&
     UrlUtil.extractParam("mode", url) === "list";

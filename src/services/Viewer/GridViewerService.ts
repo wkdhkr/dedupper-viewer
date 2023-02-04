@@ -40,23 +40,29 @@ export default class GridViewerService {
     );
 
     const hashList: string[] = [];
-    if (startIndex !== null && nextStartIndex != null) {
-      for (let i = startIndex; i < nextStartIndex; i += 1) {
+    let fixedNextStartIndex = nextStartIndex;
+    if (nextStartIndex === 0) {
+      fixedNextStartIndex = state.mainViewer.images.length;
+    }
+    for (let i = startIndex; i < fixedNextStartIndex; i += 1) {
+      if (t === "t1" && images[i].rating > 0) {
+        // ignore
+      } else {
         hashList.push(images[i].hash);
       }
-      actions(this.store).selected(state, nextStartHash, nextStartIndex);
-      setTimeout(() => {
-        if (hashList.length) {
-          actions(this.store).updateTag(
-            this.store.getState(),
-            hashList,
-            1,
-            t,
-            false
-          );
-        }
-      }, 3000);
     }
+    actions(this.store).selected(state, nextStartHash, nextStartIndex);
+    setTimeout(() => {
+      if (hashList.length) {
+        actions(this.store).updateTag(
+          this.store.getState(),
+          hashList,
+          1,
+          t,
+          false
+        );
+      }
+    }, 3000);
   };
 
   applyTagForImagesInScreen = (t = "t1") => {
@@ -77,7 +83,7 @@ export default class GridViewerService {
       const leftTopIndex = index - (index % range);
       const hashList = fitImages
         .slice(leftTopIndex, leftTopIndex + range)
-        .filter((i) => i.rating < 1)
+        .filter((i) => t !== "t1" && i.rating < 1)
         .filter((i) => (i.t1 || 0) < 1)
         .map((i) => i.hash);
 

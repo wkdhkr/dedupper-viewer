@@ -16,6 +16,7 @@ const GestureTip: React.FunctionComponent<GestureTipProps> = React.memo(
     const [gestureTipWithXy, setGestureTip] = useState<
       [string | null, number, number]
     >([null, 0, 0]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [gestureTip, x, y] = gestureTipWithXy;
 
     useEffect(() => {
